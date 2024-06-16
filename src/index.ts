@@ -147,7 +147,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
     'A button in JupyterLab to run the code cells and then to hide the code cells.',
   autoStart: 'defer',
   activate: (app: JupyterFrontEnd) => {
-
     app.docRegistry.addWidgetExtension('Notebook', new ButtonExtension());
     console.log('JupyterLab extension jupyterlab_hide_code is activated!');
   }
@@ -165,7 +164,6 @@ export class ButtonExtension
 
         createClusters(cell, cell.model.metadata['codes'] as unknown as Code[]);
       });
-      console.log(panel.model?.metadata['data_submissions'])
 
       buttonShowInput.show();
     };
@@ -177,11 +175,10 @@ export class ButtonExtension
       tooltip: 'Show Input'
     });
 
-    if(panel.model?.metadata['data_submissions'] === true){
-      buttonShowInput.show();
-      panel.toolbar.insertItem(11, 'showInput', buttonShowInput);
-    }
-    
+    buttonShowInput.show();
+    panel.toolbar.insertItem(11, 'showInput', buttonShowInput);
+
+
 
     return new DisposableDelegate(() => {
       buttonShowInput.dispose();
