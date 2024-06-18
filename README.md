@@ -1,6 +1,7 @@
 # jupyterlab_apod
 
 [![Github Actions Status](/workflows/Build/badge.svg)](/actions/workflows/build.yml)
+
 [![Binder](https://mybinder.org/badge_logo.svg)]([https://mybinder.org/v2/gh//main?urlpath=lab](https://mybinder.org/v2/gh/ETH-PEACH-Lab/datascience-visualisation/master))
 
 
