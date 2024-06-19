@@ -2,8 +2,7 @@
 
 [![Github Actions Status](/workflows/Build/badge.svg)](/actions/workflows/build.yml)
 
-[![Binder](https://mybinder.org/badge_logo.svg)]([https://mybinder.org/v2/gh//main?urlpath=lab](https://mybinder.org/v2/gh/ETH-PEACH-Lab/datascience-visualisation/master))
-
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ETH-PEACH-Lab/datascience-visualisation.git/HEAD)
 
  Show a random NASA Astronomy Picture of the Day in a JupyterLab panel
 
