@@ -56,12 +56,16 @@
         "@jupyterlab/application": "^4.2.1",
         "@jupyterlab/apputils": "^4.3.1",
         "@lumino/widgets": "^2.3.2",
+        "@types/d3": "^7.4.3",
+        "cytoscape": "^3.30.0",
+        "d3": "^7.9.0",
         "express": "^4.19.2",
         "fs": "^0.0.1-security"
     },
     "devDependencies": {
         "@jupyterlab/builder": "^4.0.0",
         "@jupyterlab/testutils": "^4.0.0",
+        "@types/cytoscape": "^3.21.4",
         "@types/jest": "^29.2.0",
         "@types/json-schema": "^7.0.11",
         "@types/react": "^18.0.26",
