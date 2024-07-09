@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable prettier/prettier */
+/* eslint-disable prefer-const */
 import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
@@ -23,15 +26,19 @@ import { ISharedCodeCell } from '@jupyter/ydoc';
 
 import '../style/index.css';
 import { PanelLayout, Widget } from '@lumino/widgets';
-
+import { contentRefs } from 'yjs/dist/src/internals';
 
 
 interface Code {
-  cell_id: number;
-  cluster_id: number;
-  code: string;
-  outputs: IOutput[];
-  code_id: number;
+  notebook_id : number;
+  code : string;
+  output : IOutput[];
+}
+
+interface CellMetadata {
+  start_cell : boolean;
+  class : string;
+  codes : Code[];
 }
 
 /**
@@ -68,7 +75,7 @@ const populateCluster = (codes: Code[], cell: Cell<ICellModel>) => {
       });
       codeDiv.classList.add('active');
       changeCode(cell, codes.find((c) => c.code_id === code_id) as Code);
-      console.log(`Code ${codeDiv.innerText} clicked`)
+      console.log(`Code ${codeDiv.innerText} clicked`);
     });
   });
 
@@ -91,12 +98,52 @@ const getCodeClusters = (codes: Code[]) => {
   return clusters;
 };
 
+const classes = [
+  { label: 'Data Extraction', color: '#6abf4b' }, // Green
+  { label: 'Data Transform', color: '#4b98bf' }, // Blue
+  { label: 'Visualization', color: '#bf4b4b' }, // Red
+  { label: 'Debug', color: '#bf4b98' }, // Pink
+  { label: 'Model Training', color: '#bfb24b' }, // Yellow
+];
+
+const changeAllCels = (cells: Cell<ICellModel>[]) => {
+
+const createClass = (cell: Cell<ICellModel>, cellMeta: CellMetadata) => {
+  if (!cellMeta.start_cell) {
+    return;
+  }
+  const layout = cell.layout as unknown as PanelLayout;
+
+  const classContainer = document.createElement('div');
+  classContainer.className = 'cells-class';
+  classContainer.style.backgroundColor = classes.find((c) => c.label === cellMeta.class)?.color as string;
+  
+  const classHeader = document.createElement('div');
+  classHeader.className = 'class-header';
+  classHeader.innerText = cellMeta.class;
+  classContainer.appendChild(classHeader);
+
+
+  const studentContainer = document.createElement('div');
+  studentContainer.className = 'class-tabs';
+  classContainer.appendChild(studentContainer);
+
+  cellMeta.codes.forEach((code) => {
+    const codeDiv = document.createElement('div');
+    codeDiv.className = 'student-tab';
+    codeDiv.innerText = code.notebook_id.toString();
+    classContainer.appendChild(codeDiv);
+
+    codeDiv.addEventListener('click', () => {
+      
+    });
+  }
+}
 /**
  * Create the cluster tabs and the code tabs
  */
-const createClusters = (cell: Cell<ICellModel>, codes: Code[]) => {
+const createClusters = (cell: Cell<ICellModel>, codes: CellMetadata) => {
   const layout = cell.layout as unknown as PanelLayout;
-  const clusters = getCodeClusters(codes);
   const mainContainer = document.createElement('div');
   const clusterContainer = document.createElement('div');
   clusterContainer.className = 'tab-container';
@@ -162,7 +209,7 @@ export class ButtonExtension
 
       panel.content.widgets.forEach((cell) => {
 
-        createClusters(cell, cell.model.metadata['codes'] as unknown as Code[]);
+        createCell(cell, cell.model.metadata as unknown as CellMetadata);
       });
 
       buttonShowInput.show();

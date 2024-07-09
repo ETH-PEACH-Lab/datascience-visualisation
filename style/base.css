@@ -15,13 +15,24 @@ body {
   font-family: Arial, sans-serif;
 }
 
-.tab-container {
+.cells-class{
   display: flex;
   border-bottom: 1px solid #ccc;
   margin: 20px;
 }
 
-.tab {
+.class-header{
+  font-size: 20px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.class-tabs{
+  display: flex;
+  margin: 20px;
+}
+
+.student-tab {
   padding: 10px 20px;
   border: 1px solid #ccc;
   border-bottom: none;
@@ -31,11 +42,11 @@ body {
   border-radius: 5px 5px 0 0;
 }
 
-.tab:hover {
+.student-tab:hover {
   background-color: #ddd;
 }
 
-.tab.active {
+.student-tab.active {
   background-color: white;
   border-bottom: 1px solid white;
   font-weight: bold;
