@@ -26,12 +26,12 @@ import { ISharedCodeCell } from '@jupyter/ydoc';
 
 import '../style/index.css';
 import { PanelLayout, Widget } from '@lumino/widgets';
-import { contentRefs } from 'yjs/dist/src/internals';
 
 
 interface Code {
-  notebook_id : number;
   code : string;
+  notebook_id : number;
+  cell_id : number;
   output : IOutput[];
 }
 
@@ -47,56 +47,12 @@ interface CellMetadata {
 const changeCode = (cell: Cell<ICellModel>, code: Code) => {
   cell.model.sharedModel.setSource(code.code);
   const c = cell?.model.sharedModel as unknown as ISharedCodeCell;
-  c.setOutputs(code.outputs);
+  c.execution_count = code.cell_id;
+  // console.log('Setting outputs', code.output);
+  // c.setOutputs(code.output);
 };
 
-/**
- * Populate the cluster tab with the codes associated to the cluster_id
- */
-const populateCluster = (codes: Code[], cell: Cell<ICellModel>) => {
-  const codeContainer = document.createElement('div');
-  codeContainer.className = 'tab-container';
 
-  // Create the code tabs
-  let codeDivs: Map<number, HTMLDivElement> = new Map();
-  codes.forEach((code) => {
-    const codeDiv = document.createElement('div');
-    codeDiv.className = 'tab';
-    codeDiv.innerText = code.code_id.toString();
-    codeDivs.set(code.code_id, codeDiv);
-    codeContainer.appendChild(codeDiv);
-  });
-
-  // Add event listeners to the code tabs that change the code of the cell and highlight the active tab
-  codeDivs.forEach((codeDiv, code_id) => {
-    codeDiv.addEventListener('click', () => {
-      codeDivs.forEach((c) => {
-        c.classList.remove('active');
-      });
-      codeDiv.classList.add('active');
-      changeCode(cell, codes.find((c) => c.code_id === code_id) as Code);
-      console.log(`Code ${codeDiv.innerText} clicked`);
-    });
-  });
-
-  return codeContainer;
-}
-
-/**
- * Get a map from cluster_id to codes
- */
-const getCodeClusters = (codes: Code[]) => {
-  let clusters: Map<number, Code[]> = new Map();
-  codes.forEach((code) => {
-    if (clusters.has(code.cluster_id)) {
-      clusters.get(code.cluster_id)?.push(code);
-    } else {
-      clusters.set(code.cluster_id, [code]);
-    }
-  });
-
-  return clusters;
-};
 
 const classes = [
   { label: 'Data Extraction', color: '#6abf4b' }, // Green
@@ -106,21 +62,32 @@ const classes = [
   { label: 'Model Training', color: '#bfb24b' }, // Yellow
 ];
 
-const changeAllCels = (cells: Cell<ICellModel>[]) => {
+const changeAllCells = (cells: readonly Cell<ICellModel>[], notebook_id: number) => {
+  cells.forEach((cell) => {
+    const cellMeta = cell.model.metadata as unknown as CellMetadata;
+    cell.hide();
+    cellMeta.codes.forEach((code) => {
+      if (code.notebook_id === notebook_id) {
+        cell.show();
+        console.log('Changing code', code);
+        changeCode(cell, code);
+      }
+    });
+  });
+}
 
-const createClass = (cell: Cell<ICellModel>, cellMeta: CellMetadata) => {
+const createClass = (cells: readonly Cell<ICellModel>[], cell: Cell<ICellModel>, cellMeta: CellMetadata) => {
   if (!cellMeta.start_cell) {
     return;
   }
-  const layout = cell.layout as unknown as PanelLayout;
-
   const classContainer = document.createElement('div');
   classContainer.className = 'cells-class';
-  classContainer.style.backgroundColor = classes.find((c) => c.label === cellMeta.class)?.color as string;
   
   const classHeader = document.createElement('div');
   classHeader.className = 'class-header';
   classHeader.innerText = cellMeta.class;
+  classHeader.style.backgroundColor = classes.find((c) => c.label === cellMeta.class)?.color as string;
+
   classContainer.appendChild(classHeader);
 
 
@@ -129,62 +96,33 @@ const createClass = (cell: Cell<ICellModel>, cellMeta: CellMetadata) => {
   classContainer.appendChild(studentContainer);
 
   cellMeta.codes.forEach((code) => {
+    console.log('Creating code ', code.notebook_id);
     const codeDiv = document.createElement('div');
     codeDiv.className = 'student-tab';
     codeDiv.innerText = code.notebook_id.toString();
-    classContainer.appendChild(codeDiv);
+    codeDiv.style.borderColor = classes.find((c) => c.label === cellMeta.class)?.color as string;
+    studentContainer.appendChild(codeDiv);
 
     codeDiv.addEventListener('click', () => {
-      
+      changeAllCells(cells, code.notebook_id);
+      console.log('Changing to ', code.notebook_id);
+      document.querySelectorAll('.student-tab').forEach((tab) => {
+        const tabElement = tab as HTMLElement;
+        if (parseInt(tabElement.innerText) === code.notebook_id) {
+          tabElement.classList.add('active');
+        } else {
+          tabElement.classList.remove('active');
+        }
+      });
     });
-  }
-}
-/**
- * Create the cluster tabs and the code tabs
- */
-const createClusters = (cell: Cell<ICellModel>, codes: CellMetadata) => {
+  });
+
+  const widget = new Widget({ node: classContainer });
   const layout = cell.layout as unknown as PanelLayout;
-  const mainContainer = document.createElement('div');
-  const clusterContainer = document.createElement('div');
-  clusterContainer.className = 'tab-container';
-  mainContainer.appendChild(clusterContainer);
-  let clusterTabs: Map<number, HTMLDivElement> = new Map();
-  let allCodeTabs: Map<number, HTMLDivElement> = new Map();
-
-  // Create the cluster tabs and populate the code tabs
-  clusters.forEach((codes, cluster_id) => {
-    const clusterTab = document.createElement('div');
-    clusterTab.className = 'tab';
-    clusterTab.innerText = `Cluster ${cluster_id}`;
-    clusterTab.dataset.cluster_id = cluster_id.toString();
-    const codeTabs = populateCluster(codes, cell);
-    codeTabs.style.display = 'none';
-    clusterTabs.set(cluster_id, clusterTab);
-    allCodeTabs.set(cluster_id, codeTabs);
-
-
-    mainContainer.appendChild(codeTabs);
-    clusterContainer.appendChild(clusterTab);
-  });
-
-  // Add event listeners to the cluster tabs that highlight the active tab and show the corresponding code tabs
-  clusterTabs.forEach((clusterTab, clusterIndex) => {
-    clusterTab.addEventListener('click', () => {
-      console.log(`Cluster ${clusterIndex} clicked`)
-      clusterTabs.forEach((t) => t.classList.remove('active'));
-      clusterTab.classList.add('active');
-
-      allCodeTabs.forEach((t) => t.style.display = 'none');
-      const codeTabs = allCodeTabs.get(clusterIndex);
-      if (codeTabs) {
-        codeTabs.style.display = 'flex';
-      }
-    });
-  });
-
-  const widget = new Widget({ node: mainContainer });
   layout?.insertWidget(0, widget);
-};
+
+}
+
 /**
  * Initialization data for the jupyterlab_hide_code extension.
  */
@@ -206,10 +144,10 @@ export class ButtonExtension
     context: DocumentRegistry.IContext<INotebookModel>
   ): IDisposable {
     const showClusters = () => {
-
+      console.log('Showing clusters');
       panel.content.widgets.forEach((cell) => {
 
-        createCell(cell, cell.model.metadata as unknown as CellMetadata);
+        createClass(panel.content.widgets, cell, cell.model.metadata as unknown as CellMetadata);
       });
 
       buttonShowInput.show();
