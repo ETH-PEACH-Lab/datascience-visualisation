@@ -20,16 +20,16 @@ import '../style/index.css';
 import { PanelLayout, Widget } from '@lumino/widgets';
 
 interface Code {
-  code : string;
-  notebook_id : number;
-  cell_id : number;
-  output : IOutput[];
+  code: string;
+  notebook_id: number;
+  cell_id: number;
+  output: IOutput[];
 }
 
 interface CellMetadata {
-  start_cell : boolean;
-  class : string;
-  codes : Code[];
+  start_cell: boolean;
+  class: string;
+  codes: Code[];
 }
 
 /**
@@ -73,7 +73,7 @@ const createClass = (cells: readonly Cell<ICellModel>[], cell: Cell<ICellModel>,
   }
   const classContainer = document.createElement('div');
   classContainer.className = 'cells-class';
-  
+
   const classHeader = document.createElement('div');
   classHeader.className = 'class-header';
   classHeader.innerText = cellMeta.class;
@@ -120,8 +120,29 @@ const plugin: JupyterFrontEndPlugin<void> = {
   id: 'sidebar-cluster:plugin',
   autoStart: true,
   activate: (app: JupyterFrontEnd) => {
+
+    // Add the button extension to the notebook
+    app.docRegistry.addWidgetExtension('Notebook', new SideBarExtension(app));
+    app.docRegistry.addWidgetExtension('Notebook', new ButtonExtension());
+  }
+};
+
+export class SideBarExtension
+  implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel> {
+
+    private app: JupyterFrontEnd;
+
+    constructor(app: JupyterFrontEnd) {
+      this.app = app;
+    }
+
+  createNew(
+    panel: NotebookPanel,
+    context: DocumentRegistry.IContext<INotebookModel>
+  ): IDisposable {
     console.log('JupyterLab extension sidebar-cluster is activated!');
 
+    
     // Create a sidebar widget
     const sidebar = new Widget();
     sidebar.id = 'sidebar';
@@ -154,7 +175,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     `;
 
     // Add the sidebar to the left area
-    app.shell.add(sidebar, 'left');
+    this.app.shell.add(sidebar, 'left');
 
     const svgEdges = sidebar.node.querySelector('.edges') as SVGElement;
     const viewSelector = sidebar.node.querySelector('#viewSelector') as HTMLSelectElement;
@@ -275,11 +296,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     // Draw edges initially
     setTimeout(drawEdges, 100);
-
-    // Add the button extension to the notebook
-    app.docRegistry.addWidgetExtension('Notebook', new ButtonExtension());
+    
+    return new DisposableDelegate(() => {
+      sidebar.dispose();
+    });
   }
-};
+}
 
 export class ButtonExtension
   implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel> {
