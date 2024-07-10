@@ -136,42 +136,72 @@ export class SideBarExtension
 
 
     // Create a sidebar widget
+
     
-    const sidebar = new Widget();
-    sidebar.id = 'sidebar';
-    sidebar.title.iconClass = 'jp-SideBarIcon jp-SideBar';
-    sidebar.title.caption = 'Flowchart Sidebar';
-    sidebar.node.innerHTML = `
-      <div class="sidebar-content">
-        <select id="viewSelector">
-          <option value="all">ALL</option>
-          <option value="student1">Student 1</option>
-          <option value="student2">Student 2</option>
-          <option value="student3">Student 3</option>
-        </select>
-        <div class="node node1" id="node1">Data Extraction</div>
-        <div class="node node2" id="node2">Data Transform</div>
-        <div class="node node3" id="node3">Visualization</div>
-        <div class="node node4" id="node4">Debug</div>
-        <div class="node node5" id="node5">Model Training</div>
-        <div class="student-graph" id="student-graph" style="display: none;">
-          <div class="student-node" id="student-node1">Node 1</div>
-          <div class="student-node" id="student-node2">Node 2</div>
-          <div class="student-node" id="student-node3">Node 3</div>
-          <div class="student-node" id="student-node4">Node 4</div>
-          <div class="student-node" id="student-node5">Node 5</div>
-        </div>
-        <svg class="edges" height="800" width="200">
-          <!-- Define edges here -->
-        </svg>
-      </div>
-    `;
+    const sidebarContent = document.createElement('div');
+    sidebarContent.className = 'sidebar-content';
+
+    const viewSelector = document.createElement('select');
+    viewSelector.id = 'viewSelector';
+    sidebarContent.appendChild(viewSelector);
+
+    const options = [
+      { value: 'all', text: 'ALL' },
+    ];
+
+    for (let i = 1; i <= countNotebooks(panel.content.widgets); i++) {
+      options.push({ value: `student${i}`, text: `Student ${i}` });
+    }
+
+    options.forEach(optionData => {
+      const option = document.createElement('option');
+      option.value = optionData.value;
+      option.text = optionData.text;
+      viewSelector.appendChild(option);
+    });
+    // Create and append nodes
+    const nodes = [
+      { id: 'node1', text: 'Data Extraction' },
+      { id: 'node2', text: 'Data Transform' },
+      { id: 'node3', text: 'Visualization' },
+      { id: 'node4', text: 'Debug' },
+      { id: 'node5', text: 'Model Training' },
+    ];
+
+    nodes.forEach(nodeData => {
+      const node = document.createElement('div');
+      node.className = `node ${nodeData.id}`;
+      node.id = nodeData.id;
+      node.textContent = nodeData.text;
+      sidebarContent.appendChild(node);
+    });
+
+    // Create and append student graph container
+    const studentGraph = document.createElement('div');
+    studentGraph.className = 'student-graph';
+    studentGraph.id = 'student-graph';
+    studentGraph.style.display = 'none';
+    sidebarContent.appendChild(studentGraph);
+
+    // Create and append student nodes
+    for (let i = 1; i <= 5; i++) {
+      const studentNode = document.createElement('div');
+      studentNode.className = 'student-node';
+      studentNode.id = `student-node${i}`;
+      studentNode.textContent = `Node ${i}`;
+      studentGraph.appendChild(studentNode);
+    }
+
+    // Create and append SVG container for edges
+    const sidebar = new Widget({node : sidebarContent});
+    // Append the sidebar content to the sidebar
 
     // Add the sidebar to the left area
-    this.app.shell.add(sidebar, 'left');
+
+    // Add the sidebar to the left area
+    // this.app.shell.add(sidebar, 'left');
 
     const svgEdges = sidebar.node.querySelector('.edges') as SVGElement;
-    const viewSelector = sidebar.node.querySelector('#viewSelector') as HTMLSelectElement;
 
     const drawEdges = () => {
       const svgRect = svgEdges.getBoundingClientRect();
