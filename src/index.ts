@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/quotes */
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable prefer-const */
 import {
@@ -12,9 +13,8 @@ import {
   NotebookPanel,
   INotebookModel,
 } from '@jupyterlab/notebook';
-import { Cell, ICellModel } from '@jupyterlab/cells'
-import { IOutput } from '@jupyterlab/nbformat';
 import { ISharedCodeCell } from '@jupyter/ydoc';
+import { Cell, ICellModel } from '@jupyterlab/cells'
 import '../style/index.css';
 import { PanelLayout, Widget } from '@lumino/widgets';
 
@@ -27,29 +27,13 @@ const getClassColor = (className: string): string => {
 };
 
 
-interface Code {
-  code: string;
-  notebook_id: number;
-  cell_id: number;
-  output: IOutput[];
-}
 
 interface CellMetadata {
   start_cell: boolean;
   class: string;
-  codes: Code[];
+  notebook_id: number;
+  cell_id: number;
 }
-
-/**
- * Change the code of a cell
- */
-const changeCode = (cell: Cell<ICellModel>, code: Code) => {
-  cell.model.sharedModel.setSource(code.code);
-  const c = cell?.model.sharedModel as unknown as ISharedCodeCell;
-  c.execution_count = code.cell_id;
-  // console.log('Setting outputs', code.output);
-  // c.setOutputs(code.output);
-};
 
 
 
@@ -57,17 +41,26 @@ const changeAllCells = (cells: readonly Cell<ICellModel>[], notebook_id: number)
   cells.forEach((cell) => {
     const cellMeta = cell.model.metadata as unknown as CellMetadata;
     cell.hide();
-    cellMeta.codes.forEach((code) => {
-      if (code.notebook_id === notebook_id) {
-        cell.show();
-        console.log('Changing code', code);
-        changeCode(cell, code);
-      }
-    });
+    if (cellMeta.notebook_id === notebook_id) {
+      cell.show();
+    }
   });
 }
 
-const createClass = (cells: readonly Cell<ICellModel>[], cell: Cell<ICellModel>, cellMeta: CellMetadata) => {
+const countNotebooks = (cells: readonly Cell<ICellModel>[]) => {
+  const notebooks = new Set<number>();
+  cells.forEach((cell) => {
+    const cellMeta = cell.model.metadata as unknown as CellMetadata;
+    notebooks.add(cellMeta.notebook_id);
+  });
+  return notebooks.size;
+}
+
+const createClass = (cells: readonly Cell<ICellModel>[], cell: Cell<ICellModel>) => {
+  console.log('Creating class');
+  const cellMeta = cell.model.metadata as unknown as CellMetadata;
+  const c = cell?.model.sharedModel as unknown as ISharedCodeCell;
+  c.execution_count = cellMeta.cell_id;
   if (!cellMeta.start_cell) {
     return;
   }
@@ -86,27 +79,28 @@ const createClass = (cells: readonly Cell<ICellModel>[], cell: Cell<ICellModel>,
   studentContainer.className = 'class-tabs';
   classContainer.appendChild(studentContainer);
 
-  cellMeta.codes.forEach((code) => {
-    console.log('Creating code ', code.notebook_id);
+  const n_notebooks = countNotebooks(cells);
+  for (let i = 1; i <= n_notebooks; i++) {
+    console.log('Creating code ', i);
     const codeDiv = document.createElement('div');
     codeDiv.className = 'student-tab';
-    codeDiv.innerText = code.notebook_id.toString();
+    codeDiv.innerText = i.toString();
     codeDiv.style.borderColor = getClassColor(cellMeta.class);
     studentContainer.appendChild(codeDiv);
 
     codeDiv.addEventListener('click', () => {
-      changeAllCells(cells, code.notebook_id);
-      console.log('Changing to ', code.notebook_id);
+      changeAllCells(cells, i);
+      console.log('Changing to ', i);
       document.querySelectorAll('.student-tab').forEach((tab) => {
         const tabElement = tab as HTMLElement;
-        if (parseInt(tabElement.innerText) === code.notebook_id) {
+        if (parseInt(tabElement.innerText) === i) {
           tabElement.classList.add('active');
         } else {
           tabElement.classList.remove('active');
         }
       });
     });
-  });
+  }
 
   const widget = new Widget({ node: classContainer });
   const layout = cell.layout as unknown as PanelLayout;
@@ -141,11 +135,13 @@ export class ButtonExtension
     panel: NotebookPanel,
     context: DocumentRegistry.IContext<INotebookModel>
   ): IDisposable {
+
+
     const showClusters = () => {
       console.log('Showing clusters');
       panel.content.widgets.forEach((cell) => {
 
-        createClass(panel.content.widgets, cell, cell.model.metadata as unknown as CellMetadata);
+        createClass(panel.content.widgets, cell);
       });
 
       buttonShowInput.show();
