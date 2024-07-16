@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/quotes */
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable prettier/prettier */
 /* eslint-disable prefer-const */
@@ -56,6 +57,7 @@ const countNotebooks = (cells: readonly Cell<ICellModel>[]) => {
 }
 
 const createClass = (cells: readonly Cell<ICellModel>[], cell: Cell<ICellModel>) => {
+  console.log('Creating class');
   const cellMeta = cell.model.metadata as unknown as CellMetadata;
   const c = cell?.model.sharedModel as unknown as ISharedCodeCell;
   c.execution_count = cellMeta.cell_id;
@@ -114,19 +116,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
   activate: (app: JupyterFrontEnd) => {
 
     // Add the button extension to the notebook
-    app.docRegistry.addWidgetExtension('Notebook', new SideBarExtension(app));
+    app.docRegistry.addWidgetExtension('Notebook', new SideBarExtension());
     app.docRegistry.addWidgetExtension('Notebook', new ButtonExtension());
   }
 };
 
 export class SideBarExtension
   implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel> {
-
-  private app: JupyterFrontEnd;
-
-  constructor(app: JupyterFrontEnd) {
-    this.app = app;
-  }
 
   createNew(
     panel: NotebookPanel,
@@ -332,6 +328,8 @@ export class ButtonExtension
     panel: NotebookPanel,
     context: DocumentRegistry.IContext<INotebookModel>
   ): IDisposable {
+
+
     const showClusters = () => {
       console.log('Showing clusters');
       panel.content.widgets.forEach((cell) => {
