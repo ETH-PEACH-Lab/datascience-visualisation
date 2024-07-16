@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable prettier/prettier */
 /* eslint-disable prefer-const */
 import {
   JupyterFrontEnd,
@@ -18,6 +17,14 @@ import { IOutput } from '@jupyterlab/nbformat';
 import { ISharedCodeCell } from '@jupyter/ydoc';
 import '../style/index.css';
 import { PanelLayout, Widget } from '@lumino/widgets';
+
+import colorScheme from './colorScheme';
+
+// Example usage of the color scheme
+const getClassColor = (className: string): string => {
+    return colorScheme[className] || '#ffffff';  // Default to black if class name is not found
+};
+
 
 interface Code {
   code: string;
@@ -45,14 +52,6 @@ const changeCode = (cell: Cell<ICellModel>, code: Code) => {
 
 
 
-const classes = [
-  { label: 'Data Extraction', color: '#6abf4b' }, // Green
-  { label: 'Data Transform', color: '#4b98bf' }, // Blue
-  { label: 'Visualization', color: '#bf4b4b' }, // Red
-  { label: 'Debug', color: '#bf4b98' }, // Pink
-  { label: 'Model Training', color: '#bfb24b' }, // Yellow
-];
-
 const changeAllCells = (cells: readonly Cell<ICellModel>[], notebook_id: number) => {
   cells.forEach((cell) => {
     const cellMeta = cell.model.metadata as unknown as CellMetadata;
@@ -77,7 +76,7 @@ const createClass = (cells: readonly Cell<ICellModel>[], cell: Cell<ICellModel>,
   const classHeader = document.createElement('div');
   classHeader.className = 'class-header';
   classHeader.innerText = cellMeta.class;
-  classHeader.style.backgroundColor = classes.find((c) => c.label === cellMeta.class)?.color as string;
+  classHeader.style.backgroundColor = getClassColor(cellMeta.class);
 
   classContainer.appendChild(classHeader);
 
@@ -91,7 +90,7 @@ const createClass = (cells: readonly Cell<ICellModel>[], cell: Cell<ICellModel>,
     const codeDiv = document.createElement('div');
     codeDiv.className = 'student-tab';
     codeDiv.innerText = code.notebook_id.toString();
-    codeDiv.style.borderColor = classes.find((c) => c.label === cellMeta.class)?.color as string;
+    codeDiv.style.borderColor = getClassColor(cellMeta.class);
     studentContainer.appendChild(codeDiv);
 
     codeDiv.addEventListener('click', () => {
