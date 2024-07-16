@@ -55,12 +55,15 @@
     "dependencies": {
         "@jupyterlab/application": "^4.2.1",
         "@jupyterlab/apputils": "^4.3.1",
+        "@jupyterlab/launcher": "^4.2.3",
+        "@jupyterlab/launcher\n": "^4.2.3",
         "@lumino/widgets": "^2.3.2",
         "@types/d3": "^7.4.3",
         "cytoscape": "^3.30.0",
         "d3": "^7.9.0",
         "express": "^4.19.2",
-        "fs": "^0.0.1-security"
+        "fs": "^0.0.1-security",
+        "reagraph": "^4.19.2"
     },
     "devDependencies": {
         "@jupyterlab/builder": "^4.0.0",
@@ -100,7 +103,25 @@
     },
     "jupyterlab": {
         "extension": true,
-        "outputDir": "jupyterlab_apod/labextension"
+        "outputDir": "jupyterlab_apod/labextension",
+        "sharedPackages": {
+            "@jupyter-widgets/base": {
+                "bundled": false,
+                "singleton": true
+            },
+            "react": {
+                "bundled": true,
+                "singleton": true
+            },
+            "react-dom": {
+                "bundled": true,
+                "singleton": true
+            },
+            "reagraph": {
+                "bundled": true,
+                "singleton": true
+            }
+        }
     },
     "eslintIgnore": [
         "node_modules",
