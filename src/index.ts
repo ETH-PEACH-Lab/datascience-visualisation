@@ -7,15 +7,19 @@ import {
 } from '@jupyterlab/application';
 
 
-import { FlowchartWidget } from './GraphWidget';
-import { ButtonExtension } from './ClassPlugin';
+import { FlowchartWidget } from './graphWidget';
+import { ButtonExtension } from './classPlugin';
 import { NotebookManager } from './helper';
 import { ICommandPalette } from '@jupyterlab/apputils';
+
+
 
 
 /**
  * Initialization data for the sidebar and cluster extension.
  */
+
+
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'sidebar-cluster:plugin',
   autoStart: true,
