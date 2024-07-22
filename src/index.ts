@@ -7,9 +7,9 @@ import {
 } from '@jupyterlab/application';
 
 
-import { FlowchartWidget } from './GraphWidget';
-import { ButtonExtension } from './ClassPlugin';
-import { NotebookManager } from './helper';
+import { FlowchartWidget } from './graphWidget';
+import { ButtonExtension } from './classPlugin';
+import { NotebookManager } from './notebookManager';
 import { ICommandPalette } from '@jupyterlab/apputils';
 
 
