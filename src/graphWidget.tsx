@@ -104,13 +104,16 @@ const Flowchart: React.FC<Props> = (prop) => {
 
   return (
     <div>
-      <select value={selectedNotebook} onChange={handleNotebookChange}>
-        {prop.notebookManager.getNotebookIds().map(notebook => (
-          <option key={notebook} value={notebook}>
-            {notebook}
-          </option>
-        ))}
-      </select>
+      <div className="dropdown-container">
+        <label htmlFor="notebook-select" className="dropdown-label">Select Student:</label>
+        <select id="notebook-select" value={selectedNotebook} onChange={handleNotebookChange} className="notebook-dropdown">
+          {prop.notebookManager.getNotebookIds().map(notebook => (
+            <option key={notebook} value={notebook}>
+              Student {parseInt(notebook)+1}
+            </option>
+          ))}
+        </select>
+      </div>
       <svg ref={svgRef}></svg>
     </div>
   );

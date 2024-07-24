@@ -14,6 +14,8 @@ interface CellMetadata {
     class: string;
     notebook_id: number;
     cell_id: number;
+    student_id: number;  
+
 }
 
 const changeAllCells = (cells: readonly Cell<ICellModel>[], notebook_id: number) => {
