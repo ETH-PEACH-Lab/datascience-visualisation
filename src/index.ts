@@ -29,7 +29,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     console.log('JupyterLab extension sidebar-cluster is activated!');
     const notebookManager = new NotebookManager();
     app.docRegistry.addWidgetExtension('Notebook', new ButtonExtension(notebookManager));
-
+    
     app.commands.addCommand('sidebar-cluster:open', {
       label: 'Generate sidebar graphs',
       caption: 'Generate sidebar graphs',

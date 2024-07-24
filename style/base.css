@@ -159,3 +159,31 @@ background-color: #ddd;
 #student-node5 {
   background-color: #9E9E9E; /* Grey */
 }
+
+.dropdown-container {
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  margin-bottom: 10px; /* Adds spacing between the dropdown and other elements */
+}
+
+.dropdown-label {
+  display: block; /* Ensures the label is on its own line */
+  margin-bottom: 5px; /* Adds some space between the label and the dropdown */
+  color: #333; /* Sets the text color */
+  font-weight: bold; /* Makes the label text bold */
+}
+
+.notebook-dropdown {
+  padding: 5px 10px;
+  border-radius: 4px;
+  width: 100%; /* Ensures the dropdown fills the container */
+}
+.student-label {
+  font-size: 12px;
+  color: #666;
+  padding: 2px 5px;
+  position: absolute; /* Adjust positioning as necessary */
+  top: 0;
+  left: 0;
+}
