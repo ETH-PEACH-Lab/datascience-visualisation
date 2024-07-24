@@ -187,3 +187,45 @@ background-color: #ddd;
   top: 0;
   left: 0;
 }
+.student-name-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.student-name {
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.cells-class {
+  margin-bottom: 20px;
+}
+
+.class-header {
+  background-color: #d3d3d3;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.eliot-container {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: transparent;
+  color: #fbf7f7;
+  font-size: 16px;
+  font-weight: normal;
+  padding-left: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}

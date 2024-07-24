@@ -14,8 +14,6 @@ interface CellMetadata {
     class: string;
     notebook_id: number;
     cell_id: number;
-    student_id: number;  
-
 }
 
 const changeAllCells = (cells: readonly Cell<ICellModel>[], notebook_id: number) => {
@@ -25,6 +23,7 @@ const changeAllCells = (cells: readonly Cell<ICellModel>[], notebook_id: number)
         cell.hide();
         if (cellMeta.notebook_id === notebook_id) {
             cell.show();
+            addEliotToCell(cell);  // Add Eliot to each cell
         }
     });
     document.querySelectorAll('.student-tab').forEach((tab) => {
@@ -35,25 +34,38 @@ const changeAllCells = (cells: readonly Cell<ICellModel>[], notebook_id: number)
             tabElement.classList.remove('active');
         }
     });
-
 }
-
-// const countNotebooks = (cells: readonly Cell<ICellModel>[]) => {
-//     const notebooks = new Set<number>();
-//     cells.forEach((cell) => {
-//         const cellMeta = cell.model.metadata as unknown as CellMetadata;
-//         notebooks.add(cellMeta.notebook_id);
-//     });
-//     return notebooks.size;
-// }
 
 const removeClass = (cell: Cell<ICellModel>) => {
     const layout = cell.layout as unknown as PanelLayout;
-    for(let i = 0; i < layout.widgets.length; i++) {
+    for (let i = layout.widgets.length - 1; i >= 0; i--) {
         const widget = layout.widgets[i];
         if (widget instanceof ClassWidget) {
             layout.removeWidget(widget);
         }
+    }
+}
+
+const addEliotToCell = (cell: Cell<ICellModel>) => {
+    const cellMeta = cell.model.metadata as unknown as CellMetadata;
+
+    // Check if Eliot container already exists
+    if (!cell.node.querySelector('.eliot-container')) {
+        // Create the container for "Eliot"
+        const eliotContainer = document.createElement('div');
+        eliotContainer.className = 'eliot-container';
+        eliotContainer.innerText = "Student " + String(cellMeta.notebook_id+1);
+        eliotContainer.style.position = 'absolute';
+        eliotContainer.style.left = '0';
+        eliotContainer.style.top = '50%';
+        eliotContainer.style.transform = 'translateY(-50%)';
+        eliotContainer.style.backgroundColor = 'gray';
+        eliotContainer.style.color = 'white';
+        eliotContainer.style.padding = '5px';
+        // Append the container to the cell's node
+        cell.node.appendChild(eliotContainer);
+        cell.node.style.position = 'relative'; // Ensure the parent is positioned
+
     }
 }
 
@@ -70,14 +82,12 @@ const createClass = (cell: Cell<ICellModel>) => {
 
     classContainer.appendChild(classHeader);
 
-
     const widget = new ClassWidget({ node: classContainer });
     const layout = cell.layout as unknown as PanelLayout;
     layout?.insertWidget(0, widget);
 };
 
 class ClassWidget extends Widget {
-
 }
 
 export class NotebookManager {
@@ -85,7 +95,10 @@ export class NotebookManager {
 
     public populateCells(cells: readonly Cell<ICellModel>[]) {
         this.cells = cells;
+        // Add Eliot to all cells initially
+        this.cells.forEach(cell => addEliotToCell(cell));
     }
+
     public showNotebook(notebook_id: number) {
         changeAllCells(this.cells, notebook_id);
     }
@@ -103,6 +116,7 @@ export class NotebookManager {
                     classesCreated.add(cellMeta.class);
                 }
                 cell.show();
+                addEliotToCell(cell);  // Add Eliot to each cell
             } else {
                 cell.hide();
             }
@@ -117,13 +131,13 @@ export class NotebookManager {
             const promptNode = cell.node.querySelector('.jp-InputPrompt');
             if (promptNode) {
                 promptNode.textContent = cellMeta.notebook_id.toString();
-            }        
+            }
             if (!classesCreated.has(cellMeta.class)) {
                 createClass(cell);
                 classesCreated.add(cellMeta.class);
             }
             cell.show();
-
+            addEliotToCell(cell);  // Add Eliot to each cell
         }
     }
 

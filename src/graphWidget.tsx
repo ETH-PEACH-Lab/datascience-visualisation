@@ -31,7 +31,13 @@ const Flowchart: React.FC<Props> = (prop) => {
 
     svg.selectAll('*').remove(); // Clear existing graph
 
-    const notebookClasses = prop.notebookManager.getCellsClass(parseInt(selectedNotebooks[0]));
+    let notebookClasses: string[] = [];
+    if (selectedNotebooks.includes('all')) {
+      notebookClasses = prop.notebookManager.getNotebookIds().flatMap(id => prop.notebookManager.getCellsClass(parseInt(id)));
+    } else if (selectedNotebooks.length > 0) {
+      notebookClasses = prop.notebookManager.getCellsClass(parseInt(selectedNotebooks[0]));
+    }
+
     const nodes: Node[] = [];
     const nodesSet = new Set<string>();
     const links: Link[] = [];
@@ -105,17 +111,23 @@ const Flowchart: React.FC<Props> = (prop) => {
       }
     }
     setSelectedNotebook(selected);
-    prop.notebookManager.showNotebooks(selected.map(notebook => parseInt(notebook)));
+
+    if (selected.includes('all')) {
+      prop.notebookManager.showAllNotebooks();
+    } else {
+      prop.notebookManager.showNotebooks(selected.map(notebook => parseInt(notebook)));
+    }
   }
 
   return (
     <div>
       <div className="dropdown-container">
         <label htmlFor="notebook-select" className="dropdown-label">Select Student:</label>
-        <select id="notebook-select" value={selectedNotebook} onChange={handleNotebookChange} className="notebook-dropdown">
+        <select id="notebook-select" value={selectedNotebooks} onChange={handleNotebookChange} className="notebook-dropdown" multiple>
+          <option value="all">All</option>
           {prop.notebookManager.getNotebookIds().map(notebook => (
             <option key={notebook} value={notebook}>
-              Student {parseInt(notebook)+1}
+              Student {parseInt(notebook) + 1}
             </option>
           ))}
         </select>
@@ -126,12 +138,8 @@ const Flowchart: React.FC<Props> = (prop) => {
 };
 
 export class FlowchartWidget extends ReactWidget {
-
-
   notebookManager: NotebookManager;
-  /**
-   * Constructs a new CounterWidget.
-   */
+
   constructor(notebookManager: NotebookManager) {
     super();
     this.addClass('jp-react-widget');
