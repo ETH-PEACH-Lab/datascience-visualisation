@@ -4,8 +4,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ReactWidget } from '@jupyterlab/ui-components';
 import * as d3 from 'd3';
-import { NotebookManager } from './helper';
-import { getClassColor } from './helper';
+import { NotebookManager } from './notebookManager';
+import { getClassColor } from './notebookManager';
 
 interface Node {
   id: string;
@@ -22,7 +22,7 @@ interface Link {
 type Props = { notebookManager: NotebookManager };
 const Flowchart: React.FC<Props> = (prop) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const [selectedNotebook, setSelectedNotebook] = useState<string>('');
+  const [selectedNotebooks, setSelectedNotebook] = useState<string[]>([]);
 
   useEffect(() => {
     const svg = d3.select(svgRef.current)
@@ -31,7 +31,7 @@ const Flowchart: React.FC<Props> = (prop) => {
 
     svg.selectAll('*').remove(); // Clear existing graph
 
-    const notebookClasses = prop.notebookManager.getCellsClass(parseInt(selectedNotebook));
+    const notebookClasses = prop.notebookManager.getCellsClass(parseInt(selectedNotebooks[0]));
     const nodes: Node[] = [];
     const nodesSet = new Set<string>();
     const links: Link[] = [];
@@ -94,12 +94,18 @@ const Flowchart: React.FC<Props> = (prop) => {
       })
       .attr('stroke', '#999')
       .attr('fill', 'none');
-  }, [selectedNotebook]);
+  }, [selectedNotebooks]);
 
   const handleNotebookChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = event.target.value;
+    const options = event.target.options;
+    const selected: string[] = [];
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) {
+        selected.push(options[i].value);
+      }
+    }
     setSelectedNotebook(selected);
-    prop.notebookManager.showNotebook(parseInt(selected));
+    prop.notebookManager.showNotebooks(selected.map(notebook => parseInt(notebook)));
   }
 
   return (

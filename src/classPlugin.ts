@@ -7,7 +7,7 @@ import { IDisposable, DisposableDelegate } from '@lumino/disposable';
 
 import { ToolbarButton } from '@jupyterlab/apputils';
 import '../style/index.css';
-import { NotebookManager } from './helper';
+import { NotebookManager } from './notebookManager';
 
 export class ButtonExtension
     implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel> {
@@ -28,7 +28,7 @@ export class ButtonExtension
         const showClusters = () => {
             console.log('Creating tabs');
             this.notebookManager.populateCells(panel.content.widgets);
-            this.notebookManager.generateNotebookTabs();
+            this.notebookManager.showAllNotebooks();
             buttonShowInput.show();
             console.log('Populating Manager');
         };

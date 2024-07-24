@@ -6,10 +6,12 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
+import {
+  INotebookTracker,
+} from '@jupyterlab/notebook';
 
 import { FlowchartWidget } from './graphWidget';
-import { ButtonExtension } from './classPlugin';
-import { NotebookManager } from './helper';
+import { NotebookManager } from './notebookManager';
 import { ICommandPalette } from '@jupyterlab/apputils';
 
 
@@ -23,17 +25,24 @@ import { ICommandPalette } from '@jupyterlab/apputils';
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'sidebar-cluster:plugin',
   autoStart: true,
-  requires: [ICommandPalette],
-  activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
+  requires: [ICommandPalette, INotebookTracker],
+  activate: (app: JupyterFrontEnd, palette: ICommandPalette, tracker: INotebookTracker) => {
 
     console.log('JupyterLab extension sidebar-cluster is activated!');
     const notebookManager = new NotebookManager();
-    app.docRegistry.addWidgetExtension('Notebook', new ButtonExtension(notebookManager));
-    
+
     app.commands.addCommand('sidebar-cluster:open', {
       label: 'Generate sidebar graphs',
       caption: 'Generate sidebar graphs',
       execute: () => {
+        const panel = tracker.currentWidget;
+        if(panel){
+          notebookManager.populateCells(panel.content.widgets);
+          notebookManager.showAllNotebooks();  
+        }
+        else{
+          console.log('No notebook is open');
+        }
         const widget = new FlowchartWidget(notebookManager);
         widget.id = 'my-sidebar-graph-widget';
         widget.title.iconClass = 'jp-SideBar-tabIcon';
