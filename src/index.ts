@@ -10,10 +10,15 @@ import {
   INotebookTracker,
 } from '@jupyterlab/notebook';
 
+import {
+  IFileBrowserFactory
+} from '@jupyterlab/filebrowser';
+
 import { FlowchartWidget } from './graphWidget';
 import { NotebookManager } from './notebookManager';
 import { ICommandPalette } from '@jupyterlab/apputils';
 
+import { OpenNotebookButton } from './openNotebookButton';
 
 /**
  * Initialization data for the sidebar and cluster extension.
@@ -21,8 +26,8 @@ import { ICommandPalette } from '@jupyterlab/apputils';
 const plugin: JupyterFrontEndPlugin<void> = {
   id: 'sidebar-cluster:plugin',
   autoStart: true,
-  requires: [ICommandPalette, INotebookTracker],
-  activate: (app: JupyterFrontEnd, palette: ICommandPalette, tracker: INotebookTracker) => {
+  requires: [ICommandPalette, INotebookTracker, IFileBrowserFactory],
+  activate: (app: JupyterFrontEnd, palette: ICommandPalette, tracker: INotebookTracker, factory: IFileBrowserFactory) => {
 
     console.log('JupyterLab extension sidebar-cluster is activated!');
     const notebookManager = new NotebookManager();
@@ -35,6 +40,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
         if(panel){
           notebookManager.populateCells(panel.content.widgets);
           notebookManager.showAllNotebooks();  
+          // Create a new button extension
+          const buttonExtension = new OpenNotebookButton(notebookManager, factory);
+          panel.toolbar.insertItem(11, 'showNotebook', buttonExtension.createButton());
+          console.log('Button extension added to notebook');
         }
         else{
           console.log('No notebook is open');
@@ -47,6 +56,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         // Add the sidebar to the left area
         app.shell.add(widget, 'left');
         app.shell.activateById(widget.id);
+
       }
     });
 
