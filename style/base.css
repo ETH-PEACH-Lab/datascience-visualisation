@@ -159,3 +159,11 @@ background-color: #ddd;
 #student-node5 {
   background-color: #9E9E9E; /* Grey */
 }
+
+/* style.css */
+.my-custom-widget {
+  margin-top: 30px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+}

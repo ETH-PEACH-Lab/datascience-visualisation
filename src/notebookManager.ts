@@ -107,6 +107,7 @@ export class NotebookManager {
         }
     }
 
+
     public showAllNotebooks() {
         const classesCreated = new Set<string>();
         for (const cell of this.cells) {
