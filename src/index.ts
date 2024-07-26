@@ -32,7 +32,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     console.log('JupyterLab extension sidebar-cluster is activated!');
     const notebookManager = new NotebookManager();
-    const notebookSelector = new NotebookSelector(notebookManager);
+    const graphWidget = new FlowchartWidget(notebookManager);
+    const notebookSelector = new NotebookSelector(notebookManager, graphWidget);
 
     // When a notebook is opened, add the custom widget to the top
     tracker.widgetAdded.connect((sender, notebook) => {
@@ -61,14 +62,18 @@ const plugin: JupyterFrontEndPlugin<void> = {
         else {
           console.log('No notebook is open');
         }
-        const widget = new FlowchartWidget(notebookManager);
-        widget.id = 'my-sidebar-graph-widget';
-        widget.title.iconClass = 'jp-SideBar-tabIcon';
-        widget.title.caption = 'My Sidebar Graph Widget';
+
+        graphWidget.id = 'my-sidebar-graph-widget';
+        graphWidget.title.iconClass = 'jp-SideBar-tabIcon';
+        graphWidget.title.caption = 'My Sidebar Graph Widget';
 
         // Add the sidebar to the left area
-        app.shell.add(widget, 'left');
-        app.shell.activateById(widget.id);
+        app.shell.add(graphWidget, 'left');
+        app.shell.activateById(graphWidget.id);
+
+        // console.log('Changing height');
+        // const mainArea = document.querySelector('.jp-Notebook') as HTMLElement;
+        // mainArea.style.marginTop = '50px'; // Adjust this value to push the main area down
 
         notebookSelector.addOptions();
       }

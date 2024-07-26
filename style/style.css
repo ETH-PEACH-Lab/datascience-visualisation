@@ -1,0 +1,11 @@
+.jp-Notebook {
+    padding-top: 70px !important;
+    /* Adjust this value if needed */
+}
+
+.jp-Toolbar {
+    position: fixed;
+    /* Ensure the toolbar is properly positioned */
+    z-index: 1;
+    /* Make sure the toolbar stays on top */
+}

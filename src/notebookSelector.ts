@@ -1,14 +1,17 @@
 import { Widget } from "@lumino/widgets";
 import { NotebookManager } from "./notebookManager";
+import { FlowchartWidget } from "./graphWidget";
 
 
 export class NotebookSelector {
     notebookManager: NotebookManager;
     shownNotebooks: Set<string>;
+    graphWidget: FlowchartWidget;
 
-    constructor(notebookManager: NotebookManager) {
+    constructor(notebookManager: NotebookManager, graphWidget: FlowchartWidget) {
         this.notebookManager = notebookManager;
         this.shownNotebooks = new Set<string>();
+        this.graphWidget = graphWidget;
     }
 
     public createSelector() {
@@ -38,7 +41,13 @@ export class NotebookSelector {
         selectorContainer.appendChild(elementSelector);
 
         addButton.addEventListener('click', () => {
+            
             var selectedValue = elementSelector.options[elementSelector.selectedIndex].text;
+
+            if(this.shownNotebooks.has(selectedValue)){
+                console.log('Already shown');
+                return;
+            }
 
             var newElement = document.createElement('div');
             newElement.className = 'element';
@@ -46,6 +55,10 @@ export class NotebookSelector {
 
             this.shownNotebooks.add(selectedValue);
             selectedElements.appendChild(newElement);
+
+            this.notebookManager.showNotebooks(Array.from(this.shownNotebooks).map(Number));
+
+            this.graphWidget.updateGraph(Array.from(this.shownNotebooks));
         });
 
         return new Widget({ node: selectorContainer });

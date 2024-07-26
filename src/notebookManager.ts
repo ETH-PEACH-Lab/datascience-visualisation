@@ -47,7 +47,7 @@ const changeAllCells = (cells: readonly Cell<ICellModel>[], notebook_id: number)
 
 const removeClass = (cell: Cell<ICellModel>) => {
     const layout = cell.layout as unknown as PanelLayout;
-    for(let i = 0; i < layout.widgets.length; i++) {
+    for (let i = 0; i < layout.widgets.length; i++) {
         const widget = layout.widgets[i];
         if (widget instanceof ClassWidget) {
             layout.removeWidget(widget);
@@ -116,7 +116,7 @@ export class NotebookManager {
             const promptNode = cell.node.querySelector('.jp-InputPrompt');
             if (promptNode) {
                 promptNode.textContent = cellMeta.notebook_id.toString();
-            }        
+            }
             if (!classesCreated.has(cellMeta.class)) {
                 createClass(cell);
                 classesCreated.add(cellMeta.class);
@@ -145,7 +145,17 @@ export class NotebookManager {
         });
     }
 
-    public getCurrentNotebookIds(){
+    public getCellsNotebooksClass(notebook_ids: number[]) {
+        return this.cells.filter((cell) => {
+            const cellMeta = cell.model.metadata as unknown as CellMetadata;
+            return notebook_ids.includes(cellMeta.notebook_id);
+        }).map((cell) => {
+            const cellMeta = cell.model.metadata as unknown as CellMetadata
+            return cellMeta.class
+        })
+    };
+
+    public getCurrentNotebookIds() {
         const notebooks = new Set<string>();
         this.cells.forEach((cell) => {
             const cellMeta = cell.model.metadata as unknown as CellMetadata;
