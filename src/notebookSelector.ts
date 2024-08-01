@@ -35,14 +35,25 @@ export class NotebookSelector {
         addButton.innerText = '+';
         selectorContainer.appendChild(addButton);
 
-        const elementSelector = document.createElement('select');
+        const elementSelector = document.createElement('input');
+        elementSelector.setAttribute('list', 'elements');
         elementSelector.id = 'element-selector';
         elementSelector.className = 'element-selector';
         selectorContainer.appendChild(elementSelector);
 
+        const elements = document.createElement('datalist');
+        elements.id = 'elements';
+        elementSelector.setAttribute('list', 'elements');
+        selectorContainer.appendChild(elements);
+
+        // const elementSelector = document.createElement('select');
+        // elementSelector.id = 'element-selector';
+        // elementSelector.className = 'element-selector';
+        // selectorContainer.appendChild(elementSelector);
+
         addButton.addEventListener('click', () => {
             
-            var selectedValue = elementSelector.options[elementSelector.selectedIndex].text;
+            var selectedValue = elementSelector.value as string;
 
             if(this.shownNotebooks.has(selectedValue)){
                 console.log('Already shown');
@@ -67,7 +78,7 @@ export class NotebookSelector {
 
     public addOptions(){
         console.log('Adding options');
-        const elementSelector = document.getElementById('element-selector') as HTMLSelectElement;
+        const elementSelector = document.getElementById('elements') as HTMLDataListElement;
         this.notebookManager.getNotebookIds().forEach((notebookId) => {
             const option = document.createElement('option');
             option.value = notebookId.toString();
