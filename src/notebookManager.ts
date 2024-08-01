@@ -1,9 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import colorScheme from './colorScheme';
+import colorScheme, {classTypes} from './colorScheme';
 // import { ISharedCodeCell } from '@jupyter/ydoc';
 import { Cell, ICellModel } from '@jupyterlab/cells'
 import '../style/index.css';
 import { PanelLayout, Widget } from '@lumino/widgets';
+import {
+    ISharedNotebook
+  } from '@jupyter/ydoc'
+import { ISharedCell } from '@jupyter/ydoc';
 
 export const getClassColor = (className: string): string => {
     return colorScheme[className] || '#ffffff';  // Default to white if class name is not found
@@ -74,16 +78,45 @@ const createClass = (cell: Cell<ICellModel>) => {
     layout?.insertWidget(0, widget);
 };
 
+const createClassCell = (cell: ISharedCell, classType: string) => {
+    const classContainer = document.createElement('div');
+    classContainer.className = 'cells-class';
+
+    const classHeader = document.createElement('div');
+    classHeader.className = 'class-header';
+    classHeader.innerText = classType;
+    classHeader.style.backgroundColor = getClassColor(classType);
+
+    classContainer.appendChild(classHeader);
+
+    const widget = new ClassWidget({ node: classContainer });
+    cell.
+    const layout = cell.layout as unknown as PanelLayout;
+    layout?.insertWidget(0, widget);
+}
+
 class ClassWidget extends Widget {
 
 }
 
 export class NotebookManager {
     private cells!: readonly Cell<ICellModel>[];
+    private nbook: ISharedNotebook;
+    private classCells: Map<string, ISharedCell> = new Map<string, ISharedCell>();
 
-    public populateCells(cells: readonly Cell<ICellModel>[]) {
-        this.cells = cells;
+    public constructor(notebook: ISharedNotebook) {
+        this.nbook = notebook;
+        this.showNotebooks([]);
     }
+
+    private createClassCells() {
+        const classCells = new Map<string, ISharedCell>();
+        Object.keys(colorScheme).forEach((className) => {
+            const cell = this.nbook.addCell({cell_type: 'markdown'});
+            createClassCell(cell, className);
+        });
+    }
+
     public showNotebook(notebook_id: number) {
         changeAllCells(this.cells, notebook_id);
     }

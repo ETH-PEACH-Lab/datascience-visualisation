@@ -20,4 +20,6 @@ const colorScheme: ColorScheme = {
     "Model Training": "#ff9da7"
 };
 
+export const classTypes = Object.keys(colorScheme);
+
 export default colorScheme;
