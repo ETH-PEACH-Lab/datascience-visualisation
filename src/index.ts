@@ -34,8 +34,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
     // When a notebook is opened, add the custom widget to the top
     tracker.widgetAdded.connect((sender, panel) => {
       panel.context.ready.then(() => {
-        
-        panel.content.model?.sharedModel.getMetadata('visualization');
         if (!panel.content.model?.sharedModel.getMetadata('visualization')){
           return;
         }
