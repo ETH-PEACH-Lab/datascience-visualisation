@@ -55,12 +55,21 @@
     "dependencies": {
         "@jupyterlab/application": "^4.2.1",
         "@jupyterlab/apputils": "^4.3.1",
+        "@jupyterlab/launcher": "^4.2.3",
+        "@jupyterlab/launcher\n": "^4.2.3",
         "@lumino/widgets": "^2.3.2",
         "@types/d3": "^7.4.3",
         "cytoscape": "^3.30.0",
         "d3": "^7.9.0",
         "express": "^4.19.2",
-        "fs": "^0.0.1-security"
+        "fs": "^0.0.1-security",
+        "graphology-types": "^0.24.7",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "reagraph": "^4.19.2",
+        "three": "^0.166.1",
+        "types": "^0.1.1",
+        "webpack": "^5.93.0"
     },
     "devDependencies": {
         "@jupyterlab/builder": "^4.0.0",
@@ -68,8 +77,10 @@
         "@types/cytoscape": "^3.21.4",
         "@types/jest": "^29.2.0",
         "@types/json-schema": "^7.0.11",
-        "@types/react": "^18.0.26",
+        "@types/react": "^18.3.3",
         "@types/react-addons-linked-state-mixin": "^0.14.22",
+        "@types/react-dom": "^18.3.0",
+        "@types/three": "^0.166.0",
         "@typescript-eslint/eslint-plugin": "^6.1.0",
         "@typescript-eslint/parser": "^6.1.0",
         "css-loader": "^6.7.1",
@@ -87,8 +98,14 @@
         "stylelint-config-standard": "^34.0.0",
         "stylelint-csstree-validator": "^3.0.0",
         "stylelint-prettier": "^4.0.0",
-        "typescript": "~5.0.2",
+        "typescript": "^5.5.3",
         "yjs": "^13.5.0"
+    },
+    "resolutions": {
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "graphology-types": "^0.24.7",
+        "typescript": "^5.5.3"
     },
     "sideEffects": [
         "style/*.css",
@@ -100,7 +117,25 @@
     },
     "jupyterlab": {
         "extension": true,
-        "outputDir": "jupyterlab_apod/labextension"
+        "outputDir": "jupyterlab_apod/labextension",
+        "sharedPackages": {
+            "@jupyter-widgets/base": {
+                "bundled": false,
+                "singleton": true
+            },
+            "react": {
+                "bundled": true,
+                "singleton": true
+            },
+            "react-dom": {
+                "bundled": true,
+                "singleton": true
+            },
+            "reagraph": {
+                "bundled": true,
+                "singleton": true
+            }
+        }
     },
     "eslintIgnore": [
         "node_modules",
