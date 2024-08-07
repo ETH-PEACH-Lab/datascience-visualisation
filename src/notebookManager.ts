@@ -159,4 +159,14 @@ export class NotebookManager {
             return cellMeta.class
         });
     }
+    public getCurrentNotebookIds(){
+        const notebooks = new Set<string>();
+        this.cells.forEach((cell) => {
+            const cellMeta = cell.model.metadata as unknown as CellMetadata;
+            if (cell.isVisible) {
+                notebooks.add(cellMeta.notebook_id.toString());
+            }
+        });
+        return Array.from(notebooks);
+    }
 }
