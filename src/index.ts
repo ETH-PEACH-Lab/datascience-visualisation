@@ -1,78 +1,50 @@
-/* eslint-disable @typescript-eslint/quotes */
-/* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable prefer-const */
 import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
-
-import {
-  INotebookTracker,
-} from '@jupyterlab/notebook';
-
-import {
-  IFileBrowserFactory
-} from '@jupyterlab/filebrowser';
-
-import { FlowchartWidget } from './graphWidget';
-import { NotebookManager } from './notebookManager';
-
-
-import { OpenNotebookButton } from './openNotebookButton';
-import { NotebookSelector } from './notebookSelector';
+import { MainAreaWidget } from '@jupyterlab/apputils';
+import { ILauncher } from '@jupyterlab/launcher';
+import { reactIcon } from '@jupyterlab/ui-components';
+import { NotebookWidget } from './mainWidget';
 
 /**
- * Initialization data for the sidebar and cluster extension.
+ * The command IDs used by the react-widget plugin.
  */
-const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'sidebar-cluster:plugin',
+namespace CommandIDs {
+  export const create = 'create-react-widget';
+}
+
+/**
+ * Initialization data for the react-widget extension.
+ */
+const extension: JupyterFrontEndPlugin<void> = {
+  id: 'react-widget',
+  description: 'A minimal JupyterLab extension using a React Widget.',
   autoStart: true,
-  requires: [INotebookTracker, IFileBrowserFactory],
-  activate: (app: JupyterFrontEnd, tracker: INotebookTracker, factory: IFileBrowserFactory) => {
+  optional: [ILauncher],
+  activate: (app: JupyterFrontEnd, launcher: ILauncher) => {
+    const { commands } = app;
 
-
-    // When a notebook is opened, add the custom widget to the top
-    tracker.widgetAdded.connect((sender, panel) => {
-      panel.context.ready.then(() => {
-        if (!panel.content.model?.sharedModel.getMetadata('visualization')){
-          return;
-        }
-
-          // Initialize the classes
-          const notebookManager = new NotebookManager();
-          const graphWidget = new FlowchartWidget(notebookManager);
-          const notebookSelector = new NotebookSelector(notebookManager, graphWidget);
-
-          // Instantiating the notebook manager
-          notebookManager.populateCells(panel.content.widgets);
-          notebookManager.showNotebooks([]);
-
-          // Adding the toolbar selector
-          const toolbar = panel.toolbar.node;
-          const customWidget = notebookSelector.createSelector();
-          toolbar.parentNode?.insertBefore(customWidget.node, toolbar.parentNode?.nextSibling as Node);
-          notebookSelector.addOptions();
-          console.log('Selector added to toolbar');
-
-          // Create the Open Notebooks button
-          const buttonExtension = new OpenNotebookButton(notebookManager, factory);
-          panel.toolbar.insertItem(11, 'showNotebook', buttonExtension.createButton());
-          console.log('Button extension added to notebook');
-
-          // Add the graph widget to the sidebar
-          graphWidget.id = 'my-sidebar-graph-widget';
-          graphWidget.title.iconClass = 'jp-SideBar-tabIcon';
-          graphWidget.title.caption = 'My Sidebar Graph Widget';
-          app.shell.add(graphWidget, 'left');
-          app.shell.activateById(graphWidget.id);
-          console.log('Graph widget added to sidebar');
-
-        });
+    const command = CommandIDs.create;
+    commands.addCommand(command, {
+      caption: 'Create a new React Widget',
+      label: 'React Widget',
+      icon: args => (args['isPalette'] ? undefined : reactIcon),
+      execute: () => {
+        const content = new NotebookWidget();
+        const widget = new MainAreaWidget<NotebookWidget>({ content });
+        widget.title.label = 'React Widget';
+        widget.title.icon = reactIcon;
+        app.shell.add(widget, 'main');
+      }
     });
+
+    if (launcher) {
+      launcher.add({
+        command
+      });
+    }
   }
 };
 
-
-
-
-export default plugin;
+export default extension;
