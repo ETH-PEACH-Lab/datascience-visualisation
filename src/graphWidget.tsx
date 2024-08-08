@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 // src/Flowchart.tsx
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { Component, createRef } from 'react';
 import { ReactWidget } from '@jupyterlab/ui-components';
 import * as d3 from 'd3';
 import { NotebookManager } from './notebookManager';
@@ -19,30 +19,54 @@ interface Link {
   weight: number;
 }
 
-type Props = { notebookManager: NotebookManager };
-const Flowchart: React.FC<Props> = (prop) => {
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const [selectedNotebooks, setSelectedNotebook] = useState<string[]>([]);
+interface Props {
+  notebookManager: NotebookManager;
+}
 
-  useEffect(() => {
-    const svg = d3.select(svgRef.current)
+interface State {
+  selectedNotebooks: string[];
+}
+
+class Flowchart extends Component<Props, State> {
+  svgRef: React.RefObject<SVGSVGElement>;
+
+  constructor(props: Props) {
+    super(props);
+    this.svgRef = createRef();
+    this.state = {
+      selectedNotebooks: [],
+    };
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    if (prevState.selectedNotebooks !== this.state.selectedNotebooks) {
+      this.drawChart();
+    }
+  }
+
+  updateSelectedNotebooks = (newSelected: string[]) => {
+    this.setState({ selectedNotebooks: newSelected });
+  };
+
+  drawChart() {
+    const { selectedNotebooks } = this.state;
+    console.log('Drawing chart for', selectedNotebooks);
+    if (selectedNotebooks.length === 0) {
+      return;
+    }
+
+    const svg = d3.select(this.svgRef.current)
       .attr('width', 300)
       .attr('height', 600);
 
     svg.selectAll('*').remove(); // Clear existing graph
 
-    let notebookClasses: string[] = [];
-    if (selectedNotebooks.includes('all')) {
-      notebookClasses = prop.notebookManager.getNotebookIds().flatMap(id => prop.notebookManager.getCellsClass(parseInt(id)));
-    } else if (selectedNotebooks.length > 0) {
-      notebookClasses = prop.notebookManager.getCellsClass(parseInt(selectedNotebooks[0]));
-    }
-
+    const notebookClasses = this.props.notebookManager.getCellsNotebooksClass(Array.from(selectedNotebooks).map(Number));
     const nodes: Node[] = [];
     const nodesSet = new Set<string>();
     const links: Link[] = [];
     let nodeCounter = 0;
-    for(let i = 0; i < notebookClasses.length; i++) {
+    for (let i = 0; i < notebookClasses.length; i++) {
       if (!nodesSet.has(notebookClasses[i])) {
         nodes.push({ id: notebookClasses[i], x: 100, y: 50 + (nodeCounter++) * 100 });
         nodesSet.add(notebookClasses[i]);
@@ -100,53 +124,33 @@ const Flowchart: React.FC<Props> = (prop) => {
       })
       .attr('stroke', '#999')
       .attr('fill', 'none');
-  }, [selectedNotebooks]);
-
-  const handleNotebookChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const options = event.target.options;
-    const selected: string[] = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selected.push(options[i].value);
-      }
-    }
-    setSelectedNotebook(selected);
-
-    if (selected.includes('all')) {
-      prop.notebookManager.showAllNotebooks();
-    } else {
-      prop.notebookManager.showNotebooks(selected.map(notebook => parseInt(notebook)));
-    }
   }
 
-  return (
-    <div>
-      <div className="dropdown-container">
-        <label htmlFor="notebook-select" className="dropdown-label">Select Student:</label>
-        <select id="notebook-select" value={selectedNotebooks} onChange={handleNotebookChange} className="notebook-dropdown" multiple>
-          <option value="all">All</option>
-          {prop.notebookManager.getNotebookIds().map(notebook => (
-            <option key={notebook} value={notebook}>
-              Student {parseInt(notebook) + 1}
-            </option>
-          ))}
-        </select>
+  render() {
+    return (
+      <div>
+        <svg ref={this.svgRef}></svg>
       </div>
-      <svg ref={svgRef}></svg>
-    </div>
-  );
-};
+    );
+  }
+}
 
 export class FlowchartWidget extends ReactWidget {
   notebookManager: NotebookManager;
+  graph: React.RefObject<Flowchart>;
 
   constructor(notebookManager: NotebookManager) {
     super();
     this.addClass('jp-react-widget');
     this.notebookManager = notebookManager;
+    this.graph = createRef();
+  }
+  
+  public updateGraph(selectedNotebooks: string[]): void {
+    this.graph.current?.updateSelectedNotebooks(selectedNotebooks);
   }
 
   render(): JSX.Element {
-    return <Flowchart notebookManager={this.notebookManager} />;
+    return <Flowchart ref={this.graph} notebookManager={this.notebookManager} />;
   }
 }

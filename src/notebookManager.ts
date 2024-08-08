@@ -38,7 +38,7 @@ const changeAllCells = (cells: readonly Cell<ICellModel>[], notebook_id: number)
 
 const removeClass = (cell: Cell<ICellModel>) => {
     const layout = cell.layout as unknown as PanelLayout;
-    for (let i = layout.widgets.length - 1; i >= 0; i--) {
+    for (let i = 0; i < layout.widgets.length; i++) {
         const widget = layout.widgets[i];
         if (widget instanceof ClassWidget) {
             layout.removeWidget(widget);
@@ -123,6 +123,7 @@ export class NotebookManager {
         }
     }
 
+
     public showAllNotebooks() {
         const classesCreated = new Set<string>();
         for (const cell of this.cells) {
@@ -159,7 +160,18 @@ export class NotebookManager {
             return cellMeta.class
         });
     }
-    public getCurrentNotebookIds(){
+
+    public getCellsNotebooksClass(notebook_ids: number[]) {
+        return this.cells.filter((cell) => {
+            const cellMeta = cell.model.metadata as unknown as CellMetadata;
+            return notebook_ids.includes(cellMeta.notebook_id);
+        }).map((cell) => {
+            const cellMeta = cell.model.metadata as unknown as CellMetadata
+            return cellMeta.class
+        })
+    };
+
+    public getCurrentNotebookIds() {
         const notebooks = new Set<string>();
         this.cells.forEach((cell) => {
             const cellMeta = cell.model.metadata as unknown as CellMetadata;
