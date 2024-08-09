@@ -1,49 +1,40 @@
 import {
-  JupyterFrontEnd,
-  JupyterFrontEndPlugin
+  JupyterFrontEnd, JupyterFrontEndPlugin
 } from '@jupyterlab/application';
-import { MainAreaWidget } from '@jupyterlab/apputils';
-import { ILauncher } from '@jupyterlab/launcher';
-import { reactIcon } from '@jupyterlab/ui-components';
-import { NotebookWidget } from './mainWidget';
 
-/**
- * The command IDs used by the react-widget plugin.
- */
-namespace CommandIDs {
-  export const create = 'create-react-widget';
-}
+import { VizWidgetFactory } from './factory';
 
-/**
- * Initialization data for the react-widget extension.
- */
 const extension: JupyterFrontEndPlugin<void> = {
-  id: 'react-widget',
-  description: 'A minimal JupyterLab extension using a React Widget.',
+  id: 'viz-file-handler',
   autoStart: true,
-  optional: [ILauncher],
-  activate: (app: JupyterFrontEnd, launcher: ILauncher) => {
-    const { commands } = app;
+  activate: (app: JupyterFrontEnd) => {
+    console.log('JupyterLab extension viz-file-handler is activated!');
 
-    const command = CommandIDs.create;
-    commands.addCommand(command, {
-      caption: 'Create a new React Widget',
-      label: 'React Widget',
-      icon: args => (args['isPalette'] ? undefined : reactIcon),
-      execute: () => {
-        const content = new NotebookWidget();
-        const widget = new MainAreaWidget<NotebookWidget>({ content });
-        widget.title.label = 'React Widget';
-        widget.title.icon = reactIcon;
-        app.shell.add(widget, 'main');
-      }
+    // Register the new file type
+    app.docRegistry.addFileType({
+      name: 'viz',
+      displayName: 'VIZ File',
+      extensions: ['.viz'],
+      fileFormat: 'text',
+      mimeTypes: ['application/json'],
+      contentType: 'file',
     });
 
-    if (launcher) {
-      launcher.add({
-        command
-      });
-    }
+    // Create and register the widget factory
+    const factory = new VizWidgetFactory({
+      name: 'VIZ Widget',
+      fileTypes: ['viz'],
+      modelName: 'text',
+      defaultFor: ['viz'],
+      preferKernel: false
+    });
+
+    app.docRegistry.addWidgetFactory(factory);
+
+    // Use the widget factory to create a new widget
+    factory.widgetCreated.connect((sender, widget) => {
+      app.shell.add(widget, 'main');
+    });
   }
 };
 
