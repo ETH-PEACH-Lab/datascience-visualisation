@@ -1,0 +1,17 @@
+{
+    "notebooks": [
+      {
+        "cells": [
+          {
+            "cell_id": 1,
+            "code": "print(\"Hello, world!\")"
+          },
+          {
+            "cell_id": 2,
+            "code": "x = 42\nprint(x)"
+          }
+        ],
+        "notebook_id": 1
+      }
+    ]
+  }
