@@ -7,11 +7,12 @@ import {
   } from '@jupyterlab/docregistry';
   
   import VizContent from './VizContent';
+import { FlowchartWidget } from './Flowchart';
   
   // VizWidget extending DocumentWidget
   class VizWidget extends DocumentWidget<VizContent, DocumentRegistry.IModel> {
-    constructor(context: DocumentRegistry.Context) {
-      const content = new VizContent(context);
+    constructor(context: DocumentRegistry.Context, flowchartWidget: FlowchartWidget) {
+      const content = new VizContent(context, flowchartWidget);
       super({ content, context });
       this.addClass('jp-vizWidget');
     }

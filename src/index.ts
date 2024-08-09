@@ -3,6 +3,8 @@ import {
 } from '@jupyterlab/application';
 
 import { VizWidgetFactory } from './factory';
+import { FlowchartWidget } from './Flowchart';
+import { WidgetTracker } from '@jupyterlab/apputils';
 
 const extension: JupyterFrontEndPlugin<void> = {
   id: 'viz-file-handler',
@@ -19,6 +21,20 @@ const extension: JupyterFrontEndPlugin<void> = {
       mimeTypes: ['application/json'],
       contentType: 'file',
     });
+    
+    const flowchartWidget = new FlowchartWidget();
+
+    // Add the FlowchartWidget to the left sidebar
+    flowchartWidget.id = 'flowchart-widget';
+    flowchartWidget.title.iconClass = 'jp-GraphIcon jp-SideBar-tabIcon';
+    flowchartWidget.title.caption = 'Flowchart';
+
+    const tracker = new WidgetTracker<FlowchartWidget>({
+      namespace: 'flowchart-widget'
+    });
+
+    tracker.add(flowchartWidget);
+    app.shell.add(flowchartWidget, 'left', { rank: 900 });
 
     // Create and register the widget factory
     const factory = new VizWidgetFactory({
@@ -27,7 +43,8 @@ const extension: JupyterFrontEndPlugin<void> = {
       modelName: 'text',
       defaultFor: ['viz'],
       preferKernel: false
-    });
+    },
+    flowchartWidget);
 
     app.docRegistry.addWidgetFactory(factory);
 

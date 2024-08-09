@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as React from 'react';
 
-interface NotebookCell {
+export interface NotebookCell {
   cell_id: number;
   code: string;
   class: string;

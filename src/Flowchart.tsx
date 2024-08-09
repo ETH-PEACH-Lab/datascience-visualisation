@@ -15,10 +15,16 @@ interface Link {
   weight: number;
 }
 
+interface NotebookCell {
+  cell_id: number;
+  code: string;
+  class: string;
+}
+
 interface Props {}
 
 interface State {
-  selectedNotebooks: number[];
+  selectedCells: NotebookCell[];
 }
 
 class Flowchart extends Component<Props, State> {
@@ -28,24 +34,24 @@ class Flowchart extends Component<Props, State> {
     super(props);
     this.svgRef = createRef();
     this.state = {
-      selectedNotebooks: [],
+      selectedCells: [],
     };
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    if (prevState.selectedNotebooks !== this.state.selectedNotebooks) {
+    if (prevState.selectedCells !== this.state.selectedCells) {
       this.drawChart();
     }
   }
 
-  updateSelectedNotebooks = (newSelected: number[]) => {
-    this.setState({ selectedNotebooks: newSelected });
+  updateSelectedCells = (newSelectedCells: NotebookCell[]) => {
+    this.setState({ selectedCells: newSelectedCells });
   };
 
   drawChart() {
-    const { selectedNotebooks } = this.state;
-    console.log('Drawing chart for', selectedNotebooks);
-    if (selectedNotebooks.length === 0) {
+    const { selectedCells } = this.state;
+    console.log('Drawing chart for selected cells', selectedCells);
+    if (selectedCells.length === 0) {
       return;
     }
 
@@ -55,8 +61,8 @@ class Flowchart extends Component<Props, State> {
 
     svg.selectAll('*').remove(); // Clear existing graph
 
-    // Example graphing logic based on selected notebooks
-    const classes = selectedNotebooks.map(id => `Class ${id}`);
+    // Extract unique classes from selected cells
+    const classes = selectedCells.map(cell => cell.class);
     const nodes: Node[] = [];
     const nodesSet = new Set<string>();
     const links: Link[] = [];
@@ -140,8 +146,8 @@ export class FlowchartWidget extends ReactWidget {
     this.graph = createRef();
   }
   
-  public updateGraph(selectedNotebooks: number[]): void {
-    this.graph.current?.updateSelectedNotebooks(selectedNotebooks);
+  public updateGraph(selectedCells: NotebookCell[]): void {
+    this.graph.current?.updateSelectedCells(selectedCells);
   }
 
   render(): JSX.Element {

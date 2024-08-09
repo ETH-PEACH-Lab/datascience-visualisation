@@ -29,6 +29,16 @@
         }
       ],
       "notebook_id": 2
+    },
+    {
+      "cells": [
+        {
+          "cell_id": 1,
+          "code": "print('This is notebook 3') \n It has only one cell",
+          "class": "Data Extraction"
+        }
+      ],
+      "notebook_id": 3
     }
   ]
 }
