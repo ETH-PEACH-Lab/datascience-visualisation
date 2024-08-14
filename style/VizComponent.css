@@ -1,0 +1,151 @@
+/* VizComponent.css */
+
+.group-container {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .group-header {
+    padding: 10px;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+  }
+  
+  .group-content {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 0 0 5px 5px;
+  }
+  
+  .cell-container {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+  }
+  
+  .group-header-arrow {
+    transform: rotate(0deg);
+    transition: transform 0.2s;
+  }
+  
+  .group-header-arrow-open {
+    transform: rotate(90deg);
+  }
+  
+  /* Additional styles for specific component elements */
+  .selector-container {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+  }
+  
+  .current-selection-text {
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  
+  .selected-elements {
+    margin-bottom: 10px;
+  }
+  
+  .element {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    background-color: #f0f0f0;
+  }
+  
+  .element-selector {
+    margin-right: 10px;
+    padding: 5px;
+    border-radius: 5px;
+  }
+  
+  #add-button {
+    padding: 5px 10px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .group-container {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .group-header {
+    padding: 10px;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+  }
+  
+  .group-content {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 0 0 5px 5px;
+  }
+  
+  .clusters-container {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+  }
+  
+  .cluster-button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: #e0e0e0;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .cluster-button.active {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .cluster-identifier {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 20px;
+    background-color: #c0c0c0;
+    border-radius: 50%;
+    color: #000;
+    font-weight: bold;
+  }
+  
+  .cluster-cells-container {
+    margin-top: 10px;
+  }
+  
+  .cell-container {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+  }
+  

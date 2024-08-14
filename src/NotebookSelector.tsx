@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+// NotebookSelector.tsx
 import React, { useState, useEffect } from 'react';
+import '../style/notebookSelector.css';
 
 interface NotebookSelectorProps {
   notebookIds: number[];
@@ -25,15 +26,20 @@ const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, onSele
     setSelectedValue(''); // Clear the input after adding
   };
 
+  const handleRemoveNotebook = (notebookId: number) => {
+    const newShownNotebooks = new Set(shownNotebooks);
+    newShownNotebooks.delete(notebookId);
+    setShownNotebooks(newShownNotebooks);
+  };
+
   return (
-    <div className="selector-container" style={{ padding: '10px', borderBottom: '1px solid #ddd', marginBottom: '20px' }}>
-      <div className="current-selection-text" style={{ marginBottom: '10px' }}>
-        Current selection:
-      </div>
-      <div className="selected-elements" id="selected-elements" style={{ marginBottom: '10px' }}>
+    <div className="selector-container">
+      <div className="current-selection-text">Current selection:</div>
+      <div className="selected-elements" id="selected-elements">
         {Array.from(shownNotebooks).map(notebookId => (
-          <div key={notebookId} className="element" style={{ padding: '5px', border: '1px solid #ddd', borderRadius: '5px', marginBottom: '5px' }}>
+          <div key={notebookId} className="element">
             {notebookId}
+            <button className="remove-button" onClick={() => handleRemoveNotebook(notebookId)}>Remove</button>
           </div>
         ))}
       </div>
@@ -45,7 +51,6 @@ const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, onSele
         value={selectedValue}
         onChange={(e) => setSelectedValue(e.target.value)}
         placeholder="Select notebook ID"
-        style={{ marginRight: '10px' }}
       />
       <datalist id="elements">
         {notebookIds.map(id => (

@@ -2,6 +2,8 @@
 import React, { Component, createRef } from 'react';
 import { ReactWidget } from '@jupyterlab/ui-components';
 import * as d3 from 'd3';
+import colorScheme from './colorScheme';
+
 
 interface Node {
   id: string;
@@ -57,7 +59,7 @@ class Flowchart extends Component<Props, State> {
 
     const svg = d3.select(this.svgRef.current)
       .attr('width', 300)
-      .attr('height', 600);
+      .attr('height', 1000);
 
     svg.selectAll('*').remove(); // Clear existing graph
 
@@ -91,7 +93,7 @@ class Flowchart extends Component<Props, State> {
       .attr('height', nodeHeight)
       .attr('rx', 10)
       .attr('ry', 10)
-      .attr('fill', '#69b3a2'); // Replace with your color logic
+      .attr('fill', d => colorScheme[d.id] || '#69b3a2'); // Replace with your color logic
 
     svg.selectAll('text')
       .data(nodes)

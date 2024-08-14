@@ -77,7 +77,7 @@ class VizContent extends ReactWidget {
     );
 
     return (
-      <div>
+      <div style={{ height: '100%', overflowY: 'auto' }}> {/* Scrollable container */}
         <NotebookSelector
           notebookIds={jsonData.notebooks.map(notebook => notebook.notebook_id)}
           onSelectionChange={this.handleNotebookSelection}
