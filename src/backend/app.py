@@ -87,25 +87,26 @@ def classify():
         # Write final_json to a JSON file (Checkpoint)
         print("overwriting clustered final notebook to JSON file.") 
         with open('tmp/clustering_test.json', 'w') as f: json.dump(final_json, f)
-                    
+             
         preds = []
         truths = []
         for notebook in tqdm(final_json["notebooks"], desc="Evaluating clustering accuracy"):
             for cell in notebook["cells"]:
-                print(cell)
-                class_id = str(LABELS.index(cell["class"]))
-                cluster = str(int(cell["cluster"])+1)
-                cluster = int(f"{class_id}{cluster}")
-                preds.append(cluster)
-                truths.append(cell["testing"]["subclass_id"])
-                
-        clustering_accuracy = hungarian_clustering_accuracy(np.array(truths), np.array(preds))
-        print(f"Clustering accuracy: {clustering_accuracy*100:.2f}%")
-        final_json["metadata"]["clustering_accuracy"] = clustering_accuracy
-        
-        # Write final_json to a JSON file
-        print("Overwriting evaluated final notebook JSON file.") 
-        with open('tmp/clustering_test.json', 'w') as f: json.dump(final_json, f)
+                if "testing" in cell:
+                    class_id = str(LABELS.index(cell["class"]))
+                    cluster = str(int(cell["cluster"])+1)
+                    cluster = int(f"{class_id}{cluster}")
+                    preds.append(cluster)
+                    truths.append(cell["testing"]["subclass_id"])
+                    # del cell["testing"]
+        if len(preds) == len(truths) and len(preds):
+            clustering_accuracy = hungarian_clustering_accuracy(np.array(truths), np.array(preds))
+            print(f"Clustering accuracy: {clustering_accuracy*100:.2f}%")
+            final_json["metadata"]["clustering_accuracy"] = clustering_accuracy
+            
+            # Write final_json to a JSON file
+            print("Overwriting evaluated final notebook JSON file.") 
+            with open('tmp/clustering_test.json', 'w') as f: json.dump(final_json, f)
        
         
         # Add the final notebook to the database

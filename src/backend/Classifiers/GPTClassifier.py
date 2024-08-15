@@ -116,30 +116,32 @@ class GPTClassifier():
         classified_cells = []
         i = 0
         for cell in tqdm.tqdm(cells):
-            messages.append({"role": "user","content": cell["source"]})
-            prediction, description = self._make_prediction(messages, verbose=verbose)
-            messages.append({
-                "role": "assistant", 
-                "content": f"Class: {prediction}\nDescription: {description}"
-            })
-            
-            new_cell = {
-                "cell_id": i,
-                "code": cell["source"],
-                "class": prediction,
-                "desc": description,
-            }
-            if embed: new_cell["embedding"] = self.embedder([description])[0]
-            if "class" in cell["metadata"] and "subclass" in cell["metadata"] and "subclass_id" in cell["metadata"]:
-                new_cell["testing"] = {
-                    "class": cell["metadata"]["class"],
-                    "subclass": cell["metadata"]["subclass"],
-                    "subclass_id": cell["metadata"]["subclass_id"],
-                    "predicted_subclass_probability": cell["metadata"]["predicted_subclass_probability"]
+            if cell["cell_type"] == "code" and len(cell["source"]):
+                messages.append({"role": "user","content": cell["source"]})
+                prediction, description = self._make_prediction(messages, verbose=verbose)
+                messages.append({
+                    "role": "assistant", 
+                    "content": f"Class: {prediction}\nDescription: {description}"
+                })
+                
+                new_cell = {
+                    "cell_id": i,
+                    "code": cell["source"],
+                    "class": prediction,
+                    "desc": description,
                 }
-            classified_cells.append(new_cell)
+                if embed: new_cell["embedding"] = self.embedder([description])[0]
+                if "class" in cell["metadata"] and "subclass" in cell["metadata"] and "subclass_id" in cell["metadata"]:
+                    new_cell["testing"] = {
+                        "class": cell["metadata"]["class"],
+                        "subclass": cell["metadata"]["subclass"],
+                        "subclass_id": cell["metadata"]["subclass_id"],
+                        "predicted_subclass_probability": cell["metadata"]["predicted_subclass_probability"]
+                    }
+                classified_cells.append(new_cell)
 
-            i += 1
+                i += 1
+            elif cell["cell_type"] == "markdown":
         return classified_cells
             
 
