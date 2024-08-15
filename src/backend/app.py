@@ -3,7 +3,7 @@ import numpy as np
 from Classifiers.GPTClassifier import GPTClassifier
 from Clusterers.clusterer import ClassCluster
 from utils.helper_functions import ipynb_to_json, notebook_extract_code, notebook_add_class_labels, kaggle_pull_competiton
-from utils.constants import FIRST_LAYER_LABELS, SECOND_LAYER_LABELS, BLANK_IPYNB_JSON
+from utils.constants import FIRST_LAYER_LABELS, SECOND_LAYER_LABELS, BLANK_IPYNB_JSON, classifier_prompt
 from db.client import FirebaseClient
 import json
 import tempfile
@@ -12,25 +12,18 @@ from tqdm import tqdm
 
 app = Flask(__name__, template_folder="./template")
 client = FirebaseClient()
-with open('../secrets/api_key.txt', 'r') as f: api_key = f'{f.read()}'
+with open('../../secrets/api_key.txt', 'r') as f: api_key = f'{f.read()}'
 os.environ["OPENAI_API_KEY"] = api_key
-
 
 LABELS = FIRST_LAYER_LABELS
 # LABELS = SECOND_LAYER_LABELS
 
-
 print(f"Initializing classifier...")
-prompt = f"""You will be given each code cell of the same jupyter notebook of a machine learning task.
-First, classify the code into one {', '.join(LABELS[:-1])} or {LABELS[-1]}.
-Consider the previously classified code snippets for context.
-Then, describe what the code snippet does in strictly one sentence.
-Explain your reasoning for the classification and then output the desired format at the end.
-Desired format:
-Class: <class_label>
-Description: <desctiption_sentence>
-""" 
-classifier = GPTClassifier(api_key=api_key, prompt=prompt, labels=LABELS)
+classifier = GPTClassifier(
+    api_key=api_key, 
+    prompt=classifier_prompt(LABELS), 
+    labels=LABELS
+)
 clusterer = ClassCluster()
 
 @app.route("/")
@@ -125,7 +118,21 @@ def classify():
     
 @app.route("/<competition_name>", methods=["POST"])
 def classify_competition(competition_name: str):
-    final_json = BLANK_IPYNB_JSON
+    """
+    Classifies notebooks from a given competition.
+    Args:
+        competition_name (str): The name of the competition.
+    Returns:
+        dict: A JSON object containing the classified notebooks and metadata.
+    Raises:
+        Exception: If an error occurs during the classification process.
+    """
+    
+    # Initialize the final notebook which will condense all classified notebooks
+    final_json = {
+        'notebooks': [],
+        'metadata': {}
+    }
     
     try:
         notebooks = []
@@ -134,37 +141,58 @@ def classify_competition(competition_name: str):
             notebooks = kaggle_pull_competiton(competition_name, temp_dir, n_notebooks=20, verbose=True)
         
         for notebook_id, notebook_json in enumerate(notebooks):
-            notebook_code = notebook_extract_code(notebook_json)
-            
-            # Classify the code cells of the current notebook
-            print(f"Classifying notebook ({notebook_id+1}/{len(notebooks)})...", end="\r")
-            cell_labels = classifier.classify_notebook(notebook_code)
-            notebook_json = notebook_add_class_labels(notebook_json, cell_labels)
-            
-            # Reformat and add classified code cells to the final notebook
-            for i in range(len(notebook_json['cells'])):
-                cell = notebook_json['cells'][i]
-                if cell['cell_type'] == 'code' and len(cell['source']):
-                    final_json['cells'].append({
-                        "cell_type": cell['cell_type'],
-                        "execution_count": cell['execution_count'],
-                        "metadata": {
-                            "start_cell": cell['metadata']['start_cell'],
-                            "class": cell['metadata']['class'],
-                            "cell_id": cell['metadata']['cell_id'],
-                            "notebook_id": notebook_id,
-                        },
-                        "source": cell['source']
-                    })
-            
-        # Reorder cells by their class
-        final_json['cells'] = sorted(final_json['cells'], key=lambda x: x['metadata']['class'])
+            if len([cell for cell in notebook_json['cells'] if cell['cell_type'] == 'code']) >= 15:
+
+                print(f"Classifying notebook ({notebook_id+1}/{len(notebooks)})...", end="\r")
+                classified_cells = classifier.classify_ipynb(notebook_json, embed=False, verbose=True)
+                
+                notebook = {}
+                notebook["cells"] = sorted(classified_cells, key=lambda x: (x['class'], x['cell_id']))
+                notebook["notebook_id"] = notebook_id
+                notebook["notebook_name"] = notebook_id
+                
+                final_json['notebooks'].append(notebook)
+            else:
+                print(f"Skipping notebook ({notebook_id+1}/{len(notebooks)}) due to insufficient code cells.")
+              
+        # Write final_json to a JSON file (Checkpoint)
+        print("Writing classified final notebook to JSON file.") 
+        with open(f'../data/{competition_name}.json', 'w') as f: json.dump(final_json, f)  
+                
+        # Reorder cells by their class        
+        final_json = clusterer.cluster(final_json)
         
-        # Write final_json to a JSON file
-        with open('../data/final_test2.json', 'w') as f: json.dump(final_json, f)
+        # Remove the "embeddings" property from each cell's metadata
+        for notebook in tqdm(final_json["notebooks"], desc="Deleting embeddings from metadata"):
+            for cell in notebook["cells"]:
+                if "embedding" in cell:
+                    del cell["embedding"]
+                    
+        # Write final_json to a JSON file (Checkpoint)
+        print("Overwriting clustered final notebook to JSON file.") 
+        with open(f'../data/{competition_name}.json', 'w') as f: json.dump(final_json, f)
         
+        # Evaluate clustering accuracy            
+        preds = []
+        truths = []
+        for notebook in tqdm(final_json["notebooks"], desc="Evaluating clustering accuracy"):
+            for cell in notebook["cells"]:
+                print(cell)
+                class_id = str(LABELS.index(cell["class"]))
+                cluster = str(int(cell["cluster"])+1)
+                cluster = int(f"{class_id}{cluster}")
+                preds.append(cluster)
+                truths.append(cell["metadata"]["subclass_id"])
+                
+        clustering_accuracy = clusterer.evaluate_clustering(np.array(truths), np.array(preds))
+        print(f"Clustering accuracy: {clustering_accuracy*100:.2f}%")
+        final_json["metadata"]["clustering_accuracy"] = clustering_accuracy
+        
+        print("Overwriting evaluated final notebook to JSON file.") 
+        with open(f'../data/{competition_name}.json', 'w') as f: json.dump(final_json, f)
+            
         # Add the final notebook to the database
-        client.add_notebook("final_test2", final_json)
+        client.add_notebook(f"{competition_name}", final_json)
             
         return jsonify(final_json)
     except Exception as e:
@@ -188,6 +216,12 @@ def get_notebook(notebook_name: str):
     
 @app.route("/evaluate", methods=["POST"])
 def evaluate():
+    """OUT OF DATE
+    # TODO Update this method
+
+    Returns:
+        _type_: _description_
+    """
     try:
         total_accuracy = 0
         total_misclassification_dict = {label: {"count": 0, "misclassified": 0} for label in LABELS}
