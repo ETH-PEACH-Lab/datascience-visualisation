@@ -13,7 +13,7 @@ class FirebaseClient():
     """
 
     def __init__(self) -> None:
-        cred = credentials.Certificate("../secrets/serviceAccountKey.json")
+        cred = credentials.Certificate("../../secrets/serviceAccountKey.json")
         firebase_admin.initialize_app(cred)
         self._db = firestore.client()
 

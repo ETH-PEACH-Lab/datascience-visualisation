@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 import numpy as np
 from Classifiers.GPTClassifier import GPTClassifier
-from Clusterers.clusterer import ClassCluster
+from Clusterers.clusterer import ClassCluster, hungarian_clustering_accuracy
 from utils.helper_functions import ipynb_to_json, notebook_extract_code, notebook_add_class_labels, kaggle_pull_competiton
 from utils.constants import FIRST_LAYER_LABELS, SECOND_LAYER_LABELS, BLANK_IPYNB_JSON, classifier_prompt
 from db.client import FirebaseClient
@@ -74,19 +74,19 @@ def classify():
             else:
                 print(f"Skipping notebook {notebook_name} ({notebook_id+1}/{len(files)}) due to insufficient code cells.")
 
-            
+        # Write final_json to a JSON file (Checkpoint)
+        print("Writing classified final notebook to JSON file.") 
+        with open('tmp/clustering_test.json', 'w') as f: json.dump(final_json, f)
+        
         # Reorder cells by their class        
-        final_json = clusterer.cluster(final_json)
+        final_json = clusterer.cluster(final_json, LABELS)
+        
         print(final_json["notebooks"][0]["cells"][0])
-        # Remove the "embeddings" property from each cell's metadata
-        for notebook in tqdm(final_json["notebooks"], desc="Deleting embeddings from metadata"):
-            for cell in notebook["cells"]:
-                if "embedding" in cell:
-                    del cell["embedding"]
+        
                     
-        # Write final_json to a JSON file
-        print("Writing final notebook to JSON file.") 
-        with open('../data/clustering_test.json', 'w') as f: json.dump(final_json, f)
+        # Write final_json to a JSON file (Checkpoint)
+        print("overwriting clustered final notebook to JSON file.") 
+        with open('tmp/clustering_test.json', 'w') as f: json.dump(final_json, f)
                     
         preds = []
         truths = []
@@ -97,20 +97,20 @@ def classify():
                 cluster = str(int(cell["cluster"])+1)
                 cluster = int(f"{class_id}{cluster}")
                 preds.append(cluster)
-                truths.append(cell["metadata"]["subclass_id"])
+                truths.append(cell["testing"]["subclass_id"])
                 
-        clustering_accuracy = clusterer.evaluate_clustering(np.array(truths), np.array(preds))
+        clustering_accuracy = hungarian_clustering_accuracy(np.array(truths), np.array(preds))
         print(f"Clustering accuracy: {clustering_accuracy*100:.2f}%")
         final_json["metadata"]["clustering_accuracy"] = clustering_accuracy
         
         # Write final_json to a JSON file
-        print("Adding accuracy to final notebook JSON file.") 
-        with open('../data/clustering_test.json', 'w') as f: json.dump(final_json, f)
+        print("Overwriting evaluated final notebook JSON file.") 
+        with open('tmp/clustering_test.json', 'w') as f: json.dump(final_json, f)
        
         
         # Add the final notebook to the database
         print("Uploading final notebook to Firestore DB.") 
-        client.add_notebook("clusterin_test", final_json)
+        client.add_notebook("clustering_test", final_json)
             
         return jsonify(final_json)
     except Exception as e:
@@ -157,20 +157,14 @@ def classify_competition(competition_name: str):
               
         # Write final_json to a JSON file (Checkpoint)
         print("Writing classified final notebook to JSON file.") 
-        with open(f'../data/{competition_name}.json', 'w') as f: json.dump(final_json, f)  
+        with open(f'tmp/{competition_name}.json', 'w') as f: json.dump(final_json, f)  
                 
         # Reorder cells by their class        
         final_json = clusterer.cluster(final_json)
-        
-        # Remove the "embeddings" property from each cell's metadata
-        for notebook in tqdm(final_json["notebooks"], desc="Deleting embeddings from metadata"):
-            for cell in notebook["cells"]:
-                if "embedding" in cell:
-                    del cell["embedding"]
                     
         # Write final_json to a JSON file (Checkpoint)
         print("Overwriting clustered final notebook to JSON file.") 
-        with open(f'../data/{competition_name}.json', 'w') as f: json.dump(final_json, f)
+        with open(f'tmp/{competition_name}.json', 'w') as f: json.dump(final_json, f)
         
         # Evaluate clustering accuracy            
         preds = []
@@ -189,7 +183,7 @@ def classify_competition(competition_name: str):
         final_json["metadata"]["clustering_accuracy"] = clustering_accuracy
         
         print("Overwriting evaluated final notebook to JSON file.") 
-        with open(f'../data/{competition_name}.json', 'w') as f: json.dump(final_json, f)
+        with open(f'tmp/{competition_name}.json', 'w') as f: json.dump(final_json, f)
             
         # Add the final notebook to the database
         client.add_notebook(f"{competition_name}", final_json)

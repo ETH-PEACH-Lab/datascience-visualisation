@@ -43,7 +43,7 @@ class ClassCluster():
         return torch.mean(torch.stack([code_embedding, desc_embedding]), dim=0).detach().numpy().reshape(-1).tolist()
         
     
-    def cluster(self, data: dict) -> dict:
+    def cluster(self, data: dict, classes: list[str]) -> dict:
         """
         Clusters code cells in the given data dictionary based on their class.
         Args:
@@ -52,17 +52,19 @@ class ClassCluster():
             dict: A dictionary with clustered code cells.
         """
         
-        # Filter out non-code cells
         cells = []
-        for notebook in data["notebooks"]:
-            cells += notebook["cells"]
+        for notebook_idx, notebook in enumerate(data["notebooks"]):
+            cells += [{**cell, "index": cell_idx, "notebook_idx": notebook_idx} for cell_idx, cell in enumerate(notebook["cells"])]
         
         # Generate embeddings for each code cell
         for cell in tqdm(cells, desc="Embedding code cells and their descriptions"):
             cell["embedding"] = self.embed_cell(clean_code(cell["code"]), cell["desc"])
-            
+        
         # Group cells by class
-        grouped_cells = {k: list(v) for k, v in itertools.groupby(cells, lambda x: x["class"])}
+        grouped_cells = {label: [] for label in classes}
+        for cell in cells:
+            grouped_cells[cell["class"]].append(cell)
+        # grouped_cells = {k: list(v) for k, v in itertools.groupby(cells, lambda x: x["class"])}
         
         # Cluster the cells for each class
         clusters = {}
@@ -81,52 +83,21 @@ class ClassCluster():
                 labels = self.clusterer.labels_
 
             clusters[key] = {str(i): "" for i in set(labels)}
-            print(f"{labels}\n")
         
             for i, cell in enumerate(group):
-                cell["cluster"] = int(labels[i])
+                notebook_idx = cell["notebook_idx"]
+                cell_idx = cell["index"]
+                data["notebooks"][notebook_idx]["cells"][cell_idx]["cluster"] = int(labels[i])
             descriptions_per_cluster[key] = self.title_generator.generate_titles_from_descs(labels, descs)
                     
         data["metadata"]["clusters"] = descriptions_per_cluster
-        
         return data
-    
-    def evaluate_clustering(true_labels: np.ndarray, predicted_labels: np.ndarray) -> float:
-        
-        assert len(true_labels) == len(predicted_labels)
-        
-        unique_true_labels = np.unique(true_labels)
-        unique_predicted_labels = np.unique(predicted_labels)
-        
-        cost_matrix = np.zeros((len(unique_true_labels), len(unique_predicted_labels)), dtype=int)
-        
-        for i, true_label in enumerate(unique_true_labels):
-            for j, predicted_label in enumerate(unique_predicted_labels):
-                cost_matrix[i, j] = np.sum((true_labels == true_label) & (predicted_labels != predicted_label))
-        
-        row_ind, col_ind = linear_sum_assignment(cost_matrix)
-        
-        misclustered_count = cost_matrix[row_ind, col_ind].sum()
-        
-        return 1-(misclustered_count/len(true_labels))
         
     
     
     #######################################
     ########### Private/Helper methods ###########
     #######################################
-    
-    def hungarian_clustering_accuracy(true_labels, predicted_labels):
-        # Create a confusion matrix
-        cm = confusion_matrix(true_labels, predicted_labels)
-        
-        # Use the Hungarian algorithm to find the optimal assignment
-        row_indices, col_indices = linear_sum_assignment(-cm)
-        
-        # Calculate the accuracy based on the optimal assignment
-        accuracy = cm[row_indices, col_indices].sum() / len(true_labels)
-        
-        return accuracy
     
     def _process_code(self, code_str, max_length=512, stride=256) -> torch.Tensor:
         """
@@ -169,3 +140,35 @@ class ClassCluster():
         outputs = self._model(**tokens)
         summary_output = torch.mean(outputs.last_hidden_state, dim=1)  # Average over the sequence length
         return summary_output
+    
+def evaluate_clustering(true_labels: np.ndarray, predicted_labels: np.ndarray) -> float:
+        
+        assert len(true_labels) == len(predicted_labels)
+        
+        unique_true_labels = np.unique(true_labels)
+        unique_predicted_labels = np.unique(predicted_labels)
+        
+        cost_matrix = np.zeros((len(unique_true_labels), len(unique_predicted_labels)), dtype=int)
+        
+        for i, true_label in enumerate(unique_true_labels):
+            for j, predicted_label in enumerate(unique_predicted_labels):
+                cost_matrix[i, j] = np.sum((true_labels == true_label) & (predicted_labels != predicted_label))
+        
+        row_ind, col_ind = linear_sum_assignment(cost_matrix)
+        
+        misclustered_count = cost_matrix[row_ind, col_ind].sum()
+        
+        return 1-(misclustered_count/len(true_labels))
+    
+    
+def hungarian_clustering_accuracy(true_labels, predicted_labels):
+        # Create a confusion matrix
+        cm = confusion_matrix(true_labels, predicted_labels)
+        
+        # Use the Hungarian algorithm to find the optimal assignment
+        row_indices, col_indices = linear_sum_assignment(-cm)
+        
+        # Calculate the accuracy based on the optimal assignment
+        accuracy = cm[row_indices, col_indices].sum() / len(true_labels)
+        
+        return accuracy
