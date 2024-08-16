@@ -141,7 +141,12 @@ class GPTClassifier():
                 classified_cells.append(new_cell)
 
                 i += 1
-            elif cell["cell_type"] == "markdown":
+            elif cell["cell_type"] == "markdown" and len(cell["source"]):
+                messages.append({
+                    "role": "user",
+                    "content": self._markdown_prompt(cell["source"])
+                })
+
         return classified_cells
             
 
@@ -155,26 +160,33 @@ class GPTClassifier():
         truths = []
         preds = []
         for cell in tqdm.tqdm(cells, desc=f"Evaluating"):
-            messages.append({"role": "user", "content": cell["source"]})
-            prediction, description = self._make_prediction(messages, verbose=verbose)
-            messages.append({
-                "role": "assistant", 
-                "content": f"Class: {prediction}\nDescription: {description}"
-            })
-        
-            if verbose: print(f"Predicted label {cell_count}/{len(cells)}: {prediction}")
+            if cell["cell_type"] == "code" and len(cell["source"]): 
+                messages.append({"role": "user", "content": cell["source"]})
+                prediction, description = self._make_prediction(messages, verbose=verbose)
+                messages.append({
+                    "role": "assistant", 
+                    "content": f"Class: {prediction}\nDescription: {description}"
+                })
             
-            true_class = cell["metadata"]["class"]
-            if true_class == "EDA": true_class = "Exploratory_Data_Analysis"
-            
-            truths.append(true_class)
-            preds.append(prediction)
-            
-            if prediction == true_class: correct_count += 1
-            else: misclassification_dict[true_class]["misclassified"] += 1
-            
-            misclassification_dict[true_class]["count"] += 1
-            cell_count += 1
+                if verbose: print(f"Predicted label {cell_count}/{len(cells)}: {prediction}")
+                
+                true_class = cell["metadata"]["class"]
+                if true_class == "EDA": true_class = "Exploratory_Data_Analysis"
+                
+                truths.append(true_class)
+                preds.append(prediction)
+                
+                if prediction == true_class: correct_count += 1
+                else: misclassification_dict[true_class]["misclassified"] += 1
+                
+                misclassification_dict[true_class]["count"] += 1
+                cell_count += 1
+                
+            elif cell["cell_type"] == "markdown" and len(cell["source"]):
+                messages.append({
+                    "role": "user",
+                    "content": self._markdown_prompt(cell["source"])
+                })
             
         accuracy = correct_count / len(cells) * 100
         if verbose: print(f"Accuracy: {accuracy:.2f}%")
@@ -220,3 +232,16 @@ class GPTClassifier():
 
             if verbose and not found_label: print(f"[ERROR] Response string invalid:\n{response}\n\nRetrying...", end="\r")
         return prediction, description
+    
+    
+    def _markdown_prompt(markdown_text: str) -> str:
+        """
+        Formats a markdown prompt for the GPT model.
+
+        Args:
+            markdown_text (str): The markdown text to format.
+
+        Returns:
+            str: The formatted markdown prompt.
+        """
+        return f"""Now, the upcoming code cells are related to this markdown-cell text:\n{markdown_text}"""
