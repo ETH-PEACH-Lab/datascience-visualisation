@@ -2,6 +2,8 @@
 lib/
 node_modules/
 backend/
+backend/serviceAccountKey.json
+backend/api_key.txt
 *.log
 .eslintcache
 .stylelintcache
