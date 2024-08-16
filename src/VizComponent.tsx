@@ -5,6 +5,7 @@ import colorScheme from './colorScheme';
 import '../style/VizComponent.css';
 
 import CodeCell from './CodeCell'; 
+
 interface NotebookCell {
   cell_id: number;
   code: string;
@@ -12,7 +13,7 @@ interface NotebookCell {
   cluster: string;
 }
 
-interface NotebookCellWithID extends NotebookCell {
+export interface NotebookCellWithID extends NotebookCell {
   notebook_id: number;
 }
 

@@ -7,7 +7,7 @@ import {
 } from '@jupyterlab/docregistry';
 
 import * as React from 'react';
-import VizComponent, { LoadingComponent, DataNotFoundComponent, VizData } from './VizComponent';
+import VizComponent, { LoadingComponent, DataNotFoundComponent, VizData, NotebookCellWithID } from './VizComponent';
 import NotebookSelector from './NotebookSelector';
 import { FlowchartWidget } from './Flowchart';
 
@@ -45,9 +45,14 @@ class VizContent extends ReactWidget {
       }
 
       // Filter cells from selected notebooks only
-      const selectedCells = jsonData.notebooks
+      const selectedCells: NotebookCellWithID[] = jsonData.notebooks
         .filter(notebook => selectedIds.includes(notebook.notebook_id))
-        .flatMap(notebook => notebook.cells);
+        .flatMap(notebook =>
+          notebook.cells.map(cell => ({
+            ...cell,
+            notebook_id: notebook.notebook_id,  // Add notebook_id to each cell
+          }))
+        );
 
       this.flowchartWidget.updateGraph(selectedCells);
     }
