@@ -1,69 +1,54 @@
-body {
-    font-family: Arial, sans-serif;
-}
+/* NotebookSelector.css */
 
 .selector-container {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+  }
+  
+  .current-selection-text {
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  
+  .selected-elements {
+    margin-bottom: 10px;
+  }
+  
+  .element {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-top: 30px;
-    padding: 10px;
-    background-color: #f5f5f5;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-}
-
-.current-selection-text {
-    font-weight: bold;
-    margin-right: 10px;
-}
-
-.selected-elements {
-    display: flex;
-    gap: 10px;
-}
-
-.element {
-    background-color: #f0f0f0;
-    padding: 5px 10px;
+    justify-content: space-between;
+    padding: 5px;
+    border: 1px solid #ddd;
     border-radius: 5px;
-}
-
-#add-button {
-    margin-left: 10px;
+    margin-bottom: 5px;
+    background-color: #f0f0f0;
+  }
+  
+  .element-selector {
+    margin-right: 10px;
+    padding: 5px;
+    border-radius: 5px;
+  }
+  
+  #add-button {
     padding: 5px 10px;
-    cursor: pointer;
     border: none;
     background-color: #007bff;
     color: white;
     border-radius: 5px;
-}
-
-#add-button:hover {
-    background-color: #0056b3;
-}
-
-.element-selector {
-    padding: 5px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    margin-left: 10px;
     cursor: pointer;
-}
-
-.element-selector:focus {
-    outline: none;
-    border-color: #007bff;
-}
-
-.jp-Notebook {
-    padding-top: 50px !important;
-    /* Adjust this value if needed */
-}
-
-.jp-Toolbar {
-    position: fixed;
-    /* Ensure the toolbar is properly positioned */
-    z-index: 1;
-    /* Make sure the toolbar stays on top */
-}
+  }
+  
+  .remove-button {
+    margin-left: 10px;
+    padding: 2px 8px;
+    border: none;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8em;
+  }
+  

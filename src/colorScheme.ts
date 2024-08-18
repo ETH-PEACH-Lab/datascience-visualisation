@@ -18,7 +18,7 @@ const colorScheme: ColorScheme = {
     "Hyperparam Tuning": "#b07aa1",
     "Debug": "#76b7b2",
     "Model Training": "#ff9da7",
-    "Data Transform": "#9c755f",
+    "Data Transform": "#b07aa1",
 };
 
 export default colorScheme;
