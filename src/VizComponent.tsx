@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import colorScheme from './colorScheme';
 import '../style/VizComponent.css';
@@ -36,7 +36,7 @@ interface GroupedCellsProps {
 const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [openClusters, setOpenClusters] = useState<string[]>([]); // Manage multiple open clusters
-
+  
   const toggleOpen = () => setIsOpen(!isOpen);
 
   // Group cells by their cluster
@@ -47,11 +47,6 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
     acc[cell.cluster].push(cell);
     return acc;
   }, {} as { [key: string]: NotebookCellWithID[] });
-
-  // Filter openClusters to remove clusters that no longer exist
-  useEffect(() => {
-    setOpenClusters((prev) => prev.filter(clusterName => clusters[clusterName] && clusters[clusterName].length > 0));
-  }, [clusters]);
 
   const handleClusterClick = (clusterName: string) => {
     setOpenClusters((prev) =>
