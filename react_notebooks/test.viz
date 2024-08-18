@@ -1,0 +1,270 @@
+{
+  "notebooks": [
+    {
+      "cells": [
+        {
+          "cell_id": 1,
+          "code": "print(\"Hello, world!\")",
+          "class": "Data Extraction",
+          "cluster": "Introduction"
+        },
+        {
+          "cell_id": 2,
+          "code": "x = 42\nprint(x)",
+          "class": "Data Transform",
+          "cluster": "Basic Operations"
+        },
+        {
+          "cell_id": 3,
+          "code": "df = pd.read_csv('data.csv')\ndf.head()",
+          "class": "Data Extraction",
+          "cluster": "Introduction"
+        },
+        {
+          "cell_id": 4,
+          "code": "df['column'] = df['column'].apply(lambda x: x * 2)",
+          "class": "Data Transform",
+          "cluster": "Data Manipulation"
+        },
+        {
+          "cell_id": 5,
+          "code": "df.plot()",
+          "class": "Visualization",
+          "cluster": "Data Visualization"
+        }
+      ],
+      "notebook_id": 1
+    },
+    {
+      "cells": [
+        {
+          "cell_id": 1,
+          "code": "print('This is notebook 2')",
+          "class": "Debug",
+          "cluster": "Debugging"
+        },
+        {
+          "cell_id": 2,
+          "code": "x = 24 * 2\nprint(x)",
+          "class": "Data Transform",
+          "cluster": "Basic Operations"
+        },
+        {
+          "cell_id": 3,
+          "code": "import matplotlib.pyplot as plt\nplt.plot([1, 2, 3], [4, 5, 6])\nplt.show()",
+          "class": "Visualization",
+          "cluster": "Graph Plotting"
+        },
+        {
+          "cell_id": 4,
+          "code": "def my_func(a, b):\n    return a + b\n\nresult = my_func(10, 20)\nprint(result)",
+          "class": "Model Training",
+          "cluster": "Function Definition"
+        }
+      ],
+      "notebook_id": 2
+    },
+    {
+      "cells": [
+        {
+          "cell_id": 1,
+          "code": "print('This is notebook 3') \nIt has only one cell",
+          "class": "Data Extraction",
+          "cluster": "Single Cell Example"
+        }
+      ],
+      "notebook_id": 3
+    },
+    {
+      "cells": [
+        {
+          "cell_id": 1,
+          "code": "df = pd.DataFrame({'A': [1, 2], 'B': [3, 4]})\ndf",
+          "class": "Data Extraction",
+          "cluster": "DataFrame Creation"
+        },
+        {
+          "cell_id": 2,
+          "code": "df['C'] = df['A'] + df['B']\ndf",
+          "class": "Data Transform",
+          "cluster": "Column Addition"
+        },
+        {
+          "cell_id": 3,
+          "code": "df.to_csv('output.csv', index=False)",
+          "class": "Data Export",
+          "cluster": "Data Exporting"
+        },
+        {
+          "cell_id": 4,
+          "code": "print('End of notebook 4')",
+          "class": "Debug",
+          "cluster": "Final Debug"
+        }
+      ],
+      "notebook_id": 4
+    },
+    {
+      "cells": [
+        {
+          "cell_id": 1,
+          "code": "from sklearn.model_selection import train_test_split\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)",
+          "class": "Data Extraction",
+          "cluster": "Data Splitting"
+        },
+        {
+          "cell_id": 2,
+          "code": "from sklearn.linear_model import LinearRegression\nmodel = LinearRegression()\nmodel.fit(X_train, y_train)",
+          "class": "Model Training",
+          "cluster": "Model Training"
+        },
+        {
+          "cell_id": 3,
+          "code": "y_pred = model.predict(X_test)\nprint(y_pred)",
+          "class": "Model Evaluation",
+          "cluster": "Prediction"
+        },
+        {
+          "cell_id": 4,
+          "code": "plt.scatter(y_test, y_pred)\nplt.xlabel('Actual')\nplt.ylabel('Predicted')\nplt.show()",
+          "class": "Visualization",
+          "cluster": "Scatter Plot"
+        }
+      ],
+      "notebook_id": 5
+    },
+    {
+      "cells": [
+        {
+          "cell_id": 1,
+          "code": "import seaborn as sns\ndf = sns.load_dataset('iris')\nsns.pairplot(df, hue='species')",
+          "class": "Exploratory Data Analysis",
+          "cluster": "Pairplot"
+        },
+        {
+          "cell_id": 2,
+          "code": "corr = df.corr()\nsns.heatmap(corr, annot=True)",
+          "class": "Exploratory Data Analysis",
+          "cluster": "Correlation Heatmap"
+        },
+        {
+          "cell_id": 3,
+          "code": "from sklearn.cluster import KMeans\nkmeans = KMeans(n_clusters=3)\nkmeans.fit(df.drop('species', axis=1))",
+          "class": "Model Training",
+          "cluster": "Clustering"
+        },
+        {
+          "cell_id": 4,
+          "code": "df['clusters'] = kmeans.labels()\nsns.scatterplot(x='sepal_length', y='sepal_width', hue='clusters', data=df)",
+          "class": "Model Interpretation",
+          "cluster": "Cluster Visualization"
+        }
+      ],
+      "notebook_id": 6
+    },
+    {
+      "cells": [
+        {
+          "cell_id": 1,
+          "code": "import numpy as np\nx = np.linspace(0, 10, 100)\ny = np.sin(x)\nplt.plot(x, y)\nplt.show()",
+          "class": "Visualization",
+          "cluster": "Sine Wave Plot"
+        },
+        {
+          "cell_id": 2,
+          "code": "print('Some debugging message')",
+          "class": "Debug",
+          "cluster": "Debugging Message"
+        },
+        {
+          "cell_id": 3,
+          "code": "result = [i**2 for i in range(10)]\nprint(result)",
+          "class": "Data Transform",
+          "cluster": "Square Calculation"
+        }
+      ],
+      "notebook_id": 7
+    },
+    {
+      "cells": [
+        {
+          "cell_id": 1,
+          "code": "for i in range(10):\n    print(f'Processing item {i}')",
+          "class": "Debug",
+          "cluster": "Loop Debugging"
+        },
+        {
+          "cell_id": 2,
+          "code": "import time\ntime.sleep(5)\nprint('Done sleeping!')",
+          "class": "Environment",
+          "cluster": "Timing"
+        },
+        {
+          "cell_id": 3,
+          "code": "x = list(range(10))\ny = [i * 2 for i in x]\nplt.plot(x, y)\nplt.show()",
+          "class": "Visualization",
+          "cluster": "Line Plot"
+        }
+      ],
+      "notebook_id": 8
+    },
+    {
+      "cells": [
+        {
+          "cell_id": 1,
+          "code": "import pandas as pd\ndf = pd.read_csv('large_dataset.csv')",
+          "class": "Data Extraction",
+          "cluster": "Load Large Dataset"
+        },
+        {
+          "cell_id": 2,
+          "code": "df_cleaned = df.dropna()\ndf_cleaned",
+          "class": "Data Transform",
+          "cluster": "Data Cleaning"
+        },
+        {
+          "cell_id": 3,
+          "code": "import seaborn as sns\nsns.boxplot(data=df_cleaned)",
+          "class": "Exploratory Data Analysis",
+          "cluster": "Box Plot"
+        },
+        {
+          "cell_id": 4,
+          "code": "df_cleaned.to_csv('cleaned_data.csv', index=False)",
+          "class": "Data Export",
+          "cluster": "Export Cleaned Data"
+        }
+      ],
+      "notebook_id": 9
+    },
+    {
+      "cells": [
+        {
+          "cell_id": 1,
+          "code": "from sklearn.metrics import accuracy_score\naccuracy_score(y_true, y_pred)",
+          "class": "Model Evaluation",
+          "cluster": "Accuracy Calculation"
+        },
+        {
+          "cell_id": 2,
+          "code": "from sklearn.ensemble import RandomForestClassifier\nmodel = RandomForestClassifier()\nmodel.fit(X_train, y_train)",
+          "class": "Model Training",
+          "cluster": "Random Forest Training"
+        },
+        {
+          "cell_id": 3,
+          "code": "print('Hyperparameter tuning in progress...')\nfrom sklearn.model_selection import GridSearchCV\ngrid_search = GridSearchCV(model, param_grid, cv=5)\ngrid_search.fit(X_train, y_train)",
+          "class": "Hyperparam Tuning",
+          "cluster": "Grid Search"
+        },
+        {
+          "cell_id": 4,
+          "code": "print('Best parameters:', grid_search.best_params_)\nprint('Best score:', grid_search.best_score_)",
+          "class": "Model Evaluation",
+          "cluster": "Best Parameters"
+        }
+      ],
+      "notebook_id": 10
+    }
+  ]
+}

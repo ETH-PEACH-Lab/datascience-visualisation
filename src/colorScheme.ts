@@ -17,7 +17,8 @@ const colorScheme: ColorScheme = {
     "Data Export": "#e15759",
     "Hyperparam Tuning": "#b07aa1",
     "Debug": "#76b7b2",
-    "Model Training": "#ff9da7"
+    "Model Training": "#ff9da7",
+    "Data Transform": "#b07aa1",
 };
 
 export default colorScheme;

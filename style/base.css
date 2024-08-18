@@ -168,3 +168,15 @@ background-color: #ddd;
   border: 1px solid #ccc;
 }
 
+/* Add this to your stylesheet (e.g., in index.css) */
+#flowchart-widget {
+  height: 100%; /* Ensure it takes up the full height of the sidebar */
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.flowchart-widget .content {
+  flex-grow: 1;
+  overflow-y: auto; /* Makes the content scrollable */
+}
