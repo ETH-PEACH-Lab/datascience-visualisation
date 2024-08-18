@@ -288,9 +288,7 @@ class Flowchart extends Component<Props, State> {
 
   render() {
     return (
-      <div>
-        <svg viewBox="0 0 100 100" width="100%" height="auto" ref={this.svgRef}></svg>
-      </div>
+        <svg viewBox="0 0 800 800" width="auto" height="auto" overflow="visible" ref={this.svgRef}></svg>
     );
   }
 }
@@ -309,6 +307,6 @@ export class FlowchartWidget extends ReactWidget {
   }
 
   render(): JSX.Element {
-    return <div className="flowchart-widget"><Flowchart ref={this.graph} /></div>;
+    return <Flowchart ref={this.graph} />;
   }
 }
