@@ -76,17 +76,14 @@ def classify():
 
         # Write final_json to a JSON file (Checkpoint)
         print("Writing classified final notebook to JSON file.") 
-        with open('tmp/clustering_test.json', 'w') as f: json.dump(final_json, f)
+        with open('../output/final_file.viz', 'w') as f: json.dump(final_json, f)
         
         # Reorder cells by their class        
-        final_json = clusterer.cluster(final_json, LABELS)
-        
-        print(final_json["notebooks"][0]["cells"][0])
-        
+        final_json = clusterer.cluster(final_json, LABELS)        
                     
         # Write final_json to a JSON file (Checkpoint)
         print("overwriting clustered final notebook to JSON file.") 
-        with open('tmp/clustering_test.json', 'w') as f: json.dump(final_json, f)
+        with open('../output/final_file.viz', 'w') as f: json.dump(final_json, f)
              
         preds = []
         truths = []
@@ -106,12 +103,12 @@ def classify():
             
             # Write final_json to a JSON file
             print("Overwriting evaluated final notebook JSON file.") 
-            with open('tmp/clustering_test.json', 'w') as f: json.dump(final_json, f)
+            with open('../output/final_file.viz', 'w') as f: json.dump(final_json, f)
        
         
         # Add the final notebook to the database
         print("Uploading final notebook to Firestore DB.") 
-        client.add_notebook("clustering_test", final_json)
+        client.add_notebook("final_file", final_json)
             
         return jsonify(final_json)
     except Exception as e:

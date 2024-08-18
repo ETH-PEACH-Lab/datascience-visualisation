@@ -11,19 +11,30 @@ Description: <desctiption_sentence>
 """ 
 
 FIRST_LAYER_LABELS = [
-    "Data_Transform",
-    "Data_Extraction",
+    "Data Transform",
+    "Data Extraction",
     "Visualization",
-    "Hyperparam_Tuning",
-    "Model_Interpretation",
-    "Model_Train",
-    "Model_Evaluation",
-    "Debug",
-    "Environment",
-    "Data_Export",
-    "Exploratory_Data_Analysis",
-    "Other"
+    "Model Training",
+    "Model Evaluation",
+    "Imports and Environment",
+    "Data Export",
+    "Exploratory Data Analysis", 
+    # "Other" # "Other"
 ]
+# FIRST_LAYER_LABELS = [
+#     "Data_Transform",
+#     "Data_Extraction",
+#     "Visualization",
+#     "Hyperparam_Tuning",
+#     "Model_Interpretation",
+#     "Model_Train",
+#     "Model_Evaluation",
+#     "Debug",
+#     "Environment",
+#     "Data_Export",
+#     "Exploratory_Data_Analysis",
+#     "Other"
+# ]
 
 SECOND_LAYER_LABELS = [
     # Hyperparam_Tuning
