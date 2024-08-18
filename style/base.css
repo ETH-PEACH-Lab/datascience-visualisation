@@ -172,12 +172,10 @@ background-color: #ddd;
 .flowchart-widget {
   height: 100%; /* Ensure it takes up the full height of the sidebar */
   width: 100%;
-  display: flex;
-  flex-direction: column;
   overflow: auto;
 }
 
 .flowchart-widget .content {
   flex-grow: 1;
-  overflow-y: auto; /* Makes the content scrollable */
+  overflow: auto; /* Makes the content scrollable */
 }

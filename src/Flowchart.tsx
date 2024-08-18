@@ -39,6 +39,23 @@ interface State {
   selectedCells: NotebookCellWithID[];
 }
 
+function resizeSVG(svgRef: React.RefObject<SVGSVGElement>): void {
+  const svg = svgRef.current;
+
+  if (svg) {
+    // Get the bounds of the SVG content
+    const bbox = svg.getBBox();
+
+    // Update the width and height using the size of the contents
+    svg.setAttribute("width", (bbox.x + bbox.width + bbox.x).toString());
+    svg.setAttribute("height", (bbox.y + bbox.height + bbox.y).toString());
+
+    console.log('Resized SVG to', (bbox.x + bbox.width + bbox.x).toString(), (bbox.y + bbox.height + bbox.y).toString());
+  } else {
+    console.error("SVG element not found.");
+  }
+}
+
 class Flowchart extends Component<Props, State> {
   svgRef: React.RefObject<SVGSVGElement>;
 
@@ -279,16 +296,18 @@ class Flowchart extends Component<Props, State> {
 
     if (selectedCells.length > 20) {
       this.drawClassChart();
+      resizeSVG(this.svgRef);
       return;
     }
 
     this.drawClusterChart();
+    resizeSVG(this.svgRef);
 
   }
 
   render() {
     return (
-        <svg viewBox="0 0 800 800" width="auto" height="auto" overflow="visible" ref={this.svgRef}></svg>
+        <svg width="800" height="1000" ref={this.svgRef}></svg>
     );
   }
 }
@@ -298,7 +317,7 @@ export class FlowchartWidget extends ReactWidget {
 
   constructor() {
     super();
-    this.addClass('flowchart-widget');
+    // this.addClass('flowchart-widget');
     this.graph = createRef();
   }
 
@@ -307,6 +326,10 @@ export class FlowchartWidget extends ReactWidget {
   }
 
   render(): JSX.Element {
-    return <Flowchart ref={this.graph} />;
+    return (
+    <div className="flowchart-widget">
+      <Flowchart ref={this.graph} />
+    </div>
+    );
   }
 }
