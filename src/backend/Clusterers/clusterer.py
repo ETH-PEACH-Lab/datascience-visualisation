@@ -88,6 +88,7 @@ class ClassCluster():
                 notebook_idx = cell["notebook_idx"]
                 cell_idx = cell["index"]
                 data["notebooks"][notebook_idx]["cells"][cell_idx]["cluster"] = int(labels[i])
+                
             descriptions_per_cluster[key] = self.title_generator.generate_titles_from_descs(labels, descs)
                     
         data["metadata"]["clusters"] = descriptions_per_cluster
