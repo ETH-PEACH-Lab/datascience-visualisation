@@ -60,6 +60,7 @@ class Flowchart extends Component<Props, State> {
     this.setState({ selectedCells: newSelectedCells });
   };
 
+
   drawClassChart = () => {
     const { selectedCells } = this.state;
     console.log('Drawing chart for selected cells', selectedCells);
@@ -146,9 +147,7 @@ class Flowchart extends Component<Props, State> {
       return;
     }
 
-    const svg = d3.select(this.svgRef.current)
-      .attr('width', 800)  // Adjust width to accommodate more nodes
-      .attr('height', 1000);
+    const svg = d3.select(this.svgRef.current);
 
     svg.selectAll('*').remove(); // Clear existing graph
 
@@ -290,7 +289,7 @@ class Flowchart extends Component<Props, State> {
   render() {
     return (
       <div>
-        <svg ref={this.svgRef}></svg>
+        <svg viewBox="0 0 100 100" width="100%" height="auto" ref={this.svgRef}></svg>
       </div>
     );
   }
@@ -301,7 +300,7 @@ export class FlowchartWidget extends ReactWidget {
 
   constructor() {
     super();
-    this.addClass('jp-react-widget');
+    this.addClass('flowchart-widget');
     this.graph = createRef();
   }
 
@@ -310,6 +309,6 @@ export class FlowchartWidget extends ReactWidget {
   }
 
   render(): JSX.Element {
-    return <Flowchart ref={this.graph} />;
+    return <div className="flowchart-widget"><Flowchart ref={this.graph} /></div>;
   }
 }
