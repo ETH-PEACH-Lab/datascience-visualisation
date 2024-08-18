@@ -3,6 +3,7 @@ from typing import List
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import re
+from tqdm import tqdm
 
 class TitleGenerator:
     def __init__(self, api_key: str = None):
@@ -22,7 +23,7 @@ class TitleGenerator:
         unique_clusters = set(clusters)
         cluster_titles = {}
         
-        for cluster in unique_clusters:
+        for cluster in tqdm(unique_clusters):
             cluster_descriptions = [descriptions[i] for i in range(len(descriptions)) if clusters[i] == cluster]
             cluster_descriptions_str = "\n".join(cluster_descriptions)
             
