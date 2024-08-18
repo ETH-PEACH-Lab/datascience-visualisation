@@ -186,12 +186,12 @@ class Flowchart extends Component<Props, State> {
     // Create links between consecutive cells by cell_id and notebook_id
     selectedCells.forEach((cell, index) => {
       if (index < selectedCells.length - 1) {
-        const sourceNode = nodes.find(node => node.cell_id === cell.cell_id);
+        const sourceNode = nodes.find(node => node.cell_id === cell.cell_id && node.notebook_id === cell.notebook_id);
         const targetCell = selectedCells[index + 1];
-        const targetNode = nodes.find(node => node.cell_id === targetCell.cell_id);
+        const targetNode = nodes.find(node => node.cell_id === targetCell.cell_id && node.notebook_id === targetCell.notebook_id);
 
         // Only create a link if both nodes belong to the same notebook_id
-        if (sourceNode && targetNode && sourceNode.notebook_id === targetCell.notebook_id) {
+        if (sourceNode && targetNode && sourceNode.notebook_id === targetNode.notebook_id) {
           links.push({ source: sourceNode, target: targetNode });
         }
       }
@@ -278,7 +278,7 @@ class Flowchart extends Component<Props, State> {
       return;
     }
 
-    if (selectedCells.length > 10) {
+    if (selectedCells.length > 20) {
       this.drawClassChart();
       return;
     }
