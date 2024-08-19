@@ -10,7 +10,38 @@ import graphviz
 import itertools
 from functools import partial, reduce
 from IPython.display import SVG
+from tqdm import tqdm
 
+
+def save_viz(json_file: dict, path: str):
+    with open(path, 'w') as f: json.dump(json_file, f)
+
+def load_notebooks(notebooks_dir: str, verbose: bool = False) -> List[dict]:
+    """
+    Load notebook files from the specified directory and return a list of notebook JSONs.
+    
+    Parameters:
+        notebooks_dir (str): The directory path where the notebook files are located.
+        verbose (bool, optional): If True, print additional information. Defaults to False.
+    
+    Returns:
+        List[dict]: A list of notebook JSONs.
+    """
+    
+    files = os.listdir(notebooks_dir)
+    notebook_jsons = []
+    for file in tqdm(files, desc="Reading file contents"):
+        file_path = os.path.join(notebooks_dir, file)
+        
+        if os.path.isfile(file_path) and file.endswith(".ipynb"):
+            notebook_json = load_notebook(file_path)
+            if len([cell for cell in notebook_json['cells'] if cell['cell_type'] == 'code']) >= 15:
+                notebook_jsons.append(notebook_json)
+            else:
+                if verbose: print(f"Skipping notebook {file} due to insufficient code cells.")
+        else:
+            if verbose: print("Invalid file format. Skipping file: " + file)
+    return notebook_jsons
 
 def load_notebook(notebook_path: str):
     """
@@ -151,172 +182,6 @@ def generate_output_name(client: FirebaseClient) -> str:
     while client.notebook_exists(output_name): 
         output_name = f'output_{random.randint(100000, 999999)}'
     return output_name
-
-
-def viz_ast(code_ast):
-    _basestring = str
-
-    def recurse_through_ast(node, handle_ast, handle_terminal, handle_fields, handle_no_fields, omit_docstrings):
-        possible_docstring = isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.Module))
-        
-        node_fields = zip(
-            node._fields,
-            (getattr(node, attr) for attr in node._fields)
-        )
-        field_results = []
-        for field_name, field_value in node_fields:
-            if isinstance(field_value, ast.AST):
-                field_results.append(handle_ast(field_value))
-            
-            elif isinstance(field_value, list):
-                if possible_docstring and omit_docstrings and field_name == 'body':
-                    field_value = _strip_docstring(field_value)
-                field_results.extend(
-                    handle_ast(item)
-                    if isinstance(item, ast.AST) else
-                    handle_terminal(item)
-                    for item in field_value
-                )
-            
-            elif isinstance(field_value, _basestring):
-                field_results.append(handle_terminal('"{}"'.format(field_value)))
-                
-            elif field_value is not None:
-                field_results.append(handle_terminal(field_value))
-
-        if not field_results:
-            return handle_no_fields(node)
-
-        return handle_fields(node, field_results)
-
-    my_settings = dict(
-        # Styling options:
-        scale=2,
-        font='courier',
-        shape='none',
-        terminal_color='#800040',
-        nonterminal_color='#004080',
-        # AST display options:
-        omit_module=True,
-        omit_docstrings=True,
-    )
-
-    def _bold(label):
-        return '<<B>{}</B>>'.format(label)
-
-
-    def _attach_to_parent(parent, graph, names, label, name=None, **style):
-        node_name = next(names) if name is None else name
-        node = graph.node(node_name, label=label, **style)
-        if parent is not None:
-            graph.edge(parent, node_name, sametail='t{}'.format(parent))
-
-
-    def handle_ast(node, parent_node, graph, names, omit_docstrings, terminal_color, nonterminal_color):
-        attach_to_parent = partial(
-            _attach_to_parent,
-            graph=graph,
-            names=names,
-        )
-        node_name = next(names)
-        attach_to_parent(
-            parent=parent_node,
-            label=_bold(node.__class__.__name__),
-            name=node_name,
-            fontcolor=nonterminal_color,
-        )
-        recurse_through_ast(
-            node, 
-            partial(
-                handle_ast, 
-                parent_node=node_name,
-                graph=graph,
-                names=names,
-                omit_docstrings=omit_docstrings, 
-                terminal_color=terminal_color, 
-                nonterminal_color=nonterminal_color,
-            ), 
-            partial(
-                handle_terminal, 
-                attach_to_parent=partial(
-                    attach_to_parent, 
-                    parent=node_name, 
-                    fontcolor=terminal_color,
-                ),
-            ), 
-            handle_fields, 
-            partial(
-                handle_no_fields,
-                parent_node=node_name,
-                graph=graph,
-                terminal_color=terminal_color,
-                nonterminal_color=nonterminal_color,
-            ),
-            omit_docstrings,
-        )
-
-
-    def handle_terminal(terminal, attach_to_parent):
-        attach_to_parent(label=str(terminal))
-
-
-    def handle_fields(*__):
-        pass
-
-
-    def handle_no_fields(__, parent_node, graph, terminal_color, nonterminal_color):
-        parent_node_beginning = '{} '.format(parent_node)
-        parent_node_num = int(parent_node)
-        for i, node in enumerate(graph.body[parent_node_num:]):
-            if node.strip().startswith(parent_node_beginning):
-                break
-        else:
-            raise KeyError("Could not find parent in graph.")
-        replacements = {
-            nonterminal_color: terminal_color,
-            '<<B>': '',
-            '</B>>': '',
-        }
-        graph.body[i + parent_node_num] = reduce(
-            lambda s, replacement: s.replace(*replacement),
-            replacements.items(),
-            node,
-        )
-        
-    def render(node, settings):
-        """
-        Given an AST node and settings, return a displayable object.
-        """
-        graph = graphviz.Graph(format='svg')
-        names = (str(x) for x in itertools.count())
-
-        handle_ast(
-            node,
-            parent_node=None,
-            graph=graph,
-            names=names,
-            omit_docstrings=settings['omit_docstrings'],
-            terminal_color=settings['terminal_color'],
-            nonterminal_color=settings['nonterminal_color'],
-        )
-
-        graph.node_attr.update(dict(
-            fontname=settings['font'],
-            shape=settings['shape'],
-        ))
-
-        return SVG(graph.pipe(format='svg'))
-    return render(code_ast, my_settings)
-
-def code_to_ast(code):
-    _strip_docstring(ast.dump(ast.parse(code)))
-    return ast.parse(code)
-
-def _strip_docstring(body):
-        first = body[0]
-        if isinstance(first, ast.Expr) and isinstance(first.value, ast.Str):
-            return body[1:]
-        return body
     
 
 if __name__ == "__main__":
