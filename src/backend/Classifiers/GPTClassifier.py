@@ -149,17 +149,7 @@ class GPTClassifier():
                     "content": self._markdown_prompt(cell["source"])
                 })
 
-        return classified_cells
-    
-    
-    def parallel_classify_ipynb(self, notebooks: list[dict], embed: bool = True, verbose: bool = False) -> list[list[dict]]:
-        pool = multiprocessing.Pool()
-        results = pool.map(self.classify_ipynb, notebooks)
-        pool.close()
-        pool.join()
-        return results
-    
-    
+        return classified_cells 
             
 
     def evaluate(self, notebook: dict, verbose: bool = False):

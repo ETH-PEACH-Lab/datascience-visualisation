@@ -26,7 +26,7 @@ def classify(notebook_json):
         prompt=classifier_prompt(LABELS), 
         labels=LABELS
     )   
-    return classifier.classify_ipynb(notebook_json, embed=False, verbose=True)
+    return classifier.classify_ipynb(notebook_json, embed=False, verbose=False)
 
 def main():
     if len(sys.argv) != 2:
@@ -47,27 +47,16 @@ def main():
     # Read files from input directory
     files = os.listdir(input_directory)
     notebook_jsons = []
-    for notebook_id, file in enumerate(files):
+    for file in tqdm(files, desc="Reading file contents"):
         notebook = {}
         file_path = os.path.join(input_directory, file)
         
         if os.path.isfile(file_path) and file.endswith(".ipynb"):
             notebook_json = load_notebook(file_path)
-            
             if len([cell for cell in notebook_json['cells'] if cell['cell_type'] == 'code']) >= 15:
-                # Classify the code cells of the current notebook
-                # print(f"Classifying notebook {file} ({notebook_id+1}/{len(files)})...", end="\r")
-                # classified_cells = classifier.classify_ipynb(notebook_json, embed=False, verbose=True)
-                # notebook["cells"] = sorted(classified_cells, key=lambda x: (x['class'], x['cell_id']))
-                # notebook["notebook_id"] = notebook_id
-                # notebook["notebook_name"] = file
-                # final_json['notebooks'].append(notebook)
                 notebook_jsons.append(notebook_json)
-
-                
             else:
                 print(f"Skipping notebook {file} ({notebook_id+1}/{len(files)}) due to insufficient code cells.")
-                
         else:
             print("Invalid file format. Skipping file: " + file)
             
@@ -76,7 +65,6 @@ def main():
         for notebook_id, classified_cells in enumerate(results):
             notebook["cells"] = sorted(classified_cells, key=lambda x: (x['class'], x['cell_id']))
             notebook["notebook_id"] = notebook_id
-            # notebook["notebook_name"] = file
             final_json['notebooks'].append(notebook)
             
     # Write final_json to a JSON file (Checkpoint)
@@ -109,8 +97,6 @@ def main():
         print("Overwriting evaluated final notebook JSON file.") 
         with open(f'{output_directory}/final_file.viz', 'w') as f: json.dump(final_json, f)
         
-        
-    
     # Add the final notebook to the database
     print("Uploading final notebook to Firestore DB.") 
     client.add_notebook("final_file", final_json)
