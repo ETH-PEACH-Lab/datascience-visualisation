@@ -9,7 +9,7 @@ class TitleGenerator:
     def __init__(self, api_key: str = None):
         self.client = OpenAI()
         prompt = """You are given a set of descriptions for multiple code snippets of the a same cluster. 
-        Generate a title for the cluster based on the descriptions, in 6 words maximum.
+        Generate a title for the cluster based on the descriptions, in 6 words maximum. Mention explicitly the name of the technologies and methods used.
         Desired format:
         Title: <generated_title>"""
         self.messages = [

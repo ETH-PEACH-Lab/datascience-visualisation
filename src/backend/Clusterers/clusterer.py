@@ -10,6 +10,11 @@ from transformers import AutoTokenizer, AutoModel
 import numpy as np
 from sklearn.metrics import confusion_matrix    
 from scipy.optimize import linear_sum_assignment
+from sklearn.manifold import TSNE
+from sklearn.metrics import silhouette_score
+from sklearn.metrics import calinski_harabasz_score
+from sklearn.metrics import davies_bouldin_score
+
 
 
 class ClassCluster():
@@ -20,7 +25,7 @@ class ClassCluster():
         self._model = AutoModel.from_pretrained("microsoft/codebert-base")
         self._model.to(self.device)
         self.clusterer = HDBSCAN(
-            min_cluster_size=4,
+            min_cluster_size=10,
             min_samples=2,
             cluster_selection_epsilon=.0,
             max_cluster_size=None,
@@ -69,37 +74,78 @@ class ClassCluster():
         # Cluster the cells for each class
         clusters = {}
         descriptions_per_cluster = {}
-        for key, group in grouped_cells.items(): 
-            print(f"Class {key}: {len(group)} cells")
-
-            X = [cell["embedding"] for cell in group]
-            descs = [cell["desc"] for cell in group]
-            labels = []
+        for class_name, class_cells in grouped_cells.items(): 
+            print(f"Class {class_name}: {len(class_cells)} cells")
             
-            if len(group) < 4:
-                labels = [-1] * len(group)
-            else:
-                self.clusterer.fit(X)
-                labels = self.clusterer.labels_
-
-            clusters[key] = {str(i): "" for i in set(labels)}
+            labels = self.cluster_class(class_cells) if len(class_cells) >= 10 else labels = [-1] * len(class_cells)
+            embeddings = [cell["embedding"] for cell in class_cells]
+            descs = [cell["desc"] for cell in class_cells]
+            sil_score, ch_index, db_index = self._evaluate_clustering_accuracy(embeddings, labels)
+            
+            clusters[class_name] = {str(i): "" for i in set(labels)}
         
-            for i, cell in enumerate(group):
+            for i, cell in enumerate(class_cells):
                 notebook_idx = cell["notebook_idx"]
                 cell_idx = cell["index"]
                 data["notebooks"][notebook_idx]["cells"][cell_idx]["cluster"] = int(labels[i])
-                
-            descriptions_per_cluster[key] = self.title_generator.generate_titles_from_descs(labels, descs)
+            
+            descriptions_per_cluster[class_name] = {
+                "titles": self.title_generator.generate_titles_from_descs(labels, descs),
+                "accuracy": {
+                    "silhouette_score": sil_score,
+                    "ch_index": ch_index,
+                    "db_index": db_index
+                }
+            }
                     
         data["metadata"]["clusters"] = descriptions_per_cluster
         return data
         
+    def cluster_class(self, cells: list[dict]) -> list[int]:
+        """
+        Clusters the given embeddingss.
+        Args:
+            embeddings (list[list[float]]): A list of embeddings to be clustered.
+        Returns:
+            list[int]: A list of cluster labels.
+        """
+        
+        embeddings = np.array([cell["embedding"] for cell in cells])
+        
+        # Dimension reduction
+        tsne = TSNE(n_components=2, perplexity=30, n_iter=3000)
+        reduced_embeddings = tsne.fit_transform(embeddings)
+        
+        # Clustering all reduced embeddings
+        self.clusterer.fit(reduced_embeddings)
+        labels = self.clusterer.labels_
+        
+        # Reclustering outliers only
+        outlier_idx = np.where(labels == -1)[0]
+        outliers = reduced_embeddings[outlier_idx]
+        self.clusterer.fit(outliers)
+        outlier_labels = self.clusterer.labels_
+        
+        # Relabel clustererd outliers
+        max_cluster = max(labels)+1
+        for i, idx in enumerate(outlier_idx):
+            if outlier_labels[i] != -1:
+                labels[idx] = max_cluster + outlier_labels[i]
+        
+        return labels
     
     
-    #######################################
+    ##############################################
     ########### Private/Helper methods ###########
-    #######################################
+    ##############################################
     
+    def _evaluate_clustering_accuracy(self, embeddings: list[list[float]], labels: list[int]) -> float:
+        sil_score = silhouette_score(embeddings, labels)
+        ch_index = calinski_harabasz_score(embeddings, labels)
+        db_index = davies_bouldin_score(embeddings, labels)
+        
+        return sil_score, ch_index, db_index
+        
     def _process_code(self, code_str, max_length=512, stride=256) -> torch.Tensor:
         """
         Process the given code string by tokenizing it with chunking for long code strings.
