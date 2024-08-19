@@ -16,7 +16,7 @@ from tqdm import tqdm
 def save_viz(json_file: dict, path: str):
     with open(path, 'w') as f: json.dump(json_file, f)
 
-def load_notebooks(notebooks_dir: str, verbose: bool = False) -> List[dict]:
+def load_notebooks(notebooks_dir: str, verbose: bool = False) -> tuple[List[dict], List[str]]:
     """
     Load notebook files from the specified directory and return a list of notebook JSONs.
     
@@ -25,10 +25,12 @@ def load_notebooks(notebooks_dir: str, verbose: bool = False) -> List[dict]:
         verbose (bool, optional): If True, print additional information. Defaults to False.
     
     Returns:
-        List[dict]: A list of notebook JSONs.
+        tuple[List[dict], List[str]]: A tuple containig a list of notebook JSONs and the corresponding file names.
+        
     """
     
     files = os.listdir(notebooks_dir)
+    file_names = []
     notebook_jsons = []
     for file in tqdm(files, desc="Reading file contents"):
         file_path = os.path.join(notebooks_dir, file)
@@ -37,11 +39,12 @@ def load_notebooks(notebooks_dir: str, verbose: bool = False) -> List[dict]:
             notebook_json = load_notebook(file_path)
             if len([cell for cell in notebook_json['cells'] if cell['cell_type'] == 'code']) >= 15:
                 notebook_jsons.append(notebook_json)
+                file_names.append(file)
             else:
                 if verbose: print(f"Skipping notebook {file} due to insufficient code cells.")
         else:
             if verbose: print("Invalid file format. Skipping file: " + file)
-    return notebook_jsons
+    return notebook_jsons, file_names
 
 def load_notebook(notebook_path: str):
     """

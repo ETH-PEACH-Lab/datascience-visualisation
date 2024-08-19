@@ -27,8 +27,8 @@ def main():
         print("Input directory does not exist.")
         return
 
-    notebook_jsons = load_notebooks(input_directory)
-    final_json = classify_notebooks(notebook_jsons)
+    notebook_jsons, file_names = load_notebooks(input_directory)
+    final_json = classify_notebooks(notebook_jsons, file_names)
             
     # Write final_json to a JSON file (Checkpoint)
     print("Writing classified final notebook to .viz file.") 
