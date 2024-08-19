@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import React, { useState, useEffect } from 'react';
+import React, { useState,useEffect } from 'react';
 
 import colorScheme from './colorScheme';
 import '../style/VizComponent.css';
 
 import CodeCell from './CodeCell'; 
+
 interface NotebookCell {
   cell_id: number;
   code: string;
@@ -12,7 +13,7 @@ interface NotebookCell {
   cluster: string;
 }
 
-interface NotebookCellWithID extends NotebookCell {
+export interface NotebookCellWithID extends NotebookCell {
   notebook_id: number;
 }
 
@@ -36,7 +37,7 @@ interface GroupedCellsProps {
 const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [openClusters, setOpenClusters] = useState<string[]>([]); // Manage multiple open clusters
-
+  
   const toggleOpen = () => setIsOpen(!isOpen);
 
   // Group cells by their cluster

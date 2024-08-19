@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 // NotebookSelector.tsx
 import React, { useState, useEffect } from 'react';
 import '../style/notebookSelector.css';
