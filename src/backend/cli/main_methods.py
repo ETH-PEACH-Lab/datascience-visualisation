@@ -14,7 +14,7 @@ with open('../../secrets/api_key.txt', 'r') as f: api_key = f'{f.read()}'
 os.environ["OPENAI_API_KEY"] = api_key
 LABELS = FIRST_LAYER_LABELS
 
-def classify_notebooks(notebook_jsons: list[dict]) -> dict: 
+def classify_notebooks(notebook_jsons: list[dict], file_names: list[str]) -> dict: 
     """
     Classifies the given list of notebook JSONs and returns a dictionary containing the classified notebooks.
     
@@ -52,6 +52,7 @@ def classify_notebooks(notebook_jsons: list[dict]) -> dict:
             notebook = {}
             notebook["cells"] = sorted(classified_cells, key=lambda x: (x['class'], x['cell_id']))
             notebook["notebook_id"] = notebook_id
+            notebook["notebook_name"] = file_names[notebook_id]
             final_json['notebooks'].append(notebook)
             
     return final_json
