@@ -34,15 +34,47 @@ class VizContent extends ReactWidget {
     this.update(); // Re-render the widget when the selection changes
 
     const content = this.context.model.toString();
-    let jsonData: VizData = { notebooks: [] };
 
+    //console.log(content)
+    let jsonData: VizData = { notebooks: [] };
+    let data: any = {};
     if (content.trim() !== "") {
       try {
         jsonData = JSON.parse(content);
+        data = JSON.parse(content);
       } catch (error) {
         console.error("Error parsing JSON", error);
         return;
       }
+      console.log("metadata")
+      console.log(data["metadata"])
+
+      jsonData.notebooks.forEach(notebook => {
+        notebook.cells.forEach(cell => {
+          const classMetadata = data["metadata"]["clusters"][cell.class];
+
+          if (classMetadata && classMetadata[cell.cluster]) {
+            cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
+            console.log("cell.cluster")
+            console.log(cell.cluster)
+          }
+        }
+        )
+      });
+      this.update(); // Re-render the widget when the selection changes
+
+
+/*
+      jsonData.notebooks.forEach(notebook => {
+        notebook.cells.forEach(cell => {
+          const classMetadata = jsonData.metadata.clusters[cell.class];
+          if (classMetadata && classMetadata[cell.cluster]) {
+            cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
+          }
+        });
+      });
+
+ */
 
       // Filter cells from selected notebooks only
       const selectedCells = jsonData.notebooks
@@ -60,6 +92,7 @@ class VizContent extends ReactWidget {
 
     const content = this.context.model.toString();
     let jsonData: VizData = { notebooks: [] };
+    let data: any = {};
 
     if (content.trim() === "") {
       return <DataNotFoundComponent />;
@@ -67,10 +100,24 @@ class VizContent extends ReactWidget {
 
     try {
       jsonData = JSON.parse(content);
+      data = JSON.parse(content);
+
     } catch (error) {
       console.error("Error parsing JSON", error);
     }
 
+    jsonData.notebooks.forEach(notebook => {
+      notebook.cells.forEach(cell => {
+        const classMetadata = data["metadata"]["clusters"][cell.class];
+
+        if (classMetadata && classMetadata[cell.cluster]) {
+          cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
+          console.log("cell.cluster")
+          console.log(cell.cluster)
+        }
+      }
+      )
+    });
     // Ensure only selected notebooks are displayed
     const selectedNotebooks = jsonData.notebooks.filter(notebook =>
       this.selectedNotebookIds.includes(notebook.notebook_id)

@@ -15,10 +15,18 @@ const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, onSele
     // Trigger the callback when shownNotebooks changes
     onSelectionChange(Array.from(shownNotebooks));
   }, [shownNotebooks, onSelectionChange]);
-
+ 
   const handleAddNotebook = () => {
     const notebookId = Number(selectedValue);
-    if (!shownNotebooks.has(notebookId) && notebookIds.includes(notebookId)) {
+    console.log("Notebook : ", selectedValue);
+
+    console.log("Notebook ID: ", notebookId);
+    if (String(selectedValue) === "ALL") {
+      console.log("All notebooks selected");
+      setShownNotebooks(new Set(notebookIds));
+
+    }
+    else if (!shownNotebooks.has(notebookId) && notebookIds.includes(notebookId)) {
       const newShownNotebooks = new Set(shownNotebooks);
       newShownNotebooks.add(notebookId);
       setShownNotebooks(newShownNotebooks);
@@ -53,11 +61,16 @@ const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, onSele
         placeholder="Select notebook ID"
       />
       <datalist id="elements">
+ 
         {notebookIds.map(id => (
           <option key={id} value={id}>
             {id}
           </option>
         ))}
+          <option key={"All"} value={"ALL"}>
+            {"All"}
+          </option>
+        
       </datalist>
       <button id="add-button" onClick={handleAddNotebook}>
         +

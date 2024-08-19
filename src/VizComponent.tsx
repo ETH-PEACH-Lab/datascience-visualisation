@@ -23,6 +23,7 @@ interface Notebook {
 
 export interface VizData {
   notebooks: Notebook[];
+
 }
 
 interface GroupedCellsProps {
@@ -46,7 +47,7 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
     acc[cell.cluster].push(cell);
     return acc;
   }, {} as { [key: string]: NotebookCellWithID[] });
-
+ 
   // Filter openClusters to remove clusters that no longer exist
   useEffect(() => {
     setOpenClusters((prev) => prev.filter(clusterName => clusters[clusterName] && clusters[clusterName].length > 0));
