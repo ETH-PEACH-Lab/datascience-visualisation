@@ -77,7 +77,11 @@ class ClassCluster():
         for class_name, class_cells in grouped_cells.items(): 
             print(f"Class {class_name}: {len(class_cells)} cells")
             
-            labels = self.cluster_class(class_cells) if len(class_cells) >= 10 else labels = [-1] * len(class_cells)
+            labels = []
+            if len(class_cells) < 10:
+                labels = [-1] * len(class_cells)
+            else:
+                labels = self.cluster_class(class_cells)
             embeddings = [cell["embedding"] for cell in class_cells]
             descs = [cell["desc"] for cell in class_cells]
             sil_score, ch_index, db_index = self._evaluate_clustering_accuracy(embeddings, labels)
@@ -113,7 +117,7 @@ class ClassCluster():
         embeddings = np.array([cell["embedding"] for cell in cells])
         
         # Dimension reduction
-        tsne = TSNE(n_components=2, perplexity=30, n_iter=3000)
+        tsne = TSNE(n_components=2, perplexity=30, max_iter=3000)
         reduced_embeddings = tsne.fit_transform(embeddings)
         
         # Clustering all reduced embeddings
@@ -140,11 +144,22 @@ class ClassCluster():
     ##############################################
     
     def _evaluate_clustering_accuracy(self, embeddings: list[list[float]], labels: list[int]) -> float:
-        sil_score = silhouette_score(embeddings, labels)
-        ch_index = calinski_harabasz_score(embeddings, labels)
-        db_index = davies_bouldin_score(embeddings, labels)
+        sil_score = 0
+        ch_index = 0
+        db_index = 0
+        try:
+            sil_score = silhouette_score(embeddings, labels)
+            ch_index = calinski_harabasz_score(embeddings, labels)
+            db_index = davies_bouldin_score(embeddings, labels)
+
+        except Exception as e:
+            print("[EVALUATION ERROR]", e.with_traceback())
+            sil_score = 0
+            ch_index = 0
+            db_index = 0
+        finally:
+            return sil_score, ch_index, db_index
         
-        return sil_score, ch_index, db_index
         
     def _process_code(self, code_str, max_length=512, stride=256) -> torch.Tensor:
         """
