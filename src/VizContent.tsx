@@ -52,7 +52,7 @@ class VizContent extends ReactWidget {
 
       jsonData.notebooks.forEach(notebook => {
         notebook.cells.forEach(cell => {
-          const classMetadata = data["metadata"]["clusters"][cell.class];
+          const classMetadata = data["metadata"]["clusters"][cell.class]["titles"];
 
           if (classMetadata && classMetadata[cell.cluster]) {
             cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
@@ -119,7 +119,7 @@ class VizContent extends ReactWidget {
 
     jsonData.notebooks.forEach(notebook => {
       notebook.cells.forEach(cell => {
-        const classMetadata = data["metadata"]["clusters"][cell.class];
+        const classMetadata = data["metadata"]["clusters"][cell.class]["titles"];
 
         if (classMetadata && classMetadata[cell.cluster]) {
           cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
@@ -134,7 +134,7 @@ class VizContent extends ReactWidget {
 
     jsonData.notebooks.forEach(notebook => {
       notebook.cells.forEach(cell => {
-        const classMetadata = data["metadata"]["clusters"][cell.class];
+        const classMetadata = data["metadata"]["clusters"][cell.class]["titles"];
 
         if (classMetadata && classMetadata[cell.cluster]) {
           cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
