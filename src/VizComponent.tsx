@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import colorScheme from './colorScheme';
 import '../style/VizComponent.css';
 import CodeCell from './CodeCell';
@@ -51,9 +51,9 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
   const totalCells = cells.length; // Total number of cells within the class
 
   // Filter openClusters to remove clusters that no longer exist
-  useEffect(() => {
-    setOpenClusters((prev) => prev.filter(clusterName => clusters[clusterName] && clusters[clusterName].length > 0));
-  }, [clusters]);
+  // useEffect(() => {
+  //   setOpenClusters((prev) => prev.filter(clusterName => clusters[clusterName] && clusters[clusterName].length > 0));
+  // }, [clusters]);
 
   const handleClusterClick = (clusterName: string) => {
     setOpenClusters((prev) =>

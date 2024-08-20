@@ -194,7 +194,7 @@ class Flowchart extends Component<Props, State> {
             id: nodes.length + 1,
             cluster: cells[i].cluster,
             class: cls,
-            x: 150 + i * 150,  // Horizontally position nodes with the same class next to each other
+            x: 150 + clusterSet.size * 150,  // Horizontally position nodes with the same class next to each other
             y: 100 + yCounter * 150,  // Vertically space classes
             cell_id: cells[i].cell_id,
             notebook_id: cells[i].notebook_id,  // Add notebook_id to the node
@@ -208,12 +208,12 @@ class Flowchart extends Component<Props, State> {
     // Create links between consecutive cells by cell_id and notebook_id
     selectedCells.forEach((cell, index) => {
       if (index < selectedCells.length - 1) {
-        const sourceNode = nodes.find(node => node.cell_id === cell.cell_id && node.notebook_id === cell.notebook_id);
+        const sourceNode = nodes.find(node => node.cluster === cell.cluster);
         const targetCell = selectedCells[index + 1];
-        const targetNode = nodes.find(node => node.cell_id === targetCell.cell_id && node.notebook_id === targetCell.notebook_id);
+        const targetNode = nodes.find(node => node.cluster === targetCell.cluster && sourceNode?.cluster !== node.cluster && node.notebook_id === targetCell.notebook_id);
 
         // Only create a link if both nodes belong to the same notebook_id
-        if (sourceNode && targetNode && sourceNode.notebook_id === targetNode.notebook_id) {
+        if (sourceNode && targetNode) {
           links.push({ source: sourceNode, target: targetNode });
         }
       }
@@ -239,7 +239,28 @@ class Flowchart extends Component<Props, State> {
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
       .attr('fill', '#000')  // Set text color to black
-      .text(d => d.cluster);  // Display cluster names
+      .style('font-size', '10px')  // Set font size to smaller
+      .each(function (d) {
+        const words = d.cluster.split(' ');  // Split cluster name into words
+        let tspan = d3.select(this).append('tspan')
+          .attr('x', d.x)
+          .attr('y', d.y)
+          .attr('dy', -2);  // Start at the correct vertical position
+
+        for (let i = 0; i < words.length; i += 3) {
+          let line = words.slice(i, i + 3).join(' ');  // Take 3 words at a time
+          tspan.text(line);
+          if (i + 3 < words.length) {  // If more words remain, add a new line
+            tspan = d3.select(this).append('tspan')
+              .attr('x', d.x)
+              .attr('dy', '1.0em')  // Adjust line height
+              .attr('text-anchor', 'middle')  // Keep text centered
+              .attr('dominant-baseline', 'middle');
+          }
+        }
+      });
+
+
 
     // Draw dotted curved arrows (links between consecutive cells)
     svg.selectAll('path')
@@ -300,7 +321,7 @@ class Flowchart extends Component<Props, State> {
       return;
     }
 
-    if (selectedCells.length > 40) {
+    if (selectedCells.length > 100) {
       this.drawClassChart();
       resizeSVG(this.svgRef);
       return;
