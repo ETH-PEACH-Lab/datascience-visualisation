@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-import React, { useState,useEffect } from 'react';
-
+import React, { useState, useEffect } from 'react';
 import colorScheme from './colorScheme';
 import '../style/VizComponent.css';
-
-import CodeCell from './CodeCell'; 
+import CodeCell from './CodeCell';
 
 interface NotebookCell {
   cell_id: number;
@@ -22,14 +19,13 @@ export interface Notebook {
   notebook_id: number;
   cells: NotebookCell[];
 }
-export interface NotebookWithCellId{
+export interface NotebookWithCellId {
   notebook_id: number;
   cells: NotebookCellWithID[];
 }
 
 export interface VizData {
   notebooks: NotebookWithCellId[];
-
 }
 
 interface GroupedCellsProps {
@@ -37,12 +33,10 @@ interface GroupedCellsProps {
   cells: NotebookCellWithID[];
 }
 
-
-
 const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [openClusters, setOpenClusters] = useState<string[]>([]); // Manage multiple open clusters
-  
+
   const toggleOpen = () => setIsOpen(!isOpen);
 
   // Group cells by their cluster
@@ -53,7 +47,9 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
     acc[cell.cluster].push(cell);
     return acc;
   }, {} as { [key: string]: NotebookCellWithID[] });
- 
+
+  const totalCells = cells.length; // Total number of cells within the class
+
   // Filter openClusters to remove clusters that no longer exist
   useEffect(() => {
     setOpenClusters((prev) => prev.filter(clusterName => clusters[clusterName] && clusters[clusterName].length > 0));
@@ -93,14 +89,12 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
                 onClick={() => handleClusterClick(name)}
               >
                 <span className="cluster-identifier">{identifier}</span> {/* Identifier (A, B, C) */}
-                {name}
+                {name} ({clusters[name].length}/{totalCells}) {/* Show the number of cells in this cluster */}
               </button>
             ))}
           </div>
           <div className="cluster-cells-container">
             {openClusters.map((clusterName) =>
-              
-             
               clusters[clusterName]?.map((cell) => (
                 <div
                   key={`${cell.notebook_id}-${cell.cell_id}`}
@@ -121,6 +115,7 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
     </div>
   );
 };
+
 const VizComponent: React.FC<{ data: VizData }> = ({ data }) => {
   if (!data.notebooks || !Array.isArray(data.notebooks)) {
     return <div>No valid notebook data found.</div>;
@@ -128,33 +123,27 @@ const VizComponent: React.FC<{ data: VizData }> = ({ data }) => {
 
   let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [] };
 
-
   // Group cells by their class across all notebooks
   const groupedCells: { [key: string]: NotebookCellWithID[] } = {};
 
   data.notebooks.forEach((notebook) => {
     notebook.cells.forEach((cell) => {
-      if(notebook.notebook_id != -2){
+      if (notebook.notebook_id !== -2) {
         const cellWithID: NotebookCellWithID = { ...cell, notebook_id: notebook.notebook_id };
         newNotebook.cells.push(cellWithID);
         if (!groupedCells[cell.class]) {
           groupedCells[cell.class] = [];
         }
         groupedCells[cell.class].push(cellWithID);
-      }
-      else{
+      } else {
         if (!groupedCells[cell.class]) {
           groupedCells[cell.class] = [];
         }
-        cell.notebook_id=cell.originalNotebookId
+        cell.notebook_id = cell.originalNotebookId;
         groupedCells[cell.class].push(cell);
       }
-  
     });
-  
   });
-
-
 
   return (
     <div style={{ padding: '20px' }}>
