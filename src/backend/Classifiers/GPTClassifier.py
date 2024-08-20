@@ -4,6 +4,7 @@ import re
 from chromadb.utils import embedding_functions
 import tqdm
 from utils.helper_functions import clean_code
+import multiprocessing
 
 
 class GPTClassifier():
@@ -73,6 +74,7 @@ class GPTClassifier():
         
     def classify_notebook(self, notebook: List[str], verbose: bool = False) -> List[tuple[str, str]]:
         """
+        DEPRECATED !
         Classifies the code cells in a Jupyter notebook.
 
         Args:
@@ -147,7 +149,7 @@ class GPTClassifier():
                     "content": self._markdown_prompt(cell["source"])
                 })
 
-        return classified_cells
+        return classified_cells 
             
 
     def evaluate(self, notebook: dict, verbose: bool = False):

@@ -11,19 +11,24 @@ interface NotebookCell {
   code: string;
   class: string;
   cluster: string;
+  originalNotebookId: number;
 }
 
 export interface NotebookCellWithID extends NotebookCell {
   notebook_id: number;
 }
 
-interface Notebook {
+export interface Notebook {
   notebook_id: number;
   cells: NotebookCell[];
 }
+export interface NotebookWithCellId{
+  notebook_id: number;
+  cells: NotebookCellWithID[];
+}
 
 export interface VizData {
-  notebooks: Notebook[];
+  notebooks: NotebookWithCellId[];
 
 }
 
@@ -121,18 +126,35 @@ const VizComponent: React.FC<{ data: VizData }> = ({ data }) => {
     return <div>No valid notebook data found.</div>;
   }
 
+  let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [] };
+
+
   // Group cells by their class across all notebooks
   const groupedCells: { [key: string]: NotebookCellWithID[] } = {};
 
   data.notebooks.forEach((notebook) => {
     notebook.cells.forEach((cell) => {
-      const cellWithID: NotebookCellWithID = { ...cell, notebook_id: notebook.notebook_id };
-      if (!groupedCells[cell.class]) {
-        groupedCells[cell.class] = [];
+      if(notebook.notebook_id != -2){
+        const cellWithID: NotebookCellWithID = { ...cell, notebook_id: notebook.notebook_id };
+        newNotebook.cells.push(cellWithID);
+        if (!groupedCells[cell.class]) {
+          groupedCells[cell.class] = [];
+        }
+        groupedCells[cell.class].push(cellWithID);
       }
-      groupedCells[cell.class].push(cellWithID);
+      else{
+        if (!groupedCells[cell.class]) {
+          groupedCells[cell.class] = [];
+        }
+        cell.notebook_id=cell.originalNotebookId
+        groupedCells[cell.class].push(cell);
+      }
+  
     });
+  
   });
+
+
 
   return (
     <div style={{ padding: '20px' }}>

@@ -3,7 +3,7 @@ def classifier_prompt(labels: list[str]) -> str:
     return f"""You will be given each code cell of the same jupyter notebook of a machine learning task.
 First, classify the code into one {', '.join(labels[:-1])} or {labels[-1]}.
 Consider the previously classified code snippets for context.
-Then, describe what the code snippet does in strictly one sentence.
+Then, describe what the code snippet does in strictly one sentence. Mention explicitly the name of the technologies and methods used.
 Explain your reasoning for the classification and then output the desired format at the end.
 Desired format:
 Class: <class_label>

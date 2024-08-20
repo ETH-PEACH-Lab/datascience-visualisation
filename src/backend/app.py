@@ -78,7 +78,7 @@ def classify():
         print("Writing classified final notebook to JSON file.") 
         with open('../output/final_file.viz', 'w') as f: json.dump(final_json, f)
         
-        # Reorder cells by their class        
+                
         final_json = clusterer.cluster(final_json, LABELS)        
                     
         # Write final_json to a JSON file (Checkpoint)

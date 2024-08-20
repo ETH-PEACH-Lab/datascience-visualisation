@@ -3,12 +3,13 @@ from typing import List
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import re
+from tqdm import tqdm
 
 class TitleGenerator:
     def __init__(self, api_key: str = None):
         self.client = OpenAI()
         prompt = """You are given a set of descriptions for multiple code snippets of the a same cluster. 
-        Generate a title for the cluster based on the descriptions, in 6 words maximum.
+        Generate a title for the cluster based on the descriptions, in 6 words maximum. Mention explicitly the name of the technologies and methods used.
         Desired format:
         Title: <generated_title>"""
         self.messages = [
@@ -22,7 +23,7 @@ class TitleGenerator:
         unique_clusters = set(clusters)
         cluster_titles = {}
         
-        for cluster in unique_clusters:
+        for cluster in tqdm(unique_clusters):
             cluster_descriptions = [descriptions[i] for i in range(len(descriptions)) if clusters[i] == cluster]
             cluster_descriptions_str = "\n".join(cluster_descriptions)
             

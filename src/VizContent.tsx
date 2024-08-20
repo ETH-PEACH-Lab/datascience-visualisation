@@ -7,7 +7,7 @@ import {
 } from '@jupyterlab/docregistry';
 
 import * as React from 'react';
-import VizComponent, { LoadingComponent, DataNotFoundComponent, VizData, NotebookCellWithID } from './VizComponent';
+import VizComponent, { LoadingComponent, DataNotFoundComponent, VizData, NotebookCellWithID, NotebookWithCellId } from './VizComponent';
 import NotebookSelector from './NotebookSelector';
 import { FlowchartWidget } from './Flowchart';
 
@@ -46,8 +46,9 @@ class VizContent extends ReactWidget {
         console.error("Error parsing JSON", error);
         return;
       }
-      console.log("metadata")
-      console.log(data["metadata"])
+  
+
+      let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [] };
 
       jsonData.notebooks.forEach(notebook => {
         notebook.cells.forEach(cell => {
@@ -55,12 +56,17 @@ class VizContent extends ReactWidget {
 
           if (classMetadata && classMetadata[cell.cluster]) {
             cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
-            console.log("cell.cluster")
-            console.log(cell.cluster)
+           
           }
-        }
+          const cellWithNotebookId = {
+            ...cell,
+            originalNotebookId: notebook.notebook_id // Add a new property to store the original notebook ID
+          };
+        
+          newNotebook.cells.push(cellWithNotebookId);        }
         )
       });
+      jsonData.notebooks.push(newNotebook);
       this.update(); // Re-render the widget when the selection changes
 
 
@@ -117,12 +123,34 @@ class VizContent extends ReactWidget {
 
         if (classMetadata && classMetadata[cell.cluster]) {
           cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
-          console.log("cell.cluster")
-          console.log(cell.cluster)
+         
         }
       }
       )
     });
+
+
+    let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [] };
+
+    jsonData.notebooks.forEach(notebook => {
+      notebook.cells.forEach(cell => {
+        const classMetadata = data["metadata"]["clusters"][cell.class];
+
+        if (classMetadata && classMetadata[cell.cluster]) {
+          cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
+        
+          
+        }
+        const cellWithNotebookId = {
+          ...cell,
+          originalNotebookId: notebook.notebook_id // Add a new property to store the original notebook ID
+        };
+      
+        newNotebook.cells.push(cellWithNotebookId);
+      }
+      )
+    });
+    jsonData.notebooks.push(newNotebook);
     // Ensure only selected notebooks are displayed
     const selectedNotebooks = jsonData.notebooks.filter(notebook =>
       this.selectedNotebookIds.includes(notebook.notebook_id)

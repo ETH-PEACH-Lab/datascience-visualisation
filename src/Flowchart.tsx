@@ -10,11 +10,11 @@ interface Node {
   y: number;
 }
 
-interface ClassNode extends Node{
+interface ClassNode extends Node {
   id: string;
 }
 
-interface ClusterNode extends Node{
+interface ClusterNode extends Node {
   id: number;
   cluster: string;
   class: string;
@@ -184,17 +184,23 @@ class Flowchart extends Component<Props, State> {
         return colorOrderA - colorOrderB;
       });
 
+      const clusterSet = new Set();  // Create a set to track unique clusters
+
       for (let i = 0; i < cells.length; i++) {
-        const node: ClusterNode = {
-          id: nodes.length + 1,
-          cluster: cells[i].cluster,
-          class: cls,
-          x: 150 + i * 150,  // Horizontally position nodes with the same class next to each other
-          y: 100 + yCounter * 150,  // Vertically space classes
-          cell_id: cells[i].cell_id,
-          notebook_id: cells[i].notebook_id,  // Add notebook_id to the node
-        };
-        nodes.push(node);
+
+        if (!clusterSet.has(cells[i].cluster)) {
+          clusterSet.add(cells[i].cluster);
+          const node: ClusterNode = {
+            id: nodes.length + 1,
+            cluster: cells[i].cluster,
+            class: cls,
+            x: 150 + i * 150,  // Horizontally position nodes with the same class next to each other
+            y: 100 + yCounter * 150,  // Vertically space classes
+            cell_id: cells[i].cell_id,
+            notebook_id: cells[i].notebook_id,  // Add notebook_id to the node
+          };
+          nodes.push(node);
+        }
       }
       yCounter++;  // Move to the next row for the next class
     });
@@ -294,7 +300,7 @@ class Flowchart extends Component<Props, State> {
       return;
     }
 
-    if (selectedCells.length > 20) {
+    if (selectedCells.length > 40) {
       this.drawClassChart();
       resizeSVG(this.svgRef);
       return;
@@ -307,7 +313,7 @@ class Flowchart extends Component<Props, State> {
 
   render() {
     return (
-        <svg width="800" height="1000" ref={this.svgRef}></svg>
+      <svg width="800" height="1000" ref={this.svgRef}></svg>
     );
   }
 }
@@ -327,9 +333,9 @@ export class FlowchartWidget extends ReactWidget {
 
   render(): JSX.Element {
     return (
-    <div className="flowchart-widget">
-      <Flowchart ref={this.graph} />
-    </div>
+      <div className="flowchart-widget">
+        <Flowchart ref={this.graph} />
+      </div>
     );
   }
 }
