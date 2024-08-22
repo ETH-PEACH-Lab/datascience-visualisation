@@ -1,15 +1,15 @@
 {
-    "name": "jupyterlab_apod",
-    "version": "0.1.0",
+    "name": "cluster_viz",
+    "version": "0.2.1",
     "description": "Show a random NASA Astronomy Picture of the Day in a JupyterLab panel",
     "keywords": [
         "jupyter",
         "jupyterlab",
         "jupyterlab-extension"
     ],
-    "homepage": "",
+    "homepage": "https://github.com/ETH-PEACH-Lab/datascience-visualisation",
     "bugs": {
-        "url": "/issues"
+        "url": "https://github.com/ETH-PEACH-Lab/datascience-visualisation/issues"
     },
     "license": "BSD-3-Clause",
     "author": "My Name",
@@ -23,7 +23,7 @@
     "style": "style/index.css",
     "repository": {
         "type": "git",
-        "url": ".git"
+        "url": "https://github.com/ETH-PEACH-Lab/datascience-visualisation"
     },
     "scripts": {
         "build": "jlpm build:lib && jlpm build:labextension:dev",
@@ -35,7 +35,7 @@
         "clean": "jlpm clean:lib",
         "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
         "clean:lintcache": "rimraf .eslintcache .stylelintcache",
-        "clean:labextension": "rimraf jupyterlab_apod/labextension jupyterlab_apod/_version.py",
+        "clean:labextension": "rimraf cluster_viz/labextension cluster_viz/_version.py",
         "clean:all": "jlpm clean:lib && jlpm clean:labextension && jlpm clean:lintcache",
         "eslint": "jlpm eslint:check --fix",
         "eslint:check": "eslint . --cache --ext .ts,.tsx",
@@ -119,7 +119,7 @@
     },
     "jupyterlab": {
         "extension": true,
-        "outputDir": "jupyterlab_apod/labextension",
+        "outputDir": "cluster_viz/labextension",
         "sharedPackages": {
             "@jupyter-widgets/base": {
                 "bundled": false,
