@@ -10,9 +10,9 @@ backend/api_key.txt
 *.egg-info/
 .ipynb_checkpoints
 *.tsbuildinfo
-jupyterlab_apod/labextension
+cluster_viz/labextension
 # Version file is handled by hatchling
-jupyterlab_apod/_version.py
+cluster_viz/_version.py
 /secrets
 # Integration tests
 ui-tests/test-results/
