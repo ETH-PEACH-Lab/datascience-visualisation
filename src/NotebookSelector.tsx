@@ -1,4 +1,3 @@
-// NotebookSelector.tsx
 import React, { useState, useEffect } from 'react';
 import '../style/notebookSelector.css';
 
@@ -8,46 +7,53 @@ interface NotebookSelectorProps {
 }
 
 const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, onSelectionChange }) => {
-  const [shownNotebooks, setShownNotebooks] = useState<Set<number>>(new Set());
+  const [shownNotebooks, setShownNotebooks] = useState<Set<number>>(new Set([-2])); // Initialize with "ALL"
   const [selectedValue, setSelectedValue] = useState<string>('');
 
   useEffect(() => {
     // Trigger the callback when shownNotebooks changes
     onSelectionChange(Array.from(shownNotebooks));
   }, [shownNotebooks, onSelectionChange]);
+
+
   
   const handleRemoveNotebook = (notebookId: number) => {
     const newShownNotebooks = new Set(shownNotebooks);
-    if(newShownNotebooks.has(notebookId)){
+    if (newShownNotebooks.has(notebookId)) {
       newShownNotebooks.delete(notebookId);
+      // If the last notebook is removed, add "ALL" again
+      if (newShownNotebooks.size === 0) {
+        newShownNotebooks.add(-2);
+      }
       setShownNotebooks(newShownNotebooks);
     }
-  };     
+  };
 
   const handleAddNotebook = () => {
     const notebookId = selectedValue === "ALL" ? -2 : Number(selectedValue);
 
     if (notebookId === -2) {
-      // Remove all selected notebooks before adding ALL
+      // If "ALL" is selected, clear all other selections and set "ALL"
       const newShownNotebooks = new Set<number>();
       newShownNotebooks.add(-2);
       setShownNotebooks(newShownNotebooks);
     } else if (!shownNotebooks.has(notebookId) && notebookIds.includes(notebookId)) {
-      if (shownNotebooks.has(-2)) {
-        console.log("nxdjwkn");
-        handleRemoveNotebook(-2);  // Remove ALL (-2) before adding a specific notebook
-        console.log("COME ON")
-      }   
-      console.log("notebooks")
-      console.log(shownNotebooks)
+
+      console.log(notebookId);
       const newShownNotebooks = new Set(shownNotebooks);
       newShownNotebooks.add(notebookId);
+      if (newShownNotebooks.has(-2)) {
+        newShownNotebooks.delete(-2);  // Remove "ALL" (-2) before adding a specific notebook
+      }
+      console.log(newShownNotebooks);
       setShownNotebooks(newShownNotebooks);
+      console.log(newShownNotebooks);
+
     }
     setSelectedValue(''); // Clear the input after adding
-  };   
-   
-  return ( 
+  };
+
+  return (
     <div className="selector-container">
       <div className="current-selection-text">Current selection:</div>
       <div className="selected-elements" id="selected-elements">

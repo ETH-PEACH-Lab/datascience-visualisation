@@ -31,9 +31,10 @@ export interface VizData {
 interface GroupedCellsProps {
   className: string;
   cells: NotebookCellWithID[];
+  onSelectNotebook: (notebookIds: [number]) => void;
 }
 
-const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
+const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectNotebook }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [openClusters, setOpenClusters] = useState<string[]>([]); // Manage multiple open clusters
 
@@ -105,6 +106,7 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
                     code={cell.code}
                     clusterLabel={clusterIdentifiers.find(c => c.name === clusterName)?.identifier || ''}
                     notebook_id={cell.notebook_id} // Pass the notebook ID
+                    onSelectNotebook={onSelectNotebook} // Pass the function to CodeCell
                   />
                 </div>
               ))
@@ -116,7 +118,7 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
   );
 };
 
-const VizComponent: React.FC<{ data: VizData }> = ({ data }) => {
+const VizComponent: React.FC<{ data: VizData; onSelectNotebook: (notebookIds: [number]) => void }> = ({ data, onSelectNotebook }) => {
   if (!data.notebooks || !Array.isArray(data.notebooks)) {
     return <div>No valid notebook data found.</div>;
   }
@@ -148,7 +150,12 @@ const VizComponent: React.FC<{ data: VizData }> = ({ data }) => {
   return (
     <div style={{ padding: '20px' }}>
       {Object.entries(groupedCells).map(([className, cells]) => (
-        <GroupedCells key={className} className={className} cells={cells} />
+        <GroupedCells 
+          key={className} 
+          className={className} 
+          cells={cells} 
+          onSelectNotebook={onSelectNotebook}
+        />
       ))}
     </div>
   );

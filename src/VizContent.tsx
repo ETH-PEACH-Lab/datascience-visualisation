@@ -29,8 +29,20 @@ class VizContent extends ReactWidget {
     });
   }
 
+
   handleNotebookSelection = (selectedIds: number[]) => {
-    this.selectedNotebookIds = selectedIds;
+    // Remove every element from selectedNotebookIds directly in the
+    while(this.selectedNotebookIds.length > 0){
+      this.selectedNotebookIds.pop();
+    }
+
+    // Add every element from selectedIds that is not in selectedNotebookIds
+    selectedIds.forEach(selectedId => {
+      if (!this.selectedNotebookIds.includes(selectedId)) {
+        this.selectedNotebookIds.push(selectedId);
+      }
+    });
+
     this.update(); // Re-render the widget when the selection changes
 
     const content = this.context.model.toString();
@@ -68,19 +80,6 @@ class VizContent extends ReactWidget {
       });
       jsonData.notebooks.push(newNotebook);
       this.update(); // Re-render the widget when the selection changes
-
-
-/*
-      jsonData.notebooks.forEach(notebook => {
-        notebook.cells.forEach(cell => {
-          const classMetadata = jsonData.metadata.clusters[cell.class];
-          if (classMetadata && classMetadata[cell.cluster]) {
-            cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
-          }
-        });
-      });
-
- */
 
       // Filter cells from selected notebooks only
       const selectedCells: NotebookCellWithID[] = jsonData.notebooks
@@ -162,7 +161,10 @@ class VizContent extends ReactWidget {
           notebookIds={jsonData.notebooks.map(notebook => notebook.notebook_id)}
           onSelectionChange={this.handleNotebookSelection}
         />
-        <VizComponent data={{ notebooks: selectedNotebooks }} />
+        <VizComponent 
+          data={{ notebooks: selectedNotebooks }}
+          onSelectNotebook={this.handleNotebookSelection}
+        />
       </div>
     );
   }

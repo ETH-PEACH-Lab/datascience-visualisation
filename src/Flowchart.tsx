@@ -39,22 +39,25 @@ interface State {
   selectedCells: NotebookCellWithID[];
 }
 
-function resizeSVG(svgRef: React.RefObject<SVGSVGElement>): void {
-  const svg = svgRef.current;
+// function resizeSVG(svgRef: React.RefObject<SVGSVGElement>): void {
+//   const svg = svgRef.current;
 
-  if (svg) {
-    // Get the bounds of the SVG content
-    const bbox = svg.getBBox();
+//   if (svg) {
+//     // Get the bounds of the SVG content
+//     const bbox = svg.getBBox();
+//     console.log(bbox);
 
-    // Update the width and height using the size of the contents
-    svg.setAttribute("width", (bbox.x + bbox.width + bbox.x).toString());
-    svg.setAttribute("height", (bbox.y + bbox.height + bbox.y).toString());
+//     const newWidth = bbox.x + bbox.width + bbox.x;
+//     const newHeight = bbox.y + bbox.height + bbox.y;
+//     // Update the width and height using the size of the contents
+//     svg.setAttribute("width", newWidth.toString());
+//     svg.setAttribute("height", newHeight.toString());
 
-    console.log('Resized SVG to', (bbox.x + bbox.width + bbox.x).toString(), (bbox.y + bbox.height + bbox.y).toString());
-  } else {
-    console.error("SVG element not found.");
-  }
-}
+//     console.log('Resized SVG to', newWidth.toString(), newHeight.toString());
+//   } else {
+//     console.error("SVG element not found.");
+//   }
+// }
 
 class Flowchart extends Component<Props, State> {
   svgRef: React.RefObject<SVGSVGElement>;
@@ -80,9 +83,8 @@ class Flowchart extends Component<Props, State> {
 
   drawClassChart = () => {
     const { selectedCells } = this.state;
-    console.log('Drawing chart for selected cells', selectedCells);
     if (selectedCells.length === 0) {
-      return;
+      return { width: 0, height: 0 };
     }
 
     const svg = d3.select(this.svgRef.current)
@@ -156,12 +158,19 @@ class Flowchart extends Component<Props, State> {
       })
       .attr('stroke', '#999')
       .attr('fill', 'none');
+
+    // Calculate the required width and height
+    const width = 300;  // Fixed width
+    const height = nodeCounter * 100 + 50;  // Based on number of nodes
+
+    return { width, height };
+
   }
 
   drawClusterChart = () => {
     const { selectedCells } = this.state;
     if (selectedCells.length === 0) {
-      return;
+      return { width: 0, height: 0 };
     }
 
     const svg = d3.select(this.svgRef.current);
@@ -194,7 +203,7 @@ class Flowchart extends Component<Props, State> {
             id: nodes.length + 1,
             cluster: cells[i].cluster,
             class: cls,
-            x: 150 + clusterSet.size * 150,  // Horizontally position nodes with the same class next to each other
+            x: 50 + clusterSet.size * 150,  // Horizontally position nodes with the same class next to each other
             y: 100 + yCounter * 150,  // Vertically space classes
             cell_id: cells[i].cell_id,
             notebook_id: cells[i].notebook_id,  // Add notebook_id to the node
@@ -312,6 +321,11 @@ class Flowchart extends Component<Props, State> {
       .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
       .attr('fill', '#666')
       .style('stroke', 'none');
+
+      const width = Math.max(...nodes.map(node => node.x)) + circleRadius * 2 + 50;  // Plus padding
+      const height = yCounter * 150 + circleRadius * 2 + 50;  // Based on number of classes
+    
+      return { width, height };
   }
 
   drawChart() {
@@ -320,17 +334,22 @@ class Flowchart extends Component<Props, State> {
     if (selectedCells.length === 0) {
       return;
     }
-
+  
+    let dimensions: { width: number, height: number };
+  
     if (selectedCells.length > 100) {
-      this.drawClassChart();
-      resizeSVG(this.svgRef);
-      return;
+      dimensions = this.drawClassChart();
+    } else {
+      dimensions = this.drawClusterChart();
     }
-
-    this.drawClusterChart();
-    resizeSVG(this.svgRef);
-
+  
+    const svg = this.svgRef.current;
+    if (svg) {
+      svg.setAttribute("width", dimensions.width.toString());
+      svg.setAttribute("height", dimensions.height.toString());
+    }
   }
+  
 
   render() {
     return (

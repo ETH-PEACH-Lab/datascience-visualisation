@@ -10,7 +10,7 @@
     position: relative;
   }
   
-  .notebook-id {
+  .notebook-id-button {
     width: 60px;
     display: inline-flex;
     justify-content: center;
@@ -20,7 +20,20 @@
     font-weight: bold;
     color: #000;
     margin-right: 10px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
   }
+  
+  .notebook-id-button:hover {
+    background-color: #e0e0e0; /* Slightly darker on hover */
+  }
+  
+  .notebook-id-button:active {
+    background-color: #d0d0d0; /* Even darker when clicked */
+    transform: scale(0.95);    /* Slightly shrink the button on click */
+  }
+  
   
   .code-editor {
     flex-grow: 1;
