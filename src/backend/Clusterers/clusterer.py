@@ -43,9 +43,10 @@ class ClassCluster():
             list[float]: A list representing the embedded vector of the code snippet and its description.
         """
         
-        code_embedding = self._process_code(code_str)
+        # code_embedding = self._process_code(code_str)
         desc_embedding = self._process_summary(desc_str)
-        return torch.mean(torch.stack([code_embedding, desc_embedding]), dim=0).detach().numpy().reshape(-1).tolist()
+        # return torch.mean(torch.stack([code_embedding, desc_embedding]), dim=0).detach().numpy().reshape(-1).tolist()
+        return desc_embedding.detach().numpy().reshape(-1).tolist()
         
     
     def cluster(self, data: dict, classes: list[str]) -> dict:

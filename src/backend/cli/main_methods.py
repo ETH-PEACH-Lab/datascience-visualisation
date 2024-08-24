@@ -52,7 +52,8 @@ def classify_notebooks(notebook_jsons: list[dict], file_names: list[str]) -> dic
             notebook = {}
             notebook["cells"] = sorted(classified_cells, key=lambda x: (x['class'], x['cell_id']))
             notebook["notebook_id"] = notebook_id
-            notebook["notebook_name"] = file_names[notebook_id]
+            notebook["notebook_name"] = file_names[notebook_id].split('_')[-1]
+            notebook["user"] = file_names[notebook_id].split('_')[0]
             final_json['notebooks'].append(notebook)
             
     return final_json

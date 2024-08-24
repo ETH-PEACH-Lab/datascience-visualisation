@@ -1,4 +1,4 @@
-# jupyterlab_apod
+# cluster_Viz
 
 [![Github Actions Status](/workflows/Build/badge.svg)](/actions/workflows/build.yml)
 
@@ -16,7 +16,7 @@
 To install the extension, execute:
 
 ```bash
-pip install jupyterlab_apod
+pip install cluster_viz
 ```
 
 ## Uninstall
@@ -24,7 +24,7 @@ pip install jupyterlab_apod
 To remove the extension, execute:
 
 ```bash
-pip uninstall jupyterlab_apod
+pip uninstall cluster_viz
 ```
 
 ## Contributing
@@ -39,7 +39,7 @@ The `jlpm` command is JupyterLab's pinned version of
 
 ```bash
 # Clone the repo to your local environment
-# Change directory to the jupyterlab_apod directory
+# Change directory to the cluster_viz directory
 # Install package in development mode
 pip install -e "."
 # Link your development version of the extension with JupyterLab
@@ -68,12 +68,12 @@ jupyter lab build --minimize=False
 ### Development uninstall
 
 ```bash
-pip uninstall jupyterlab_apod
+pip uninstall cluster_viz
 ```
 
 In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
-folder is located. Then you can remove the symlink named `jupyterlab_apod` within that folder.
+folder is located. Then you can remove the symlink named `cluster_viz` within that folder.
 
 ### Testing the extension
 

@@ -3,8 +3,9 @@ requires = ["hatchling>=1.5.0", "jupyterlab>=4.0.0,<5", "hatch-nodejs-version>=0
 build-backend = "hatchling.build"
 
 [project]
-name = "jupyterlab_apod"
+name = "cluster_viz"
 readme = "README.md"
+homepage = "https://github.com/ETH-PEACH-Lab/datascience-visualisation"  # Add your repository or website URL here
 license = { file = "LICENSE" }
 requires-python = ">=3.8"
 classifiers = [
@@ -33,24 +34,24 @@ source = "nodejs"
 fields = ["description", "authors", "urls"]
 
 [tool.hatch.build.targets.sdist]
-artifacts = ["jupyterlab_apod/labextension"]
+artifacts = ["cluster_viz/labextension"]
 exclude = [".github", "binder"]
 
 [tool.hatch.build.targets.wheel.shared-data]
-"jupyterlab_apod/labextension" = "share/jupyter/labextensions/jupyterlab_apod"
-"install.json" = "share/jupyter/labextensions/jupyterlab_apod/install.json"
+"cluster_viz/labextension" = "share/jupyter/labextensions/cluster_viz"
+"install.json" = "share/jupyter/labextensions/cluster_viz/install.json"
 
 [tool.hatch.build.hooks.version]
-path = "jupyterlab_apod/_version.py"
+path = "cluster_viz/_version.py"
 
 [tool.hatch.build.hooks.jupyter-builder]
 dependencies = ["hatch-jupyter-builder>=0.5"]
 build-function = "hatch_jupyter_builder.npm_builder"
 ensured-targets = [
-    "jupyterlab_apod/labextension/static/style.js",
-    "jupyterlab_apod/labextension/package.json",
+    "cluster_viz/labextension/static/style.js",
+    "cluster_viz/labextension/package.json",
 ]
-skip-if-exists = ["jupyterlab_apod/labextension/static/style.js"]
+skip-if-exists = ["cluster_viz/labextension/static/style.js"]
 
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 build_cmd = "build:prod"
@@ -60,7 +61,7 @@ npm = ["jlpm"]
 build_cmd = "install:extension"
 npm = ["jlpm"]
 source_dir = "src"
-build_dir = "jupyterlab_apod/labextension"
+build_dir = "cluster_viz/labextension"
 
 [tool.jupyter-releaser.options]
 version_cmd = "hatch version"
