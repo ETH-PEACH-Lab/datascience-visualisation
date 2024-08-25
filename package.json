@@ -159,19 +159,7 @@
             "@typescript-eslint"
         ],
         "rules": {
-            "@typescript-eslint/naming-convention": [
-                "error",
-                {
-                    "selector": "interface",
-                    "format": [
-                        "PascalCase"
-                    ],
-                    "custom": {
-                        "regex": "^I[A-Z]",
-                        "match": true
-                    }
-                }
-            ],
+            "@typescript-eslint/naming-convention": "off",
             "@typescript-eslint/no-unused-vars": [
                 "warn",
                 {
