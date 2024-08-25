@@ -51,7 +51,16 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
 
   const totalCells = cells.length; // Total number of cells within the class
 
-
+  const selectedCells = (clusterNames: string[]) => {
+    return clusterNames.flatMap((clusterName) =>
+      clusters[clusterName].map(cell => ({ clusterName, cell }))
+    ).sort((a, b) => {
+      if (a.cell.notebook_id === b.cell.notebook_id) {
+        return a.cell.cell_id - b.cell.cell_id;
+      }
+      return a.cell.notebook_id - b.cell.notebook_id;
+    });
+  };
   const handleClusterClick = (clusterName: string) => {
     setOpenClusters((prev) =>
       prev.includes(clusterName) ? prev.filter((name) => name !== clusterName) : [...prev, clusterName]
@@ -60,7 +69,6 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
 
   const handleIdentifierClick = (clusterIdentifier: string) => {
     const cluster = clusterIdentifiers.find(ci => ci.identifier === clusterIdentifier);
-    console.log(cluster);
     if (cluster) {
       setOpenClusters([cluster.name as string]);
     }
@@ -99,23 +107,22 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
             ))}
           </div>
           <div className="cluster-cells-container">
-            {openClusters.map((clusterName) =>
-              clusters[clusterName]?.map((cell) => (
+            {selectedCells(openClusters)?.map((cell) => (
                 <div
-                  key={`${cell.notebook_id}-${cell.cell_id}`}
+                  key={`${cell.cell.notebook_id}-${cell.cell.cell_id}`}
                   className="cell-container"
                   style={{ borderColor: colorScheme[className] }}
                 >
                   <CodeCell
-                    code={cell.code}
-                    clusterLabel={clusterIdentifiers.find(c => c.name === clusterName)?.identifier || ''}
-                    notebook_id={cell.notebook_id} // Pass the notebook ID
+                    code={cell.cell.code}
+                    clusterLabel={clusterIdentifiers.find(c => c.name === cell.clusterName)?.identifier || ''}
+                    notebook_id={cell.cell.notebook_id} // Pass the notebook ID
                     onSelectNotebook={onSelectNotebook} // Pass the function to CodeCell
                     setCurrentCluster={handleIdentifierClick}
                   />
                 </div>
               ))
-            )}
+            }
           </div>
         </div>
       )}
