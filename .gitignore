@@ -130,3 +130,5 @@ dmypy.json
 
 out.txt
 /secrets/
+
+jupyterlab_apod
