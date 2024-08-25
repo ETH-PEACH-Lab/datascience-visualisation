@@ -39,7 +39,7 @@
     flex-grow: 1;
   }
   
-  .cluster-label {
+  .cluster-label-button {
     width: 20px;
     height: 20px;
     display: inline-flex;
@@ -50,5 +50,18 @@
     font-weight: bold;
     color: #000;
     margin-left: 10px;
+    border: none; /* Remove default button border */
+    cursor: pointer; /* Change cursor to pointer on hover */
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
+  }
+  
+  .cluster-label-button:hover {
+    background-color: #a0a0a0; /* Darker background on hover */
+    transform: scale(1.1); /* Slightly enlarge on hover */
+  }
+  
+  .cluster-label-button:active {
+    background-color: #808080; /* Even darker background on click */
+    transform: scale(1); /* Return to normal size on click */
   }
   

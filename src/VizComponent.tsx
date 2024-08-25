@@ -51,15 +51,19 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
 
   const totalCells = cells.length; // Total number of cells within the class
 
-  // Filter openClusters to remove clusters that no longer exist
-  // useEffect(() => {
-  //   setOpenClusters((prev) => prev.filter(clusterName => clusters[clusterName] && clusters[clusterName].length > 0));
-  // }, [clusters]);
 
   const handleClusterClick = (clusterName: string) => {
     setOpenClusters((prev) =>
       prev.includes(clusterName) ? prev.filter((name) => name !== clusterName) : [...prev, clusterName]
     );
+  };
+
+  const handleIdentifierClick = (clusterIdentifier: string) => {
+    const cluster = clusterIdentifiers.find(ci => ci.identifier === clusterIdentifier);
+    console.log(cluster);
+    if (cluster) {
+      setOpenClusters([cluster.name as string]);
+    }
   };
 
   // Generate identifiers (A, B, C, etc.) for each cluster
@@ -107,6 +111,7 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
                     clusterLabel={clusterIdentifiers.find(c => c.name === clusterName)?.identifier || ''}
                     notebook_id={cell.notebook_id} // Pass the notebook ID
                     onSelectNotebook={onSelectNotebook} // Pass the function to CodeCell
+                    setCurrentCluster={handleIdentifierClick}
                   />
                 </div>
               ))
