@@ -179,7 +179,7 @@ class Flowchart extends Component<Props, State> {
 
     const nodes: ClusterNode[] = [];
     const links: ClusterLink[] = [];
-    const circleRadius = 25;  // Set the circle radius here
+    const circleRadius = 15;  // Set the circle radius here
     const arrowheadSize = 6; // Adjust this to the size of the arrowhead
     let yCounter = 0;
 
@@ -253,7 +253,7 @@ class Flowchart extends Component<Props, State> {
         const words = d.cluster.split(' ');  // Split cluster name into words
         let tspan = d3.select(this).append('tspan')
           .attr('x', d.x)
-          .attr('y', d.y)
+          .attr('y', d.y + circleRadius + 10)
           .attr('dy', -2);  // Start at the correct vertical position
 
         for (let i = 0; i < words.length; i += 3) {
