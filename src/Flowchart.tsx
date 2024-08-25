@@ -203,7 +203,7 @@ class Flowchart extends Component<Props, State> {
             id: nodes.length + 1,
             cluster: cells[i].cluster,
             class: cls,
-            x: 50 + clusterSet.size * 150,  // Horizontally position nodes with the same class next to each other
+            x: -50 + clusterSet.size * 150,  // Horizontally position nodes with the same class next to each other
             y: 100 + yCounter * 150,  // Vertically space classes
             cell_id: cells[i].cell_id,
             notebook_id: cells[i].notebook_id,  // Add notebook_id to the node
