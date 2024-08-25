@@ -146,13 +146,26 @@ class Flowchart extends Component<Props, State> {
         const source = nodes.find(node => node.id === d.source);
         const target = nodes.find(node => node.id === d.target);
         if (source && target) {
+          const isDirectNeighbor = nodes.indexOf(source) === nodes.indexOf(target) - 1;
           const midX = (source.x + target.x) / 2;
           const midY = (source.y + target.y) / 2;
-          return lineGenerator([
-            [source.x, source.y + nodeHeight / 2],
-            [midX - nodeWidth / 2, midY],
-            [target.x, target.y + nodeHeight / 2]
-          ] as [number, number][]);
+          const distanceY = Math.abs(target.y - source.y); // Calculate the vertical distance between nodes
+
+          if (isDirectNeighbor) {
+            // Draw the link on the left (curved leftwards)
+            return lineGenerator([
+              [source.x, source.y + nodeHeight / 2],
+              [midX - nodeWidth / 2, midY + nodeHeight / 2],
+              [target.x, target.y + nodeHeight / 2]
+            ] as [number, number][]);
+          } else {
+            // Draw the link on the right (curved rightwards)
+            return lineGenerator([
+              [source.x + nodeWidth, source.y + nodeHeight / 2],
+              [midX + nodeWidth + distanceY / 4, midY], // Shift control point rightwards
+              [target.x + nodeWidth, target.y + nodeHeight / 2]
+            ] as [number, number][]);
+          }
         }
         return '';
       })
@@ -164,8 +177,8 @@ class Flowchart extends Component<Props, State> {
     const height = nodeCounter * 100 + 50;  // Based on number of nodes
 
     return { width, height };
-
   }
+
 
   drawClusterChart = () => {
     const { selectedCells } = this.state;
@@ -179,7 +192,7 @@ class Flowchart extends Component<Props, State> {
 
     const nodes: ClusterNode[] = [];
     const links: ClusterLink[] = [];
-    const circleRadius = 25;  // Set the circle radius here
+    const circleRadius = 15;  // Set the circle radius here
     const arrowheadSize = 6; // Adjust this to the size of the arrowhead
     let yCounter = 0;
 
@@ -253,7 +266,7 @@ class Flowchart extends Component<Props, State> {
         const words = d.cluster.split(' ');  // Split cluster name into words
         let tspan = d3.select(this).append('tspan')
           .attr('x', d.x)
-          .attr('y', d.y)
+          .attr('y', d.y + circleRadius + 10)
           .attr('dy', -2);  // Start at the correct vertical position
 
         for (let i = 0; i < words.length; i += 3) {
@@ -322,10 +335,10 @@ class Flowchart extends Component<Props, State> {
       .attr('fill', '#666')
       .style('stroke', 'none');
 
-      const width = Math.max(...nodes.map(node => node.x)) + circleRadius * 2 + 50;  // Plus padding
-      const height = yCounter * 150 + circleRadius * 2 + 50;  // Based on number of classes
-    
-      return { width, height };
+    const width = Math.max(...nodes.map(node => node.x)) + circleRadius * 2 + 50;  // Plus padding
+    const height = yCounter * 150 + circleRadius * 2 + 50;  // Based on number of classes
+
+    return { width, height };
   }
 
   drawChart() {
@@ -334,22 +347,22 @@ class Flowchart extends Component<Props, State> {
     if (selectedCells.length === 0) {
       return;
     }
-  
+
     let dimensions: { width: number, height: number };
-  
+
     if (selectedCells.length > 100) {
       dimensions = this.drawClassChart();
     } else {
       dimensions = this.drawClusterChart();
     }
-  
+
     const svg = this.svgRef.current;
     if (svg) {
       svg.setAttribute("width", dimensions.width.toString());
       svg.setAttribute("height", dimensions.height.toString());
     }
   }
-  
+
 
   render() {
     return (
