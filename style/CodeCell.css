@@ -1,67 +1,73 @@
-/* CodeCell.css */
 .code-cell-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #fff;
-    position: relative;
-  }
-  
-  .notebook-id-button {
-    width: 60px;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f0f0f0;
-    border-radius: 5px;
-    font-weight: bold;
-    color: #000;
-    margin-right: 10px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.1s;
-  }
-  
-  .notebook-id-button:hover {
-    background-color: #e0e0e0; /* Slightly darker on hover */
-  }
-  
-  .notebook-id-button:active {
-    background-color: #d0d0d0; /* Even darker when clicked */
-    transform: scale(0.95);    /* Slightly shrink the button on click */
-  }
-  
-  
-  .code-editor {
-    flex-grow: 1;
-  }
-  
-  .cluster-label-button {
-    width: 20px;
-    height: 20px;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #c0c0c0;
-    border-radius: 50%;
-    font-weight: bold;
-    color: #000;
-    margin-left: 10px;
-    border: none; /* Remove default button border */
-    cursor: pointer; /* Change cursor to pointer on hover */
-    transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
-  }
-  
-  .cluster-label-button:hover {
-    background-color: #a0a0a0; /* Darker background on hover */
-    transform: scale(1.1); /* Slightly enlarge on hover */
-  }
-  
-  .cluster-label-button:active {
-    background-color: #808080; /* Even darker background on click */
-    transform: scale(1); /* Return to normal size on click */
-  }
-  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  position: relative;
+  overflow-x: auto; /* Allow horizontal overflow */
+  white-space: nowrap; /* Prevent text from wrapping */
+}
+
+.notebook-id-button {
+  width: 60px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  font-weight: bold;
+  color: #000;
+  margin-right: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.notebook-id-button:hover {
+  background-color: #e0e0e0; /* Slightly darker on hover */
+}
+
+.notebook-id-button:active {
+  background-color: #d0d0d0; /* Even darker when clicked */
+  transform: scale(0.95);    /* Slightly shrink the button on click */
+}
+
+.code-editor {
+  flex-grow: 1;
+  min-width: 0; /* Allow the editor to shrink as needed */
+  overflow-x: auto; /* Allow horizontal scrolling in the editor */
+  white-space: pre; /* Preserve whitespace and line breaks */
+}
+
+.cluster-label-button {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #c0c0c0;
+  border-radius: 50%;
+  font-weight: bold;
+  color: #000;
+  margin-left: 10px;
+  border: none; /* Remove default button border */
+  cursor: pointer; /* Change cursor to pointer on hover */
+  transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
+  flex-shrink: 0; /* Prevent shrinking */
+  position: sticky; /* Stick to the container's right edge */
+  right: 0; /* Stick to the right */
+}
+
+.cluster-label-button:hover {
+  background-color: #a0a0a0; /* Darker background on hover */
+  transform: scale(1.1); /* Slightly enlarge on hover */
+}
+
+.cluster-label-button:active {
+  background-color: #808080; /* Even darker background on click */
+  transform: scale(1); /* Return to normal size on click */
+}
