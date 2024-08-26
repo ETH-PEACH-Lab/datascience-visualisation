@@ -6,20 +6,12 @@ import re
 from tqdm import tqdm
 
 class TitleGenerator:
-    def __init__(self, api_key: str = None):
+    def __init__(self):
         self.client = OpenAI()
-        prompt = """You are given a set of descriptions for multiple code snippets of the a same cluster. 
-        Generate a title for the cluster based on the descriptions, in 6 words maximum. Mention only explicitly the name of the technologies used.
-        Desired format:
-        Title: <generated_title>"""
-        self.messages = [
-            {
-                "role": "system", 
-                "content": prompt
-            },
-        ]
+        self.messages = []
         
-    def generate_titles_from_descs(self, clusters, descriptions):
+    def generate_titles_from_descs(self, clusters, descriptions, class_name):
+        self._init_prompt(class_name)
         unique_clusters = set(clusters)
         cluster_titles = {}
         
@@ -32,8 +24,13 @@ class TitleGenerator:
                 "role": "user",
                 "content": cluster_descriptions_str
             })
-            title = self._gen_title(messages)
-            cluster_titles[str(cluster)] = title
+            title, short_title = self._gen_title(messages)
+            messages.append({
+                "role": "assistant",
+                "content": title
+            })
+            cluster_titles[str(cluster)] = [short_title, title]
+        print(cluster_titles)
         return cluster_titles
 
     
@@ -61,6 +58,25 @@ class TitleGenerator:
     ########### Private methods ###########
     #######################################
     
+    def _init_prompt(self, class_name):
+        prompt = f"""You are given a set of descriptions for multiple code snippets of a same cluster. 
+        The snipets are classified as {class_name}.
+        Generate a title for the cluster based on the descriptions, as short as possible, in 6 words maximum.
+        Be very specific and explicit about the technologies used. Don't repeat the class label in the title.
+        Don't repeat word choices between titles !
+        Also generate a shorter title in 3 words maximum.
+        Desired format:
+        Title: <generated_title>
+        Short Title: <short_title>
+        """
+        
+        self.messages = [
+            {
+                "role": "system", 
+                "content": prompt
+            },
+        ]
+    
     def _compute_centroid(self, embeddings):
         return np.mean(embeddings, axis=0)
     
@@ -83,6 +99,7 @@ class TitleGenerator:
             str: The predicted label.
         """
         title = None
+        short_title = None
         while not title:   
             # TODO: add timeout mechanism 
             chat_completion = self.client.chat.completions.create(
@@ -92,11 +109,12 @@ class TitleGenerator:
             response = chat_completion.choices[0].message.content
             
             title_generated = False
-            match = re.search(r"Title: (.+)", response)
+            match = re.search(r"Title: (.+)\nShort Title: (.+)", response)
             
             if match: 
                 title = match.group(1)
+                short_title = match.group(2)
                 title_generated = True
 
             if verbose and not title_generated: print(f"[ERROR] Response title invalid:\n{response}\n\nRetrying...", end="\r")
-        return title
+        return title, short_title

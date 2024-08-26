@@ -79,12 +79,14 @@ class ClassCluster():
             print(f"Class {class_name}: {len(class_cells)} cells")
             
             labels = []
+            print("clustering")
             if len(class_cells) < 10:
                 labels = [-1] * len(class_cells)
             else:
                 labels = self.cluster_class(class_cells)
             embeddings = [cell["embedding"] for cell in class_cells]
             descs = [cell["desc"] for cell in class_cells]
+            print("evaluating")
             sil_score, ch_index, db_index = self._evaluate_clustering_accuracy(embeddings, labels)
             
             clusters[class_name] = {str(i): "" for i in set(labels)}
@@ -93,9 +95,9 @@ class ClassCluster():
                 notebook_idx = cell["notebook_idx"]
                 cell_idx = cell["index"]
                 data["notebooks"][notebook_idx]["cells"][cell_idx]["cluster"] = int(labels[i])
-            
+            print("generating title")
             descriptions_per_cluster[class_name] = {
-                "titles": self.title_generator.generate_titles_from_descs(labels, descs),
+                "titles": self.title_generator.generate_titles_from_descs(labels, descs, class_name),
                 "accuracy": {
                     "silhouette_score": sil_score,
                     "ch_index": ch_index,
@@ -118,7 +120,7 @@ class ClassCluster():
         embeddings = np.array([cell["embedding"] for cell in cells])
         
         # Dimension reduction
-        tsne = TSNE(n_components=2, perplexity=30, max_iter=3000)
+        tsne = TSNE(n_components=2, perplexity=min(30, len(cells)-1), max_iter=3000)
         reduced_embeddings = tsne.fit_transform(embeddings)
         
         # Clustering all reduced embeddings
@@ -128,8 +130,12 @@ class ClassCluster():
         # Reclustering outliers only
         outlier_idx = np.where(labels == -1)[0]
         outliers = reduced_embeddings[outlier_idx]
-        self.clusterer.fit(outliers)
-        outlier_labels = self.clusterer.labels_
+        outlier_labels = []
+        if len(outliers) > 5:
+            self.clusterer.fit(outliers)
+            outlier_labels = self.clusterer.labels_
+        else:
+            outlier_labels = [-1] * len(outliers)
         
         # Relabel clustererd outliers
         max_cluster = max(labels)+1
