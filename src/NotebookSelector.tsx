@@ -3,11 +3,12 @@ import '../style/notebookSelector.css';
 
 interface NotebookSelectorProps {
   notebookIds: number[];
+  notebookNames: string[];
   onSelectionChange: (selectedIds: number[]) => void;
   selectedNotebooks: number[];
 }
 
-const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, onSelectionChange, selectedNotebooks }) => {
+const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, notebookNames, onSelectionChange, selectedNotebooks }) => {
   const [selectedValue, setSelectedValue] = useState<string>('');
 
 
@@ -21,7 +22,7 @@ const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, onSele
   };
 
   const handleAddNotebook = () => {
-    const notebookId = selectedValue === "ALL" ? -2 : Number(selectedValue);
+    const notebookId = selectedValue === "All Notebooks" ? -2 : parseInt(selectedValue.match(/\d+/)?.[0] || '', 10);
     console.log('Current notebook IDs:', selectedNotebooks);
     if (notebookId === -2) {
       onSelectionChange([-2]); // If "ALL" is selected, clear other selections and set "ALL"
@@ -38,7 +39,7 @@ const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, onSele
       <div className="selected-elements" id="selected-elements">
         {selectedNotebooks.map(notebookId => (
           <div key={notebookId} className="element">
-            {notebookId === -2 ? "ALL" : notebookId}
+            {notebookId === -2 ? "All Notebooks" : "Notebook " + notebookId + ": " + notebookNames[notebookIds.indexOf(notebookId)]}
             <button className="remove-button" onClick={() => handleRemoveNotebook(notebookId)}>Remove</button>
           </div>
         ))}
@@ -50,12 +51,12 @@ const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, onSele
         className="element-selector"
         value={selectedValue}
         onChange={(e) => setSelectedValue(e.target.value)}
-        placeholder="Select notebook ID"
+        placeholder="Select notebook"
       />
       <datalist id="elements">
         {notebookIds.map(id => (
-          <option key={id} value={id === -2 ? "ALL" : id}>
-            {id === -2 ? "ALL" : id}
+          <option key={id} value={id === -2 ? "All Notebooks" : "Notebook " + id}>
+            {id === -2 ? "ALL" : notebookNames[notebookIds.indexOf(id)]}
           </option>
         ))}
       </datalist>

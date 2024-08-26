@@ -54,7 +54,7 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
           return;
         }
 
-        let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [] };
+        let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [], notebook_name: 'Unassigned' };
 
         jsonData.notebooks.forEach(notebook => {
           notebook.cells.forEach(cell => {
@@ -115,7 +115,7 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
     });
   });
 
-  let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [] };
+  let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [], notebook_name: 'Unassigned' };
 
   jsonData.notebooks.forEach(notebook => {
     notebook.cells.forEach(cell => {
@@ -141,6 +141,7 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
     <div style={{ height: '100%', overflowY: 'auto' }}>
       <NotebookSelector
         notebookIds={jsonData.notebooks.map(notebook => notebook.notebook_id)}
+        notebookNames={jsonData.notebooks.map(notebook => notebook.notebook_name)}
         selectedNotebooks={selectedNotebookIds}
         onSelectionChange={handleNotebookSelection}
       />
