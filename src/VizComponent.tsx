@@ -47,14 +47,14 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
     if (!acc[cell.cluster]) {
       acc[cell.cluster] = [];
     }
-    acc[cell.cluster].push(cell);
+    acc[cell.cluster].push(cell); 
     return acc;
   }, {} as { [key: string]: NotebookCellWithID[] });
 
   const totalCells = cells.length; // Total number of cells within the class
 
   const selectedCells = (clusterNames: string[]) => {
-    return clusterNames.flatMap((clusterName) =>
+    return clusterNames.filter(c => c in clusters).flatMap((clusterName) =>
       clusters[clusterName].map(cell => ({ clusterName, cell }))
     ).sort((a, b) => {
       if (a.cell.notebook_id === b.cell.notebook_id) {
@@ -63,6 +63,7 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
       return a.cell.notebook_id - b.cell.notebook_id;
     });
   };
+
   const handleClusterClick = (clusterName: string) => {
     setOpenClusters((prev) =>
       prev.includes(clusterName) ? prev.filter((name) => name !== clusterName) : [...prev, clusterName]
