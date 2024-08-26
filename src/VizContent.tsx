@@ -81,7 +81,7 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
             }))
           );
 
-        flowchartWidget.updateGraph(selectedCells);
+        flowchartWidget.updateGraph(selectedCells, selectedNotebookIds.includes(-2));
       }
     }
   }, [isReady, selectedNotebookIds, context, flowchartWidget]);
