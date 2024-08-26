@@ -35,7 +35,7 @@ def load_notebooks(notebooks_dir: str, verbose: bool = False) -> tuple[List[dict
     for file in tqdm(files, desc="Reading file contents"):
         file_path = os.path.join(notebooks_dir, file)
         
-        if os.path.isfile(file_path) and file.endswith(".ipynb") and len(file.split("_")) == 2:
+        if os.path.isfile(file_path) and file.endswith(".ipynb"):# and len(file.split("_")) == 2:
             notebook_json = load_notebook(file_path)
             if len([cell for cell in notebook_json['cells'] if cell['cell_type'] == 'code']) >= 15:
                 notebook_jsons.append(notebook_json)

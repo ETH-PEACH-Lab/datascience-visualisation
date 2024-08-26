@@ -21,7 +21,8 @@ def main():
         print("Usage: python jupytergrader.py <notebook_directory>")
         return
     input_directory = sys.argv[1]
-    output_filepath = '../../react_notebooks/final_file.viz'
+    final_filename = input_directory.split("/")[-1]
+    output_filepath = f'../../react_notebooks/{final_filename}.viz'
 
     if not os.path.isdir(input_directory):
         print("Input directory does not exist.")

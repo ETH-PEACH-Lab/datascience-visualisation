@@ -118,24 +118,27 @@ class ClassCluster():
         embeddings = np.array([cell["embedding"] for cell in cells])
         
         # Dimension reduction
-        tsne = TSNE(n_components=2, perplexity=30, max_iter=3000)
+        tsne = TSNE(n_components=2, perplexity=min(len(embeddings)-1, 30), max_iter=3000)
         reduced_embeddings = tsne.fit_transform(embeddings)
         
         # Clustering all reduced embeddings
-        self.clusterer.fit(reduced_embeddings)
-        labels = self.clusterer.labels_
-        
-        # Reclustering outliers only
-        outlier_idx = np.where(labels == -1)[0]
-        outliers = reduced_embeddings[outlier_idx]
-        self.clusterer.fit(outliers)
-        outlier_labels = self.clusterer.labels_
-        
-        # Relabel clustererd outliers
-        max_cluster = max(labels)+1
-        for i, idx in enumerate(outlier_idx):
-            if outlier_labels[i] != -1:
-                labels[idx] = max_cluster + outlier_labels[i]
+        labels = []
+        if len(reduced_embeddings):
+            self.clusterer.fit(reduced_embeddings)
+            labels = self.clusterer.labels_
+            
+            # Reclustering outliers only
+            outlier_idx = np.where(labels == -1)[0]
+            outliers = reduced_embeddings[outlier_idx]
+            if len(outliers):
+                self.clusterer.fit(outliers)
+                outlier_labels = self.clusterer.labels_
+                
+                # Relabel clustererd outliers
+                max_cluster = max(labels)+1
+                for i, idx in enumerate(outlier_idx):
+                    if outlier_labels[i] != -1:
+                        labels[idx] = max_cluster + outlier_labels[i]
         
         return labels
     
