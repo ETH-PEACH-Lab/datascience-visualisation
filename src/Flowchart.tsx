@@ -33,7 +33,12 @@ interface ClusterLink {
 }
 
 
-interface Props { }
+interface Props { 
+  handleClusterClick?: ((cluster: string) => void);
+  handleClassClick?: ((cls: string) => void);
+  selectedClusters?: string[];
+  seletedClasses?: string[];
+}
 
 interface State {
   selectedCells: NotebookCellWithID[];
@@ -123,7 +128,14 @@ class Flowchart extends Component<Props, State> {
       .attr('height', nodeHeight)
       .attr('rx', 10)
       .attr('ry', 10)
-      .attr('fill', d => colorScheme[d.id] || '#69b3a2'); // Replace with your color logic
+      .attr('fill', d => colorScheme[d.id] || '#69b3a2')
+      .on('click', d => {
+        const cls = d.target.__data__.id;
+        if (this.props.handleClassClick) {
+          this.props.handleClassClick(cls);
+        }
+      }
+      );
 
     svg.selectAll('text')
       .data(nodes)
@@ -249,7 +261,14 @@ class Flowchart extends Component<Props, State> {
       .attr('cx', d => d.x)
       .attr('cy', d => d.y)
       .attr('r', circleRadius)
-      .attr('fill', d => colorScheme[d.class] || '#69b3a2');  // Use color scheme based on class
+      .attr('fill', d => colorScheme[d.class] || '#69b3a2')
+      .on('click', d => {
+        const clstr = d.target.__data__.cluster;
+        if (this.props.handleClusterClick) {
+          this.props.handleClusterClick(clstr);
+        }
+      }
+      );
 
     // Draw text labels (cluster names)
     svg.selectAll('text')
@@ -373,6 +392,8 @@ class Flowchart extends Component<Props, State> {
 
 export class FlowchartWidget extends ReactWidget {
   graph: React.RefObject<Flowchart>;
+  handleClusterClick: ((cluster: string) => void) | undefined;
+  handleClassClick: ((cls: string) => void) | undefined;
 
   constructor() {
     super();
@@ -384,10 +405,16 @@ export class FlowchartWidget extends ReactWidget {
     this.graph.current?.updateSelectedCells(selectedCells);
   }
 
+  public addProps(handleClusterClick: (cluster: string) => void, handleClassClick: (cls: string) => void): void {
+    this.handleClusterClick = handleClusterClick;
+    this.handleClassClick = handleClassClick;
+    this.update();
+  }
+
   render(): JSX.Element {
     return (
       <div className="flowchart-widget">
-        <Flowchart ref={this.graph} />
+        <Flowchart ref={this.graph} handleClassClick={this.handleClassClick} handleClusterClick={this.handleClusterClick}/>
       </div>
     );
   }

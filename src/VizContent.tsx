@@ -20,6 +20,7 @@ interface VizContentProps {
 const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => {
   const [selectedNotebookIds, setSelectedNotebookIds] = useState<number[]>([-2]);
   const [isReady, setIsReady] = useState<boolean>(context.isReady);
+  const [selectedClusters, setSelectedClusters] = useState<string[]>([]);
 
   useEffect(() => {
     if (!context.isReady) {
@@ -30,6 +31,23 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
       setIsReady(true);
     }
   }, [context]);
+
+  // Function to handle Class selection
+  const handleClassSelection = (selectedClass: string) => {
+    console.log("Selected class", selectedClass);
+  };
+
+  // Function to handle cluster selection
+  const handleClusterSelection = (selectedCluster: string) => {
+    if(selectedClusters.includes(selectedCluster)) {
+      setSelectedClusters(selectedClusters.filter(cluster => cluster !== selectedCluster));
+    }
+    else {
+      setSelectedClusters([...selectedClusters, selectedCluster]);
+    }
+  };
+
+  flowchartWidget.addProps(handleClusterSelection, handleClassSelection);
 
   // Function to handle notebook selection
   const handleNotebookSelection = useCallback((selectedIds: number[]) => {
@@ -147,6 +165,8 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
       <VizComponent
         data={{ notebooks: selectedNotebooks }}
         onSelectNotebook={handleNotebookSelection}
+        selectedClusters={selectedClusters}
+        setSelectedClusters={setSelectedClusters}
       />
     </div>
   );

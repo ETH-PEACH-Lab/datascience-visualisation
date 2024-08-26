@@ -45,7 +45,7 @@ const extension: JupyterFrontEndPlugin<void> = {
       preferKernel: false
     },
     flowchartWidget);
-
+    
     app.docRegistry.addWidgetFactory(factory);
 
     // Use the widget factory to create a new widget

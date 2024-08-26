@@ -32,11 +32,12 @@ interface GroupedCellsProps {
   className: string;
   cells: NotebookCellWithID[];
   onSelectNotebook: (notebookIds: [number]) => void;
+  selectedClusters: string[];
+  setSelectedClusters: (clusters: string[]) => void;
 }
 
-const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectNotebook }) => {
+const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectNotebook, selectedClusters, setSelectedClusters }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const [openClusters, setOpenClusters] = useState<string[]>([]); // Manage multiple open clusters
 
   const toggleOpen = () => setIsOpen(!isOpen);
 
@@ -53,7 +54,7 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
 
   const selectedCells = (clusterNames: string[]) => {
     return clusterNames.flatMap((clusterName) =>
-      clusters[clusterName].map(cell => ({ clusterName, cell }))
+      clusters[clusterName]?.map(cell => ({ clusterName, cell }))
     ).sort((a, b) => {
       if (a.cell.notebook_id === b.cell.notebook_id) {
         return a.cell.cell_id - b.cell.cell_id;
@@ -61,16 +62,20 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
       return a.cell.notebook_id - b.cell.notebook_id;
     });
   };
+
   const handleClusterClick = (clusterName: string) => {
-    setOpenClusters((prev) =>
-      prev.includes(clusterName) ? prev.filter((name) => name !== clusterName) : [...prev, clusterName]
-    );
+    if(selectedClusters.includes(clusterName)) {
+      setSelectedClusters(selectedClusters.filter(cluster => cluster !== clusterName));
+    }
+    else {
+      setSelectedClusters([...selectedClusters, clusterName]);
+    }
   };
 
   const handleIdentifierClick = (clusterIdentifier: string) => {
     const cluster = clusterIdentifiers.find(ci => ci.identifier === clusterIdentifier);
     if (cluster) {
-      setOpenClusters([cluster.name as string]);
+      setSelectedClusters([cluster.name as string]);
     }
   };
 
@@ -98,7 +103,7 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
             {clusterIdentifiers.map(({ name, identifier }) => (
               <button
                 key={name}
-                className={`cluster-button ${openClusters.includes(name) ? 'active' : ''}`}
+                className={`cluster-button ${selectedClusters.includes(name) ? 'active' : ''}`}
                 onClick={() => handleClusterClick(name)}
               >
                 <span className="cluster-identifier">{identifier}</span> {/* Identifier (A, B, C) */}
@@ -107,7 +112,7 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
             ))}
           </div>
           <div className="cluster-cells-container">
-            {selectedCells(openClusters)?.map((cell) => (
+            {selectedCells(selectedClusters)?.map((cell) => (
                 <div
                   key={`${cell.cell.notebook_id}-${cell.cell.cell_id}`}
                   className="cell-container"
@@ -130,7 +135,14 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
   );
 };
 
-const VizComponent: React.FC<{ data: VizData; onSelectNotebook: (notebookIds: [number]) => void }> = ({ data, onSelectNotebook }) => {
+interface VizComponentProps {
+  data: VizData;
+  onSelectNotebook: (notebookIds: [number]) => void;
+  selectedClusters: string[];
+  setSelectedClusters: (clusters: string[]) => void;
+}
+
+const VizComponent: React.FC<VizComponentProps> = ({data, onSelectNotebook, selectedClusters, setSelectedClusters}) => {
   if (!data.notebooks || !Array.isArray(data.notebooks)) {
     return <div>No valid notebook data found.</div>;
   }
@@ -167,6 +179,8 @@ const VizComponent: React.FC<{ data: VizData; onSelectNotebook: (notebookIds: [n
           className={className} 
           cells={cells} 
           onSelectNotebook={onSelectNotebook}
+          selectedClusters={selectedClusters}
+          setSelectedClusters={setSelectedClusters}
         />
       ))}
     </div>
