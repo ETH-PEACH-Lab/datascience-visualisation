@@ -106,6 +106,7 @@ class ClassCluster():
             }
                     
         data["metadata"]["clusters"] = descriptions_per_cluster
+        print(data["metadata"]["clusters"])
         return data
         
     def cluster_class(self, cells: list[dict]) -> list[int]:

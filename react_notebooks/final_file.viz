@@ -1,1 +1,1075 @@
-{"notebooks": [{"cells": [{"cell_id": 31, "code": "def Kaggle_submission(file_name,model,test_data,ids_list):\n    #if TARGET in test_data.columns:\n    #    test_data.drop([TARGET],axis=1,inplace=True)\n    #test_pred=model.predict(test_data)[:,1]\n    test_pred=model.predict(test_data)\n    predictions = []\n    predictions = oc.adjusted_classes(test_pred, 0.5)\n\n    submit=pd.DataFrame()\n    submit['id'] = ids_list\n    submit['target'] = predictions\n    submit.to_csv(file_name,index=False)\n    return submit", "class": "Data Export", "desc": "This code defines a function to generate a Kaggle submission file by predicting the target on test data using a given model, adjusting the predictions based on a threshold, and saving the results to a CSV file along with IDs.", "testing": {"class": "Data_Export", "subclass": "save_to_csv", "subclass_id": 25, "predicted_subclass_probability": 0.9981369}, "cluster": -1}, {"cell_id": 45, "code": "submit=pd.DataFrame()\nsubmit['id'] = test_df['id'].tolist()\nsubmit['target'] = test_pred_BERT_int", "class": "Data Export", "desc": "This code creates a new DataFrame for the Kaggle submission, populating it with the test data IDs and the predicted target values from the BERT model.", "testing": {"class": "Data_Transform", "subclass": "create_dataframe", "subclass_id": 12, "predicted_subclass_probability": 0.90852714}, "cluster": -1}, {"cell_id": 46, "code": "submit.to_csv('BERT_model_v3.csv',index=False)", "class": "Data Export", "desc": "This code saves the submission DataFrame to a CSV file named 'BERT_model_v3.csv' without including the index.", "testing": {"class": "Data_Export", "subclass": "save_to_csv", "subclass_id": 25, "predicted_subclass_probability": 0.9991627}, "cluster": -1}, {"cell_id": 47, "code": "submit.head(3)", "class": "Data Export", "desc": "This code displays the first three rows of the submission DataFrame to verify its contents using the `head` method from pandas.", "testing": {"class": "Exploratory_Data_Analysis", "subclass": "show_table", "subclass_id": 41, "predicted_subclass_probability": 0.9997651}, "cluster": -1}, {"cell_id": 2, "code": "train_df = pd.read_csv(\"/kaggle/input/nlp-getting-started/train.csv\")\ntest_df = pd.read_csv(\"/kaggle/input/nlp-getting-started/test.csv\")", "class": "Data Extraction", "desc": "This code reads training and testing data from CSV files located in a specified directory into pandas DataFrame objects.", "testing": {"class": "Data_Extraction", "subclass": "load_from_csv", "subclass_id": 45, "predicted_subclass_probability": 0.99975425}, "cluster": -1}, {"cell_id": 14, "code": "lst_stopwords = nltk.corpus.stopwords.words(\"english\")\n#lst_stopwords\n", "class": "Data Extraction", "desc": "This code retrieves the list of English stopwords from the NLTK corpus and stores it in the variable `lst_stopwords`.", "testing": {"class": "Data_Transform", "subclass": "string_transform", "subclass_id": 78, "predicted_subclass_probability": 0.9620199}, "cluster": -1}, {"cell_id": 6, "code": "def wordcount(x):\n    length = len(str(x).split())\n    return length\ndef charcount(x):\n    s = x.split()\n    x = ''.join(s)\n    return len(x)\n\ndef hashtag_count(x):\n    l = len([t for t in x.split() if t.startswith('#')])\n    return l\n\ndef mentions_count(x):\n    l = len([t for t in x.split() if t.startswith('@')])\n    return l\n\n\ntrain_df['char_count'] = train_df['text'].apply(lambda x: charcount(x))\ntrain_df['word_count'] = train_df['text'].apply(lambda x: wordcount(x))\ntrain_df['hashtag_count'] = train_df['text'].apply(lambda x: hashtag_count(x))\ntrain_df['mention_count'] = train_df['text'].apply(lambda x: mentions_count(x))\ntrain_df['length']=train_df['text'].apply(len)\n\ntest_df['char_count'] = test_df['text'].apply(lambda x: charcount(x))\ntest_df['word_count'] = test_df['text'].apply(lambda x: wordcount(x))\ntest_df['hashtag_count'] = test_df['text'].apply(lambda x: hashtag_count(x))\ntest_df['mention_count'] = test_df['text'].apply(lambda x: mentions_count(x))\ntest_df['length']=test_df['text'].apply(len)\n\ntrain_df.head(2)", "class": "Data Transform", "desc": "This code defines functions to calculate character count, word count, hashtag count, and mention count for text data, and then applies these functions to both training and testing DataFrames, adding the computed values as new columns. ", "testing": {"class": "Data_Transform", "subclass": "feature_engineering", "subclass_id": 8, "predicted_subclass_probability": 0.9946966}, "cluster": -1}, {"cell_id": 11, "code": "# Taken from - Craig Thomas https://www.kaggle.com/craigmthomas/logistic-regression-lightgbm-fe\ntrain_df.drop(\n    [\n        6449, 7034, 3589, 3591, 3597, 3600, 3603, 3604, 3610, 3613, 3614, 119, 106, 115,\n        2666, 2679, 1356, 7609, 3382, 1335, 2655, 2674, 1343, 4291, 4303, 1345, 48, 3374,\n        7600, 164, 5292, 2352, 4308, 4306, 4310, 1332, 1156, 7610, 2441, 2449, 2454, 2477,\n        2452, 2456, 3390, 7611, 6656, 1360, 5771, 4351, 5073, 4601, 5665, 7135, 5720, 5723,\n        5734, 1623, 7533, 7537, 7026, 4834, 4631, 3461, 6366, 6373, 6377, 6378, 6392, 2828,\n        2841, 1725, 3795, 1251, 7607\n    ], inplace=True\n)\n\ntrain_df.drop(\n    [\n        4290, 4299, 4312, 4221, 4239, 4244, 2830, 2831, 2832, 2833, 4597, 4605, 4618, 4232, 4235, 3240,\n        3243, 3248, 3251, 3261, 3266, 4285, 4305, 4313, 1214, 1365, 6614, 6616, 1197, 1331, 4379, 4381,\n        4284, 4286, 4292, 4304, 4309, 4318, 610, 624, 630, 634, 3985, 4013, 4019, 1221, 1349, 6091, 6094, \n        6103, 6123, 5620, 5641\n    ], inplace=True\n)", "class": "Data Transform", "desc": "This code removes specified rows from the training DataFrame by index using the `drop` method in pandas.", "testing": {"class": "Data_Transform", "subclass": "drop_column", "subclass_id": 10, "predicted_subclass_probability": 0.9402679}, "cluster": -1}, {"cell_id": 13, "code": "def preprocess_text(text, flg_stemm=False, flg_lemm=True, lst_stopwords=None):\n    \n    text = re.sub(r'[^\\w\\s]', '', str(text).lower().strip())\n    lst_text = text.split()\n    if lst_stopwords is not None:\n        lst_text = [word for word in lst_text if word not in \n                    lst_stopwords]\n                \n    ## Stemming (remove -ing, -ly, ...)\n    if flg_stemm == True:\n        ps = nltk.stem.porter.PorterStemmer()\n        lst_text = [ps.stem(word) for word in lst_text]\n\n    if flg_lemm == True:\n        lem = nltk.stem.wordnet.WordNetLemmatizer()\n        lst_text = [lem.lemmatize(word) for word in lst_text]\n            \n                            \n    ## back to string from list\n    text = \" \".join(lst_text)\n    return text", "class": "Data Transform", "desc": "This code defines a function to preprocess text by removing punctuation, converting to lowercase, optionally removing stopwords, and performing stemming or lemmatization using NLTK's PorterStemmer and WordNetLemmatizer.", "testing": {"class": "Data_Transform", "subclass": "string_transform", "subclass_id": 78, "predicted_subclass_probability": 0.9333879}, "cluster": -1}, {"cell_id": 15, "code": "contractions = { \n\"ain't\": \"am not\",\n\"aren't\": \"are not\",\n\"can't\": \"cannot\",\n\"can't've\": \"cannot have\",\n\"'cause\": \"because\",\n\"could've\": \"could have\",\n\"couldn't\": \"could not\",\n\"couldn't've\": \"could not have\",\n\"didn't\": \"did not\",\n\"doesn't\": \"does not\",\n\"don't\": \"do not\",\n\"hadn't\": \"had not\",\n\"hadn't've\": \"had not have\",\n\"hasn't\": \"has not\",\n\"haven't\": \"have not\",\n\"he'd\": \"he would\",\n\"he'd've\": \"he would have\",\n\"he'll\": \"he will\",\n\"he'll've\": \"he will have\",\n\"he's\": \"he is\",\n\"how'd\": \"how did\",\n\"how'd'y\": \"how do you\",\n\"how'll\": \"how will\",\n\"how's\": \"how does\",\n\"i'd\": \"i would\",\n\"i'd've\": \"i would have\",\n\"i'll\": \"i will\",\n\"i'll've\": \"i will have\",\n\"i'm\": \"i am\",\n\"i've\": \"i have\",\n\"isn't\": \"is not\",\n\"it'd\": \"it would\",\n\"it'd've\": \"it would have\",\n\"it'll\": \"it will\",\n\"it'll've\": \"it will have\",\n\"it's\": \"it is\",\n\"let's\": \"let us\",\n\"ma'am\": \"madam\",\n\"mayn't\": \"may not\",\n\"might've\": \"might have\",\n\"mightn't\": \"might not\",\n\"mightn't've\": \"might not have\",\n\"must've\": \"must have\",\n\"mustn't\": \"must not\",\n\"mustn't've\": \"must not have\",\n\"needn't\": \"need not\",\n\"needn't've\": \"need not have\",\n\"o'clock\": \"of the clock\",\n\"oughtn't\": \"ought not\",\n\"oughtn't've\": \"ought not have\",\n\"shan't\": \"shall not\",\n\"sha'n't\": \"shall not\",\n\"shan't've\": \"shall not have\",\n\"she'd\": \"she would\",\n\"she'd've\": \"she would have\",\n\"she'll\": \"she will\",\n\"she'll've\": \"she will have\",\n\"she's\": \"she is\",\n\"should've\": \"should have\",\n\"shouldn't\": \"should not\",\n\"shouldn't've\": \"should not have\",\n\"so've\": \"so have\",\n\"so's\": \"so is\",\n\"that'd\": \"that would\",\n\"that'd've\": \"that would have\",\n\"that's\": \"that is\",\n\"there'd\": \"there would\",\n\"there'd've\": \"there would have\",\n\"there's\": \"there is\",\n\"they'd\": \"they would\",\n\"they'd've\": \"they would have\",\n\"they'll\": \"they will\",\n\"they'll've\": \"they will have\",\n\"they're\": \"they are\",\n\"they've\": \"they have\",\n\"to've\": \"to have\",\n\"wasn't\": \"was not\",\n\" u \": \" you \",\n\" ur \": \" your \",\n\" n \": \" and \",\n\"won't\": \"would not\",\n'dis': 'this',\n'bak': 'back',\n'brng': 'bring'}\n\ndef cont_to_exp(x):\n    if type(x) is str:\n        for key in contractions:\n            value = contractions[key]\n            x = x.replace(key, value)\n        return x\n    else:\n        return x\n    \ntrain_df['text_clean'] = train_df['text'].apply(lambda x: cont_to_exp(x))\ntest_df['text_clean'] = test_df['text'].apply(lambda x: cont_to_exp(x))\n\n\ndef remove_emails(x):\n     return re.sub(r'([a-z0-9+._-]+@[a-z0-9+._-]+\\.[a-z0-9+_-]+)',\"\", x)\n\n\ndef remove_urls(x):\n    return re.sub(r'(http|https|ftp|ssh)://([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?', '' , x)\n\ndef remove_rt(x):\n    return re.sub(r'\\brt\\b', '', x).strip()\n\ndef remove_special_chars(x):\n    x = re.sub(r'[^\\w ]+', \"\", x)\n    x = ' '.join(x.split())\n    return x\n\n\ndef remove_accented_chars(x):\n    x = unicodedata.normalize('NFKD', x).encode('ascii', 'ignore').decode('utf-8', 'ignore')\n    return x\n\n\n\ntrain_df['text_clean'] = train_df['text_clean'].apply(lambda x: remove_emails(x))\ntrain_df['text_clean'] = train_df['text_clean'].apply(lambda x: remove_urls(x))\ntrain_df['text_clean'] = train_df['text_clean'].apply(lambda x: remove_rt(x))\ntrain_df['text_clean'] = train_df['text_clean'].apply(lambda x: remove_special_chars(x))\ntrain_df['text_clean'] = train_df['text_clean'].apply(lambda x: remove_accented_chars(x))", "class": "Data Transform", "desc": "This code defines various functions to expand contractions, remove emails, URLs, retweet markers, special characters, and accented characters from the text, and applies these transformations to clean the text data in both the training and testing DataFrames.", "testing": {"class": "Exploratory_Data_Analysis", "subclass": "define_variables", "subclass_id": 77, "predicted_subclass_probability": 0.99555004}, "cluster": -1}, {"cell_id": 16, "code": "train_df[\"text_clean\"] = train_df[\"text_clean\"].apply(lambda x: preprocess_text(x, flg_stemm=True, flg_lemm=False, lst_stopwords=lst_stopwords))\ntrain_df.head()", "class": "Data Transform", "desc": "This code applies the `preprocess_text` function to the cleaned text data in the training DataFrame, performing stemming, removing stopwords, and converting the text to lowercase.", "testing": {"class": "Data_Transform", "subclass": "feature_engineering", "subclass_id": 8, "predicted_subclass_probability": 0.9974553}, "cluster": -1}, {"cell_id": 17, "code": "vec=TfidfVectorizer(max_features = 10000,ngram_range=(1,4))\nvec.fit(train_df['text_clean'])", "class": "Data Transform", "desc": "This code initializes a `TfidfVectorizer` with a maximum of 10,000 features and an n-gram range of 1 to 4, then fits it to the cleaned text data in the training DataFrame.", "testing": {"class": "Model_Train", "subclass": "train_model", "subclass_id": 7, "predicted_subclass_probability": 0.5606868}, "cluster": -1}, {"cell_id": 18, "code": "matrix = vec.transform(train_df['text_clean']).toarray()\nfeatures = vec.get_feature_names()\nmatrix_df = pd.DataFrame(data=matrix, columns=features)\n", "class": "Data Transform", "desc": "This code transforms the cleaned text data in the training DataFrame into a TF-IDF feature matrix using the fitted `TfidfVectorizer`, retrieves the feature names, and creates a new DataFrame with the resulting matrix and feature names as columns.", "testing": {"class": "Data_Transform", "subclass": "create_dataframe", "subclass_id": 12, "predicted_subclass_probability": 0.99546874}, "cluster": -1}, {"cell_id": 21, "code": "matrix_df['length']=train_df['length']\nmatrix_df['char_count']=train_df['char_count']\nmatrix_df['word_count']=train_df['word_count']\nmatrix_df['hashtag_count']=train_df['hashtag_count']\nmatrix_df['mention_count']=train_df['mention_count']\ny=train_df['target']", "class": "Data Transform", "desc": "This code adds additional feature columns (length, char_count, word_count, hashtag_count, mention_count) from the training DataFrame to the TF-IDF feature matrix DataFrame and assigns the target variable to the `y` variable.", "testing": {"class": "Data_Transform", "subclass": "prepare_x_and_y", "subclass_id": 21, "predicted_subclass_probability": 0.8321087}, "cluster": -1}, {"cell_id": 29, "code": "top_features=feature_imp_list.sort_values(by='Value', ascending=False).head(20)\ntop_features", "class": "Data Transform", "desc": "This code sorts the feature importance list by value in descending order and extracts the top 20 features.", "testing": {"class": "Data_Transform", "subclass": "sort_values", "subclass_id": 9, "predicted_subclass_probability": 0.992605}, "cluster": -1}, {"cell_id": 32, "code": "test_df[\"text_clean\"]=test_df['text']\ntest_df['text_clean'] = test_df['text_clean'].apply(lambda x: remove_emails(x))\ntest_df['text_clean'] = test_df['text_clean'].apply(lambda x: remove_urls(x))\ntest_df['text_clean'] = test_df['text_clean'].apply(lambda x: remove_rt(x))\ntest_df['text_clean'] = test_df['text_clean'].apply(lambda x: remove_special_chars(x))\ntest_df['text_clean'] = test_df['text_clean'].apply(lambda x: remove_accented_chars(x))\n\ntest_df[\"text_clean\"] = test_df[\"text\"].apply(lambda x: preprocess_text(x, flg_stemm=True, flg_lemm=False, lst_stopwords=lst_stopwords))\ntest_df['length']=test_df['text'].apply(len)\n\ntest_df.head()\n\n#vec=TfidfVectorizer(max_features = 20000,ngram_range=(1,4))\n#vec.fit(test_df['text_clean'])\n\n\n\nmatrix = vec.transform(test_df['text_clean']).toarray()\nfeatures = vec.get_feature_names()\nmatrix_df = pd.DataFrame(data=matrix, columns=features)\n\nmatrix_df['length']=test_df['length']\nmatrix_df['char_count']=test_df['char_count']\nmatrix_df['word_count']=test_df['word_count']\nmatrix_df['hashtag_count']=test_df['hashtag_count']\nmatrix_df['mention_count']=test_df['mention_count']", "class": "Data Transform", "desc": "This code cleans the text data in the test DataFrame by removing emails, URLs, retweet markers, special characters, and accented characters, applies preprocessing, and subsequently transforms it into a TF-IDF feature matrix, augmenting it with additional feature columns.", "testing": {"class": "Data_Transform", "subclass": "feature_engineering", "subclass_id": 8, "predicted_subclass_probability": 0.99814296}, "cluster": -1}, {"cell_id": 36, "code": "#Credit: https://www.kaggle.com/xhlulu/disaster-nlp-keras-bert-using-tfhub\ndef bert_encode(texts, tokenizer, max_len=512):\n    all_tokens = []\n    all_masks = []\n    all_segments = []\n    \n    for text in texts:\n        text = tokenizer.tokenize(text)\n            \n        text = text[:max_len-2]\n        input_sequence = [\"[CLS]\"] + text + [\"[SEP]\"]\n        pad_len = max_len - len(input_sequence)\n        \n        tokens = tokenizer.convert_tokens_to_ids(input_sequence)\n        tokens += [0] * pad_len\n        pad_masks = [1] * len(input_sequence) + [0] * pad_len\n        segment_ids = [0] * max_len\n        \n        all_tokens.append(tokens)\n        all_masks.append(pad_masks)\n        all_segments.append(segment_ids)\n    \n    return np.array(all_tokens), np.array(all_masks), np.array(all_segments)", "class": "Data Transform", "desc": "This code defines a function to encode text data for BERT by tokenizing the text, adding special tokens, padding or truncating to a specified maximum length, and returning arrays of tokens, masks, and segment IDs.", "testing": {"class": "Data_Transform", "subclass": "categorify", "subclass_id": 20, "predicted_subclass_probability": 0.9645982}, "cluster": -1}, {"cell_id": 40, "code": "# Encode the text into tokens, masks, and segment flags\ntrain_input = bert_encode(train_df.text_clean.values, tokenizer, max_len=160)\ntest_input = bert_encode(test_df.text_clean.values, tokenizer, max_len=160)\ntrain_labels = train_df.target.values", "class": "Data Transform", "desc": "This code encodes the cleaned text data from the training and test DataFrames into token IDs, masks, and segment IDs using the BERT tokenizer, with a maximum length of 160, and extracts the target values as training labels.", "testing": {"class": "Data_Transform", "subclass": "categorify", "subclass_id": 20, "predicted_subclass_probability": 0.9929838}, "cluster": -1}, {"cell_id": 3, "code": "train_df.head(5)", "class": "Exploratory Data Analysis", "desc": "This code displays the first five rows of the training DataFrame for initial inspection using the `head` method from pandas.", "testing": {"class": "Exploratory_Data_Analysis", "subclass": "show_table", "subclass_id": 41, "predicted_subclass_probability": 0.9997615}, "cluster": -1}, {"cell_id": 4, "code": "# DataFrane Summary by pandas summary package (extension of pandas.describe method) \ndfs = DataFrameSummary(train_df)\ndfs.summary()", "class": "Exploratory Data Analysis", "desc": "This code generates a summary of the training DataFrame using the `DataFrameSummary` class from the pandas-summary package, offering an extended version of pandas' `describe` method.", "testing": {"class": "Data_Transform", "subclass": "create_dataframe", "subclass_id": 12, "predicted_subclass_probability": 0.988304}, "cluster": -1}, {"cell_id": 10, "code": "duplicates = pd.concat(x for _, x in train_df.groupby([\"text\"]) if len(x) > 1)\n\n#with pd.option_context(\"display.max_rows\", None, \"max_colwidth\", 80):\n#    display(duplicates[[\"id\", \"target\", \"text\"]])", "class": "Exploratory Data Analysis", "desc": "This code identifies and concatenates rows with duplicate text entries in the training DataFrame for inspection, potentially to be displayed with pandas' display settings.", "testing": {"class": "Data_Transform", "subclass": "concatenate", "subclass_id": 11, "predicted_subclass_probability": 0.87380403}, "cluster": -1}, {"cell_id": 19, "code": "matrix_df.head(2)", "class": "Exploratory Data Analysis", "desc": "This code displays the first two rows of the DataFrame containing the TF-IDF feature matrix for inspection using the `head` method from pandas.", "testing": {"class": "Exploratory_Data_Analysis", "subclass": "show_table", "subclass_id": 41, "predicted_subclass_probability": 0.9997633}, "cluster": -1}, {"cell_id": 20, "code": "matrix_df.shape", "class": "Exploratory Data Analysis", "desc": "This code outputs the shape of the DataFrame containing the TF-IDF feature matrix using the `shape` attribute from pandas, which provides the number of rows and columns.", "testing": {"class": "Exploratory_Data_Analysis", "subclass": "show_shape", "subclass_id": 58, "predicted_subclass_probability": 0.9996574}, "cluster": -1}, {"cell_id": 30, "code": "list_for_correlations=top_features['Feature'].to_list()\nlist_for_correlations.append('target')\noc.correlations(matrix_df,list_for_correlations)", "class": "Exploratory Data Analysis", "desc": "This code creates a list of the top 20 feature names and the target variable, then generates a correlation matrix for these selected features using the Octopus ML package's `correlations` method.", "testing": {"class": "Visualization", "subclass": "model_coefficients", "subclass_id": 79, "predicted_subclass_probability": 0.9603935}, "cluster": -1}, {"cell_id": 0, "code": "# Octopus ML pakage - github.com/gershonc/octopus-ml\n!pip install octopus-ml", "class": "Imports and Environment", "desc": "This code installs the Octopus ML package from GitHub using pip.", "testing": {"class": "Imports_and_Environment", "subclass": "install_modules", "subclass_id": 87, "predicted_subclass_probability": 0.99379325}, "cluster": -1}, {"cell_id": 1, "code": "import warnings\nwarnings.simplefilter(\"ignore\")\nimport seaborn as sns \nimport matplotlib.pyplot as plt\nimport time\nimport pandas as pd\nimport numpy as np\nimport lightgbm as lgb\nimport tracemalloc\nfrom pandas_summary import DataFrameSummary\nfrom sklearn.metrics import classification_report\n\nfrom sklearn import feature_extraction, linear_model, model_selection, preprocessing\n\n%matplotlib inline\nsns.set_style(\"whitegrid\")\n\npd.set_option('display.max_columns', None)  # or 1000\npd.set_option('display.max_rows', None)  # or 1000\npd.set_option('display.max_colwidth', -1)  # or 199\n\n#check out https://github.com/gershonc/octopus-ml\nimport octopus_ml as oc\n\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.multiclass import OneVsRestClassifier\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.model_selection import train_test_split", "class": "Imports and Environment", "desc": "This code imports various libraries and modules necessary for data manipulation, visualization, model training, and evaluation, including seaborn, matplotlib, pandas, numpy, LightGBM, and scikit-learn, and sets some default display options for pandas.", "testing": {"class": "Imports_and_Environment", "subclass": "set_options", "subclass_id": 23, "predicted_subclass_probability": 0.9992041}, "cluster": -1}, {"cell_id": 12, "code": "## for data\nimport json\nimport pandas as pd\nimport numpy as np\n## for plotting\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n## for processing\nimport re\nimport nltk\n## for bag-of-words\nfrom sklearn import feature_extraction, model_selection, naive_bayes, pipeline, manifold, preprocessing\n## for explainer\nfrom lime import lime_text\n## for word embedding\nimport gensim\nimport gensim.downloader as gensim_api\n## for deep learning\nfrom tensorflow.keras import models, layers, preprocessing as kprocessing\nfrom tensorflow.keras import backend as K\n## for bert language model\nimport transformers\nimport unicodedata", "class": "Imports and Environment", "desc": "This code imports various libraries and modules necessary for data manipulation, plotting, natural language processing, machine learning, deep learning, and language models, including pandas, seaborn, nltk, scikit-learn, gensim, TensorFlow Keras, and transformers.", "testing": {"class": "Imports_and_Environment", "subclass": "import_modules", "subclass_id": 22, "predicted_subclass_probability": 0.9993574}, "cluster": -1}, {"cell_id": 34, "code": "!wget --quiet https://raw.githubusercontent.com/tensorflow/models/master/official/nlp/bert/tokenization.py", "class": "Imports and Environment", "desc": "This code downloads the `tokenization.py` file for BERT tokenization from the TensorFlow models repository using the `wget` utility.", "testing": {"class": "Data_Extraction", "subclass": "load_from_url", "subclass_id": 42, "predicted_subclass_probability": 0.8866123}, "cluster": -1}, {"cell_id": 35, "code": "import tensorflow as tf\nfrom tensorflow.keras.layers import Dense, Input\nfrom tensorflow.keras.optimizers import Adam\nfrom tensorflow.keras.models import Model\nfrom tensorflow.keras.callbacks import ModelCheckpoint\nimport tensorflow_hub as hub\n\nimport tokenization", "class": "Imports and Environment", "desc": "This code imports TensorFlow and relevant modules for defining, training, and optimizing deep learning models, as well as the BERT tokenization module downloaded earlier, using `tensorflow_hub` and `tokenization`.", "testing": {"class": "Imports_and_Environment", "subclass": "import_modules", "subclass_id": 22, "predicted_subclass_probability": 0.99932015}, "cluster": -1}, {"cell_id": 38, "code": "# Load BERT from the Tensorflow Hub\nmodule_url = \"https://tfhub.dev/tensorflow/bert_en_uncased_L-24_H-1024_A-16/1\"\nbert_layer = hub.KerasLayer(module_url, trainable=True)", "class": "Imports and Environment", "desc": "This code loads a pre-trained BERT model from TensorFlow Hub as a Keras layer, specifying that the layer should be trainable.", "testing": {"class": "Model_Train", "subclass": "choose_model_class", "subclass_id": 4, "predicted_subclass_probability": 0.87859446}, "cluster": -1}, {"cell_id": 39, "code": "# Load tokenizer from the bert layer\nvocab_file = bert_layer.resolved_object.vocab_file.asset_path.numpy()\ndo_lower_case = bert_layer.resolved_object.do_lower_case.numpy()\ntokenizer = tokenization.FullTokenizer(vocab_file, do_lower_case)", "class": "Imports and Environment", "desc": "This code loads the BERT tokenizer from the pre-trained BERT layer by retrieving the vocabulary file and case sensitivity settings, and initializes the tokenizer for subsequent use.", "testing": {"class": "Data_Transform", "subclass": "feature_engineering", "subclass_id": 8, "predicted_subclass_probability": 0.4494561}, "cluster": -1}, {"cell_id": 23, "code": "oc.cv_plot(metrics['f1_weighted'],metrics['f1_macro'],metrics['f1_positive'],'Titanic Kaggle competition')", "class": "Model Evaluation", "desc": "This code generates and displays evaluation plots for the weighted F1 score, macro F1 score, and positive class F1 score from the cross-validation metrics, using the Octopus ML package's `cv_plot` method.", "testing": {"class": "Visualization", "subclass": "distribution", "subclass_id": 33, "predicted_subclass_probability": 0.64448214}, "cluster": -1}, {"cell_id": 24, "code": "print(classification_report(metrics['y'], metrics['predictions_folds']))", "class": "Model Evaluation", "desc": "This code prints a detailed classification report, including precision, recall, and F1 scores, based on true labels and predictions obtained from the cross-validation folds using the `classification_report` function from scikit-learn.", "testing": {"class": "Model_Evaluation", "subclass": "compute_test_metric", "subclass_id": 49, "predicted_subclass_probability": 0.9977271}, "cluster": -1}, {"cell_id": 25, "code": "oc.roc_curve_plot(metrics['y'], metrics['predictions_proba'])", "class": "Model Evaluation", "desc": "This code generates and displays a ROC curve plot to evaluate the performance of the model's predicted probabilities, using the Octopus ML package's `roc_curve_plot` method.", "testing": {"class": "Visualization", "subclass": "distribution", "subclass_id": 33, "predicted_subclass_probability": 0.67355084}, "cluster": -1}, {"cell_id": 26, "code": "oc.confusion_matrix_plot(metrics['y'], metrics['predictions_folds'])", "class": "Model Evaluation", "desc": "This code generates and displays a confusion matrix plot to visualize the performance of the model's predictions, using the Octopus ML package's `confusion_matrix_plot` method.", "testing": {"class": "Visualization", "subclass": "model_coefficients", "subclass_id": 79, "predicted_subclass_probability": 0.65878206}, "cluster": -1}, {"cell_id": 27, "code": "feature_imp_list=oc.plot_imp(metrics['final_clf'],matrix_df,'LightGBM Mortality Kaggle',num=40)", "class": "Model Evaluation", "desc": "This code generates a feature importance plot for the top 40 features in the fitted LightGBM model using the Octopus ML package's `plot_imp` method and stores the feature importances in `feature_imp_list`.", "testing": {"class": "Visualization", "subclass": "model_coefficients", "subclass_id": 79, "predicted_subclass_probability": 0.9963425}, "cluster": -1}, {"cell_id": 28, "code": "oc.preds_distribution(metrics['y'], metrics['predictions_proba'], bins=40)", "class": "Model Evaluation", "desc": "This code generates a distribution plot of the predicted probabilities to assess the model's prediction confidence, using the Octopus ML package's `preds_distribution` method.", "testing": {"class": "Model_Train", "subclass": "compute_train_metric", "subclass_id": 28, "predicted_subclass_probability": 0.558016}, "cluster": -1}, {"cell_id": 33, "code": "test_pred=metrics['final_clf'].predict(matrix_df)\npredictions = []\n#predictions = oc.adjusted_classes(test_pred, 0.5)", "class": "Model Evaluation", "desc": "This code uses the final classifier from the cross-validation metrics to predict the target on the test data TF-IDF feature matrix.", "testing": {"class": "Model_Evaluation", "subclass": "predict_on_test", "subclass_id": 48, "predicted_subclass_probability": 0.9896577}, "cluster": -1}, {"cell_id": 43, "code": "model_BERT.load_weights('model_BERT.h5')\ntest_pred_BERT = model_BERT.predict(test_input)\ntest_pred_BERT_int = test_pred_BERT.round().astype('int')", "class": "Model Evaluation", "desc": "This code loads the best weights for the BERT model from the saved checkpoint, predicts the target values on the encoded test input, and rounds the predictions to the nearest integer.", "testing": {"class": "Model_Evaluation", "subclass": "predict_on_test", "subclass_id": 48, "predicted_subclass_probability": 0.991269}, "cluster": -1}, {"cell_id": 44, "code": "train_pred_BERT = model_BERT.predict(train_input)\ntrain_pred_BERT_int = train_pred_BERT.round().astype('int')", "class": "Model Evaluation", "desc": "This code generates predictions on the encoded training input using the trained BERT model and rounds the predictions to the nearest integer.", "testing": {"class": "Model_Evaluation", "subclass": "predict_on_test", "subclass_id": 48, "predicted_subclass_probability": 0.990164}, "cluster": -1}, {"cell_id": 22, "code": "params = {\n        'boosting_type': 'gbdt',\n        'objective': 'binary',\n        'metric': 'auc',\n        'learning_rate': 0.01,\n        'num_leaves':32,\n        'subsample': 1,\n        #'colsample_bytree': 0.25,\n        #'reg_alpha': 0,\n        #'reg_lambda': 1,\n        #'scale_pos_weight': 5,\n        'n_estimators': 10000,\n        'verbose': -1,\n        'max_depth': -1,\n        'seed':100, \n        'colsample_bytree':0.4,\n        'force_col_wise': True\n\n\n}\n\"\"\"\n    boosting_type='gbdt', class_weight=None, colsample_bytree=0.4,\n               importance_type='split', learning_rate=0.04, max_depth=-1,\n               metric='auc', min_child_samples=20, min_child_weight=0.001,\n               min_split_gain=0.0, n_estimators=1500, n_jobs=-1, num_leaves=31,\n               objective=None, random_state=None, reg_alpha=0.0, reg_lambda=0.0,\n               silent=True, subsample=1.0, subsample_for_bin=200000,\n               subsample_freq=0 \n\"\"\"\nmetrics = oc.cv_adv(matrix_df,y,0.5,2000,shuffle=True,params=params)", "class": "Model Training", "desc": "This code sets up a dictionary of parameters for training a LightGBM gradient boosting model for binary classification and then runs advanced cross-validation using the Octopus ML package's `cv_adv` method on the TF-IDF feature matrix to evaluate performance metrics.", "testing": {"class": "Model_Train", "subclass": "init_hyperparams", "subclass_id": 59, "predicted_subclass_probability": 0.99348336}, "cluster": -1}, {"cell_id": 37, "code": "def build_model(bert_layer, max_len=512):\n    input_word_ids = Input(shape=(max_len,), dtype=tf.int32, name=\"input_word_ids\")\n    input_mask = Input(shape=(max_len,), dtype=tf.int32, name=\"input_mask\")\n    segment_ids = Input(shape=(max_len,), dtype=tf.int32, name=\"segment_ids\")\n\n    _, sequence_output = bert_layer([input_word_ids, input_mask, segment_ids])\n    clf_output = sequence_output[:, 0, :]\n    \n    if Dropout_num == 0:\n        # Without Dropout\n        out = Dense(1, activation='sigmoid')(clf_output)\n    else:\n        # With Dropout(Dropout_num), Dropout_num > 0\n        x = Dropout(Dropout_num)(clf_output)\n        out = Dense(1, activation='sigmoid')(x)\n\n    model = Model(inputs=[input_word_ids, input_mask, segment_ids], outputs=out)\n    model.compile(Adam(lr=learning_rate), loss='binary_crossentropy', metrics=['accuracy'])\n    \n    return model", "class": "Model Training", "desc": "This code defines a function to build a BERT-based classification model using TensorFlow Keras, specifying inputs for token IDs, masks, and segment IDs, and optionally applying a Dropout layer before the output layer, which uses a sigmoid activation function.", "testing": {"class": "Model_Train", "subclass": "choose_model_class", "subclass_id": 4, "predicted_subclass_probability": 0.9445593}, "cluster": -1}, {"cell_id": 41, "code": "random_state_split = 2\nDropout_num = 0\nlearning_rate = 6e-6\nvalid = 0.2\nepochs_num = 3\nbatch_size_num = 16\ntarget_corrected = False\ntarget_big_corrected = False\n\n# Build BERT model with my tuning\nmodel_BERT = build_model(bert_layer, max_len=160)\nmodel_BERT.summary()", "class": "Model Training", "desc": "This code sets various hyperparameters, including random seed, dropout rate, learning rate, validation split, number of epochs, and batch size, then builds and summarizes the BERT-based classification model using the specified maximum token length and the pre-trained BERT layer.", "testing": {"class": "Model_Train", "subclass": "choose_model_class", "subclass_id": 4, "predicted_subclass_probability": 0.66016126}, "cluster": -1}, {"cell_id": 42, "code": "checkpoint = ModelCheckpoint('model_BERT.h5', monitor='val_loss', save_best_only=True)\n\ntrain_history = model_BERT.fit(\n    train_input, train_labels,\n    validation_split = valid,\n    epochs = epochs_num, # recomended 3-5 epochs\n    callbacks=[checkpoint],\n    batch_size = batch_size_num\n)", "class": "Model Training", "desc": "This code trains the BERT-based model using the encoded training input and labels, with a validation split, specified number of epochs, batch size, and a model checkpoint callback to save the best model based on validation loss.", "testing": {"class": "Model_Train", "subclass": "train_model", "subclass_id": 7, "predicted_subclass_probability": 0.99751294}, "cluster": -1}, {"cell_id": 5, "code": "# Target distribution analysis\nfig, ax =plt.subplots(1,2)\n\n\nplt.style.use('fivethirtyeight')\nplt.figure(figsize=(3,4))\nsns.set_context(\"paper\", font_scale=1.2)                                                  \nsns.countplot('target',data=train_df, ax=ax[0])\ntrain_df['target'].value_counts().plot.pie(explode=[0,0.2],autopct='%1.2f%%',ax=ax[1])\nfig.show()", "class": "Visualization", "desc": "This code generates visualizations of the target variable's distribution in the training DataFrame using seaborn and matplotlib, including a count plot and a pie chart.", "testing": {"class": "Visualization", "subclass": "distribution", "subclass_id": 33, "predicted_subclass_probability": 0.9649334}, "cluster": -1}, {"cell_id": 7, "code": "sns.displot(data = train_df, kind = 'hist', x = 'length', hue = 'target', multiple = 'stack',bins=50,height = 5, aspect = 1.9)\n\n# The distibution of tweet text length vs target - there is a correlation between tweet length and target ", "class": "Visualization", "desc": "This code generates a histogram to visualize the distribution of tweet text length across different target values in the training DataFrame using seaborn's `displot` function.", "testing": {"class": "Visualization", "subclass": "distribution", "subclass_id": 33, "predicted_subclass_probability": 0.9802619}, "cluster": -1}, {"cell_id": 8, "code": "sns.displot(data = train_df, kind = 'hist', x = 'hashtag_count', hue = 'target', multiple = 'stack',bins=50,height = 5, aspect = 1.9)", "class": "Visualization", "desc": "This code generates a histogram to visualize the distribution of hashtag counts across different target values in the training DataFrame using seaborn's `displot` function.", "testing": {"class": "Visualization", "subclass": "distribution", "subclass_id": 33, "predicted_subclass_probability": 0.9985002}, "cluster": -1}, {"cell_id": 9, "code": "sns.displot(data = train_df, kind = 'hist', x = 'word_count', hue = 'target', multiple = 'stack',bins=50,height = 5, aspect = 1.9)\n", "class": "Visualization", "desc": "This code generates a histogram to visualize the distribution of word counts across different target values in the training DataFrame using seaborn's `displot` function.", "testing": {"class": "Visualization", "subclass": "distribution", "subclass_id": 33, "predicted_subclass_probability": 0.9985385}, "cluster": -1}], "notebook_id": 0, "notebook_name": "nlp-twitter-tuned-lgbm-model-tfidf-bert.ipynb", "user": "celniker"}, {"cells": [{"cell_id": 11, "code": "def submission(model, test_df, fname = 'submission'):\n    y_hat = model.predict(test_df)\n    submission = pd.read_csv('/kaggle/input/nlp-getting-started/sample_submission.csv')\n    submission['target'] = y_hat\n    submission.to_csv('submission.csv', index=False)", "class": "Data Export", "desc": "This code defines a function `submission` that generates predictions using the provided model on the test DataFrame, updates a sample submission file with these predictions, and saves it as 'submission.csv'.", "testing": {"class": "Data_Export", "subclass": "save_to_csv", "subclass_id": 25, "predicted_subclass_probability": 0.9989374}, "cluster": -1}, {"cell_id": 17, "code": "# submission\ny_hat = lr.predict_proba(test)\ny_hat = y_hat[:, 1]\n\npreds = to_class_label(y_hat, opt_thres)\nsubmission = pd.read_csv('/kaggle/input/nlp-getting-started/sample_submission.csv')\nsubmission['target'] = preds\n\nsubmission.to_csv('submission.csv', index=False)", "class": "Data Export", "desc": "This code generates class label predictions using the logistic regression model and the optimal threshold for the test dataset, updates the target column in a sample submission DataFrame, and saves the result as 'submission.csv'.", "testing": {"class": "Data_Export", "subclass": "save_to_csv", "subclass_id": 25, "predicted_subclass_probability": 0.9982597}, "cluster": -1}, {"cell_id": 1, "code": "# print files in input dir\nfor dirname, _, filenames in os.walk('/kaggle/input'):\n    for filename in filenames:\n        print(os.path.join(dirname, filename))\n    ", "class": "Data Extraction", "desc": "This code iterates through the '/kaggle/input' directory and prints the path of each file found.", "testing": {"class": "Exploratory_Data_Analysis", "subclass": "list_files", "subclass_id": 88, "predicted_subclass_probability": 0.9993166}, "cluster": -1}, {"cell_id": 2, "code": "train = pd.read_csv('../input/nlp-getting-started/train.csv')\ntest = pd.read_csv('../input/nlp-getting-started/test.csv')\n\ntrain.head()", "class": "Data Extraction", "desc": "The code reads the 'train.csv' and 'test.csv' files from the specified directory into pandas DataFrames and displays the first few rows of the training data.", "testing": {"class": "Data_Extraction", "subclass": "load_from_csv", "subclass_id": 45, "predicted_subclass_probability": 0.9996737}, "cluster": -1}, {"cell_id": 4, "code": "# plot prop of missing for each feature\nsns.set_theme(style='white')\nsns.barplot(x=train.columns, y=train.isnull().mean())\nplt.show()\n\n# drop location and keyword\ntrain.drop(columns=['id', 'keyword', 'location'], inplace=True)\ntest.drop(columns=['id', 'keyword', 'location'], inplace=True)\ntrain.drop_duplicates(inplace=True, ignore_index=True)", "class": "Data Transform", "desc": "This code generates a bar plot showing the proportion of missing values for each feature using seaborn, then drops the 'id', 'keyword', and 'location' columns from both the training and testing DataFrames and removes duplicate rows from the training DataFrame.", "testing": {"class": "Visualization", "subclass": "distribution", "subclass_id": 33, "predicted_subclass_probability": 0.8657076}, "cluster": -1}, {"cell_id": 6, "code": "wordnet_lemmatizer = WordNetLemmatizer()\n\ndef quick_clean(text):\n    \"\"\"\n    adapted from: https://www.kaggle.com/sophiejermy/sj-eda1\n    \"\"\"\n#     text = text + ' '\n    #remove links\n    text = re.sub(r'(?:(?:https?|ftp):\\/\\/)?[\\w/\\-?=%.]+\\.[\\w/\\-&?=%.]+', '', text)\n    #lower case\n    text = text.lower()    \n    #remove special characters\n    text = re.sub(r'[\\W]+', ' ', text)\n    #remove double spaces\n    text = re.sub(r'\\s+', ' ', text)\n    #tokenize\n    text = word_tokenize(text)\n    #remove stop words\n    text = [word for word in text if not word in stopwords.words('english')]    \n    #lemmatize\n    text= [wordnet_lemmatizer.lemmatize(word, pos='v') for word in text]\n    #rejoin text to string\n    text = ' '.join(text)\n    return text\n\ndef quick_clean_vectorized(col):\n    return pd.DataFrame(data=col.apply(lambda x: quick_clean(x)).tolist())\n\nquiklean_transformer = FunctionTransformer(quick_clean_vectorized) # to use in pipeline\n    ", "class": "Data Transform", "desc": "This code defines a text cleaning function `quick_clean` that removes links, converts text to lower case, removes special characters and stop words, tokenizes, and applies lemmatization using NLTK methods, and then wraps this function within a `FunctionTransformer` for use in a pipeline.", "testing": {"class": "Data_Transform", "subclass": "string_transform", "subclass_id": 78, "predicted_subclass_probability": 0.75697106}, "cluster": -1}, {"cell_id": 10, "code": "tfidf_vectorizer = TfidfVectorizer(tokenizer=word_tokenize, stop_words='english', max_features = 300)\n\npreprocess = Pipeline(steps=[\n                    ('clean',   ColumnTransformer([\n                                    ('cl', quiklean_transformer, 'text')\n                                    ],\n                                        remainder='drop')),\n                    ('TFIDF', ColumnTransformer([\n                        ('tfidf', tfidf_vectorizer, 0)\n                    ], \n                            remainder='passthrough')),\n                    ('dim_reduce', TruncatedSVD(n_components=250, random_state=42)),\n                    ('scale', MinMaxScaler())\n    \n        ])", "class": "Data Transform", "desc": "This code defines a preprocessing pipeline using scikit-learn that includes custom text cleaning, TF-IDF vectorization, dimensionality reduction via Truncated SVD, and feature scaling with MinMaxScaler.", "testing": {"class": "Data_Transform", "subclass": "feature_engineering", "subclass_id": 8, "predicted_subclass_probability": 0.9810301}, "cluster": -1}, {"cell_id": 3, "code": "print(f'Train dims {train.shape}', f'Test dims {test.shape}', sep = '\\n')", "class": "Exploratory Data Analysis", "desc": "This code prints the dimensions (number of rows and columns) of the training and testing DataFrames.", "testing": {"class": "Exploratory_Data_Analysis", "subclass": "show_shape", "subclass_id": 58, "predicted_subclass_probability": 0.99101853}, "cluster": -1}, {"cell_id": 0, "code": "# setup\n\nfrom collections import Counter, defaultdict\n\nimport numpy as np \nimport pandas as pd\nimport matplotlib.pyplot as plt\nimport seaborn as sns\nimport os\nimport re\n\nfrom sklearn.preprocessing import FunctionTransformer, MinMaxScaler\nfrom sklearn.pipeline import Pipeline, make_pipeline\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.model_selection import train_test_split \nfrom sklearn.decomposition import TruncatedSVD\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score\nfrom sklearn import set_config\n\nimport optuna\nimport nltk\nfrom nltk.stem import WordNetLemmatizer\nfrom nltk.corpus import stopwords\nfrom nltk.tokenize import word_tokenize\n\nplt.style.use('ggplot')\n%matplotlib inline\n\nset_config(display='diagram')", "class": "Imports and Environment", "desc": "The code imports various essential libraries and modules for data manipulation (NumPy, pandas), visualization (matplotlib, seaborn), natural language processing (nltk), machine learning (scikit-learn), and hyperparameter optimization (optuna), along with some system utilities, and sets a configuration for scikit-learn pipelines to display graphically.", "testing": {"class": "Imports_and_Environment", "subclass": "set_options", "subclass_id": 23, "predicted_subclass_probability": 0.99920374}, "cluster": -1}, {"cell_id": 14, "code": "def to_class_label(probs, threshold):\n    \"\"\"convert predicted probabilities to class labels\"\"\"\n    return (probs >= threshold).astype('int')\n\ndef get_optimal_threshold(fitted_model, x_test, y_test):\n    \"\"\"Threshold tuning\"\"\"\n    thresholds = np.arange(0, 1, 0.0005)\n    y_hat = fitted_model.predict_proba(x_test)\n    pos_clas_probs = y_hat[:, 1]\n    acc_scores = [accuracy_score(y_test, to_class_label(pos_clas_probs, thres)) for thres in thresholds]\n    idx = np.argmax(acc_scores)\n    \n    return thresholds[idx]\n    ", "class": "Model Evaluation", "desc": "This code defines two functions, `to_class_label` to convert predicted probabilities to class labels based on a threshold, and `get_optimal_threshold` to find the threshold that maximizes accuracy on the test dataset.", "testing": {"class": "Model_Evaluation", "subclass": "predict_on_test", "subclass_id": 48, "predicted_subclass_probability": 0.54912084}, "cluster": -1}, {"cell_id": 16, "code": "# get optimal threshold\nopt_thres = get_optimal_threshold(lr, x_test, y_test)\nprint(f'Optimal threshold for trained LR {get_optimal_threshold(lr, x_test, y_test):.4f}')", "class": "Model Evaluation", "desc": "This code calculates the optimal threshold for converting predicted probabilities to class labels by maximizing accuracy on the test dataset and prints the resulting threshold.", "testing": {"class": "Model_Train", "subclass": "train_model", "subclass_id": 7, "predicted_subclass_probability": 0.6867679}, "cluster": -1}, {"cell_id": 9, "code": "x_train, x_test, y_train, y_test = train_test_split(train.loc[:,train.columns != 'target'], train.target, test_size=0.2)\nprint(x_train.shape, y_train.shape, x_test.shape, y_test.shape)", "class": "Model Training", "desc": "This code splits the training data into training and testing subsets with an 80-20 split using `train_test_split` from scikit-learn and prints the shapes of the resulting DataFrames and Series.", "testing": {"class": "Data_Transform", "subclass": "split", "subclass_id": 13, "predicted_subclass_probability": 0.99772364}, "cluster": -1}, {"cell_id": 12, "code": "# Tune logistic regression\ndef objective(trial):\n    x, y = x_train, y_train\n    C = trial.suggest_float('C', 1e-6, 1e6, log=True)\n    penalty = trial.suggest_categorical('penalty', ['l1', 'l2', 'elasticnet'])\n    l1_ratio = trial.suggest_float('l1_ratio', 0, 1)\n    if penalty != 'elasticnet':\n        l1_ratio = None\n    \n    clf = make_pipeline(preprocess, LogisticRegression(C=C,\n                                                      penalty=penalty,\n                                                      l1_ratio=l1_ratio,\n                                                      solver='saga',\n                                                      max_iter=800))\n    clf.fit(x,y)\n    \n    acc = accuracy_score(y_test, clf.predict(x_test))\n    \n    return acc\n\nclass EarlyStopping:\n    \"\"\"stop tuning after value remains unchanged after 10 successive trials\"\"\"\n    def __init__(self, max_rounds = 10):\n        self.max_rounds = max_rounds\n        self.current_rounds = 0\n        \n    def __call__(self, study, trial, tol = 1e-6):\n        if abs(trial.value - study.best_value) <= tol:\n            self.current_rounds += 1\n        elif trial.value == study.best_value:\n            self.current_rounds = 0\n        if self.current_rounds >= self.max_rounds:\n            study.stop()", "class": "Model Training", "desc": "This code defines an `objective` function for hyperparameter tuning a logistic regression model using Optuna, and an `EarlyStopping` class to stop tuning after a specified number of trials with no improvement.", "testing": {"class": "Model_Train", "subclass": "find_best_model_class", "subclass_id": 3, "predicted_subclass_probability": 0.3142369}, "cluster": -1}, {"cell_id": 13, "code": "# # create study and run trials\nes = EarlyStopping()\n\nstudy = optuna.create_study(direction='maximize', sampler=optuna.samplers.TPESampler())  # using Tree-structured Parzen Estimator to sample\nstudy.optimize(objective, n_trials=250, callbacks=[es])", "class": "Model Training", "desc": "This code creates an Optuna study with the goal of maximizing the objective function and uses the Tree-structured Parzen Estimator (TPE) sampler, running up to 250 trials with early stopping enabled through the `EarlyStopping` callback.", "testing": {"class": "Model_Train", "subclass": "choose_model_class", "subclass_id": 4, "predicted_subclass_probability": 0.80090225}, "cluster": -1}, {"cell_id": 15, "code": "# train LR on best parameters\nlr = LogisticRegression(**study.best_params, solver='saga', max_iter=800)\nlr = make_pipeline(preprocess, lr)\nlr.fit(x_train, y_train)", "class": "Model Training", "desc": "This code trains a logistic regression model using the best hyperparameters found by the Optuna study, wrapped in a preprocessing pipeline, and fits it to the training data.", "testing": {"class": "Model_Train", "subclass": "train_model", "subclass_id": 7, "predicted_subclass_probability": 0.99761343}, "cluster": -1}, {"cell_id": 5, "code": "# plot target distribution\nsns.countplot(x='target', data=train)\nplt.title('Target distribution')\nplt.show()", "class": "Visualization", "desc": "This code generates and displays a count plot of the 'target' variable within the training DataFrame using seaborn to visualize its distribution.", "testing": {"class": "Visualization", "subclass": "distribution", "subclass_id": 33, "predicted_subclass_probability": 0.99668735}, "cluster": -1}, {"cell_id": 7, "code": "def plot_top_n_words(target = 1, n=50):\n    \n    count_dict = defaultdict(int)\n\n    for tweet in train.query(f'target=={target}')['text']:\n        for word in word_tokenize(tweet):\n            count_dict[word] += 1\n\n    wc_df = pd.DataFrame(data=count_dict.items(), columns = ['word', 'count'])\n    sns.barplot(x = 'count', y='word', data=wc_df.sort_values(by=['count'], ascending=False)[:n])", "class": "Visualization", "desc": "This code defines a function `plot_top_n_words` that counts the frequency of words in tweets with a specified target value in the training data and generates a bar plot of the top `n` most frequent words using seaborn.", "testing": {"class": "Visualization", "subclass": "distribution", "subclass_id": 33, "predicted_subclass_probability": 0.8610096}, "cluster": -1}, {"cell_id": 8, "code": "plot_top_n_words()", "class": "Visualization", "desc": "This code calls the `plot_top_n_words` function to generate and display a bar plot of the top 50 most frequent words in tweets with a target value of 1 from the training data.", "testing": {"class": "Visualization", "subclass": "relationship", "subclass_id": 81, "predicted_subclass_probability": 0.58346504}, "cluster": -1}], "notebook_id": 1, "notebook_name": "logistic-regression-with-threshold-tuning.ipynb", "user": "cluelessds"}, {"cells": [{"cell_id": 13, "code": "submission = pd.DataFrame({\n    'id': test_raw.id,\n    'target':y_hat\n})", "class": "Data Export", "desc": "This code snippet creates a DataFrame named `submission` with two columns, 'id' from `test_raw` and the predicted 'target' labels (`y_hat`).", "testing": {"class": "Data_Transform", "subclass": "create_dataframe", "subclass_id": 12, "predicted_subclass_probability": 0.9941958}, "cluster": -1}, {"cell_id": 14, "code": "submission.to_csv(\"my_submission_linear.csv\", index=False)", "class": "Data Export", "desc": "This code snippet exports the `submission` DataFrame to a CSV file named \"my_submission_linear.csv\" without including the DataFrame index.", "testing": {"class": "Data_Export", "subclass": "save_to_csv", "subclass_id": 25, "predicted_subclass_probability": 0.99924576}, "cluster": -1}, {"cell_id": 1, "code": "train_raw = pd.read_csv(\"/kaggle/input/nlp-getting-started/train.csv\")\ntest_raw = pd.read_csv(\"/kaggle/input/nlp-getting-started/test.csv\")\nsubmission_raw = pd.read_csv(\"/kaggle/input/nlp-getting-started/sample_submission.csv\")", "class": "Data Extraction", "desc": "This code snippet reads the CSV files 'train.csv', 'test.csv', and 'sample_submission.csv' from the specified directory into pandas DataFrames named `train_raw`, `test_raw`, and `submission_raw`, respectively.", "testing": {"class": "Data_Extraction", "subclass": "load_from_csv", "subclass_id": 45, "predicted_subclass_probability": 0.9997112}, "cluster": -1}, {"cell_id": 4, "code": "# remove stopwords,punct\n# remove duplicate tweet\ntexts = []\nlabels = []\ntexts_md5 = set()\nfor target, doc in zip(train_raw.target, nlp.pipe(train_raw.text)):\n    tokens = [token.lemma_ for token in doc if token.is_stop is False and token.is_punct is False and token.is_space is False]\n    temp_text = ' '.join(tokens)\n    # remove duplicate\n    md5 = hashlib.md5()\n    md5.update(temp_text.encode('utf-8'))\n    text_md5 = md5.hexdigest()\n    if text_md5 not in texts_md5:\n        texts.append(temp_text)\n        labels.append(target)\n        texts_md5.add(text_md5)", "class": "Data Transform", "desc": "This code snippet preprocesses the text data by removing stopwords, punctuation, and duplicates, then lemmatizes the text using `spaCy` and stores the unique, processed texts and corresponding labels into the `texts` and `labels` lists, respectively.", "testing": {"class": "Data_Transform", "subclass": "categorify", "subclass_id": 20, "predicted_subclass_probability": 0.9552063}, "cluster": -1}, {"cell_id": 5, "code": "tests = []\nfor doc in nlp.pipe(test_raw.text):\n    tokens = [token.lemma_ for token in doc if token.is_stop is False and token.is_punct is False and token.is_space is False]\n    tests.append(' '.join(tokens))", "class": "Data Transform", "desc": "This code snippet preprocesses the test set by removing stopwords, punctuation, and spaces, then lemmatizes the text using `spaCy`, and stores the processed texts in the `tests` list.", "testing": {"class": "Data_Transform", "subclass": "string_transform", "subclass_id": 78, "predicted_subclass_probability": 0.9769126}, "cluster": -1}, {"cell_id": 6, "code": "tf_idf = TfidfVectorizer(max_features=10000).fit(texts)\ntrain = tf_idf.transform(texts)\ntest = tf_idf.transform(tests)", "class": "Data Transform", "desc": "This code snippet initializes a `TfidfVectorizer` with a maximum of 10,000 features, fits it to the `texts`, and transforms both the training texts (`texts`) and the test texts (`tests`) into TF-IDF feature vectors.", "testing": {"class": "Data_Transform", "subclass": "feature_engineering", "subclass_id": 8, "predicted_subclass_probability": 0.9555307}, "cluster": -1}, {"cell_id": 7, "code": "X_train, X_test, y_train, y_test = train_test_split(train, labels, test_size=0.3)", "class": "Data Transform", "desc": "This code snippet splits the training data and corresponding labels into training and validation sets using `train_test_split` from `sklearn`, with 30% of the data allocated for testing.", "testing": {"class": "Data_Transform", "subclass": "split", "subclass_id": 13, "predicted_subclass_probability": 0.99791616}, "cluster": -1}, {"cell_id": 0, "code": "# This Python 3 environment comes with many helpful analytics libraries installed\n# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python\n# For example, here's several helpful packages to load\n\nimport numpy as np # linear algebra\nimport pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)\n\n# Input data files are available in the read-only \"../input/\" directory\n# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory\n\nimport os\nfor dirname, _, filenames in os.walk('/kaggle/input'):\n    for filename in filenames:\n        print(os.path.join(dirname, filename))\n\n# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using \"Save & Run All\" \n# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session", "class": "Imports and Environment", "desc": "This code snippet imports the `numpy` and `pandas` libraries for data processing and lists all files in the '/kaggle/input' directory using the `os` library.", "testing": {"class": "Exploratory_Data_Analysis", "subclass": "list_files", "subclass_id": 88, "predicted_subclass_probability": 0.99921954}, "cluster": -1}, {"cell_id": 2, "code": "import hashlib\n\nimport spacy\nimport sklearn\nfrom sklearn.svm import SVC\nfrom sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer\nfrom sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.metrics import f1_score", "class": "Imports and Environment", "desc": "This code snippet imports various machine learning and natural language processing libraries and modules, including `spacy`, and submodules from `sklearn` like `SVC`, `CountVectorizer`, `TfidfVectorizer`, `train_test_split`, `GridSearchCV`, `cross_val_score`, `StandardScaler`, `Pipeline`, and `f1_score`, as well as the `hashlib` library for hashing.", "testing": {"class": "Imports_and_Environment", "subclass": "import_modules", "subclass_id": 22, "predicted_subclass_probability": 0.99932015}, "cluster": -1}, {"cell_id": 3, "code": "nlp = spacy.load('en')", "class": "Imports and Environment", "desc": "This code snippet loads the English language model for the `spaCy` natural language processing library and assigns it to the variable `nlp`.", "testing": {"class": "Model_Train", "subclass": "load_pretrained", "subclass_id": 30, "predicted_subclass_probability": 0.9950819}, "cluster": -1}, {"cell_id": 12, "code": "y_hat = svc.predict(test)", "class": "Model Evaluation", "desc": "This code snippet uses the trained `SVC` model to predict the labels (`y_hat`) on the test dataset's TF-IDF transformed feature vectors (`test`).", "testing": {"class": "Model_Evaluation", "subclass": "predict_on_test", "subclass_id": 48, "predicted_subclass_probability": 0.99424076}, "cluster": -1}, {"cell_id": 8, "code": "param_grid = {\n    \"gamma\" : [0.001,0.01,1,10,100],\n    \"C\":[0.001,0.01,1,10,100],\n    'kernel' : ['poly', \"linear\", 'sigmoid', 'rbf']\n}", "class": "Model Training", "desc": "This code snippet defines a parameter grid dictionary named `param_grid` containing different values for the hyperparameters `gamma`, `C`, and `kernel` for use in hyperparameter tuning of an SVM model.", "testing": {"class": "Model_Train", "subclass": "define_search_space", "subclass_id": 5, "predicted_subclass_probability": 0.99403256}, "cluster": -1}, {"cell_id": 9, "code": "svc = SVC()\ngrid_searcher = GridSearchCV(svc, param_grid, cv=5, scoring='f1')\ngrid_searcher.fit(X_train, y_train)\ngrid_searcher.best_params_", "class": "Model Training", "desc": "This code snippet initializes an SVM model (`SVC`), creates a `GridSearchCV` object for hyperparameter tuning using 5-fold cross-validation and F1 scoring, fits the grid searcher to the training data (`X_train`, `y_train`), and retrieves the best hyperparameters.", "testing": {"class": "Model_Train", "subclass": "train_on_grid", "subclass_id": 6, "predicted_subclass_probability": 0.99040365}, "cluster": -1}, {"cell_id": 10, "code": "best_params= {'C': 1, 'gamma': 0.001, 'kernel': 'linear'}\nsvc = SVC(**best_params)\nscores = cross_val_score(svc,X_train, y_train, cv=5, scoring='f1')\nprint(scores)\nprint(sum(scores)/len(scores))", "class": "Model Training", "desc": "This code snippet initializes an `SVC` model with the best hyperparameters from the grid search, evaluates the model using 5-fold cross-validation and F1 scoring, prints the individual cross-validation scores, and computes the average score.", "testing": {"class": "Model_Train", "subclass": "compute_train_metric", "subclass_id": 28, "predicted_subclass_probability": 0.9838514}, "cluster": -1}, {"cell_id": 11, "code": "val_texts = [\"A happy day!\", 'An earthquake happened!']\nval_data = tf_idf.transform(val_texts)\nsvc.fit(X_train, y_train)\nprint(svc.predict(val_data))", "class": "Model Training", "desc": "This code snippet creates a small validation dataset (`val_texts`), transforms it into TF-IDF feature vectors (`val_data`), trains the `SVC` model on the training data (`X_train`, `y_train`), and prints the model's predictions on the validation texts.", "testing": {"class": "Model_Train", "subclass": "train_model", "subclass_id": 7, "predicted_subclass_probability": 0.6037878}, "cluster": -1}], "notebook_id": 2, "notebook_name": "baseline-svc-79.ipynb", "user": "beherenowli"}], "metadata": {"clusters": {"Data Transform": {"titles": {"-1": ["Preprocess Text Data", "Text Preprocessing Using Pandas, NLTK, and BERT"]}, "accuracy": {"silhouette_score": 0, "ch_index": 0, "db_index": 0}}, "Data Extraction": {"titles": {"-1": ["CSV Reading", "CSV Data Reading with Pandas and NLTK"]}, "accuracy": {"silhouette_score": 0, "ch_index": 0, "db_index": 0}}, "Visualization": {"titles": {"-1": ["Seaborn Target Analysis", "Target Variable Analysis Using Seaborn & Matplotlib"]}, "accuracy": {"silhouette_score": 0, "ch_index": 0, "db_index": 0}}, "Model Training": {"titles": {"-1": ["BERT, LightGBM, SVM", "BERT, LightGBM, Optuna, SVM Model Training"]}, "accuracy": {"silhouette_score": 0, "ch_index": 0, "db_index": 0}}, "Model Evaluation": {"titles": {"-1": ["Evaluation with Octopus ML", "Model Evaluation Techniques using Octopus ML, LightGBM, BERT, and Scikit-Learn  "]}, "accuracy": {"silhouette_score": 0, "ch_index": 0, "db_index": 0}}, "Imports and Environment": {"titles": {"-1": ["TensorFlow & NLP", "TensorFlow, BERT, NLP and ML Utilities  "]}, "accuracy": {"silhouette_score": 0, "ch_index": 0, "db_index": 0}}, "Data Export": {"titles": {"-1": ["Kaggle Model Submissions", "Kaggle Submission Files with BERT and Logistic Regression Models  "]}, "accuracy": {"silhouette_score": 0, "ch_index": 0, "db_index": 0}}, "Exploratory Data Analysis": {"titles": {"-1": ["pandas Data Overview", "Data Inspection, Summary, Correlation using pandas"]}, "accuracy": {"silhouette_score": 0, "ch_index": 0, "db_index": 0}}}, "clustering_accuracy": 0.3950617283950617}}
+{
+    "notebooks": [{
+        "cells": [{
+            "cell_id": 31,
+            "code": "def Kaggle_submission(file_name,model,test_data,ids_list):\n    #if TARGET in test_data.columns:\n    #    test_data.drop([TARGET],axis=1,inplace=True)\n    #test_pred=model.predict(test_data)[:,1]\n    test_pred=model.predict(test_data)\n    predictions = []\n    predictions = oc.adjusted_classes(test_pred, 0.5)\n\n    submit=pd.DataFrame()\n    submit['id'] = ids_list\n    submit['target'] = predictions\n    submit.to_csv(file_name,index=False)\n    return submit",
+            "class": "Data Export",
+            "desc": "This code snippet defines a function `Kaggle_submission` that takes a model, test data, and a list of IDs, makes predictions, adjusts the predicted classes with a threshold of 0.5, and then creates and saves a submission file in CSV format using pandas.",
+            "testing": {
+                "class": "Data_Export",
+                "subclass": "save_to_csv",
+                "subclass_id": 25,
+                "predicted_subclass_probability": 0.9981369
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 45,
+            "code": "submit=pd.DataFrame()\nsubmit['id'] = test_df['id'].tolist()\nsubmit['target'] = test_pred_BERT_int",
+            "class": "Data Export",
+            "desc": "This code snippet creates a DataFrame named `submit`, consisting of the 'id' and 'target' columns from the test DataFrame with the BERT model's integer predictions, preparing it for submission.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "create_dataframe",
+                "subclass_id": 12,
+                "predicted_subclass_probability": 0.90852714
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 46,
+            "code": "submit.to_csv('BERT_model_v3.csv',index=False)",
+            "class": "Data Export",
+            "desc": "This code snippet saves the `submit` DataFrame to a CSV file named 'BERT_model_v3.csv' without including the DataFrame index, making it ready for submission.",
+            "testing": {
+                "class": "Data_Export",
+                "subclass": "save_to_csv",
+                "subclass_id": 25,
+                "predicted_subclass_probability": 0.9991627
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 2,
+            "code": "train_df = pd.read_csv(\"/kaggle/input/nlp-getting-started/train.csv\")\ntest_df = pd.read_csv(\"/kaggle/input/nlp-getting-started/test.csv\")",
+            "class": "Data Extraction",
+            "desc": "This code snippet loads training and testing datasets from CSV files into pandas DataFrames using `pd.read_csv`.",
+            "testing": {
+                "class": "Data_Extraction",
+                "subclass": "load_from_csv",
+                "subclass_id": 45,
+                "predicted_subclass_probability": 0.99975425
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 14,
+            "code": "lst_stopwords = nltk.corpus.stopwords.words(\"english\")\n#lst_stopwords\n",
+            "class": "Data Extraction",
+            "desc": "This code snippet retrieves a list of English stop words from the NLTK corpus to be used for text preprocessing and filters, storing them in the variable `lst_stopwords`.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "string_transform",
+                "subclass_id": 78,
+                "predicted_subclass_probability": 0.9620199
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 39,
+            "code": "# Load tokenizer from the bert layer\nvocab_file = bert_layer.resolved_object.vocab_file.asset_path.numpy()\ndo_lower_case = bert_layer.resolved_object.do_lower_case.numpy()\ntokenizer = tokenization.FullTokenizer(vocab_file, do_lower_case)",
+            "class": "Data Extraction",
+            "desc": "This code snippet loads the vocabulary file and case processing rule from the BERT layer, then initializes a `FullTokenizer` from the `tokenization` module using these parameters for tokenizing text inputs.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "feature_engineering",
+                "subclass_id": 8,
+                "predicted_subclass_probability": 0.4494561
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 6,
+            "code": "def wordcount(x):\n    length = len(str(x).split())\n    return length\ndef charcount(x):\n    s = x.split()\n    x = ''.join(s)\n    return len(x)\n\ndef hashtag_count(x):\n    l = len([t for t in x.split() if t.startswith('#')])\n    return l\n\ndef mentions_count(x):\n    l = len([t for t in x.split() if t.startswith('@')])\n    return l\n\n\ntrain_df['char_count'] = train_df['text'].apply(lambda x: charcount(x))\ntrain_df['word_count'] = train_df['text'].apply(lambda x: wordcount(x))\ntrain_df['hashtag_count'] = train_df['text'].apply(lambda x: hashtag_count(x))\ntrain_df['mention_count'] = train_df['text'].apply(lambda x: mentions_count(x))\ntrain_df['length']=train_df['text'].apply(len)\n\ntest_df['char_count'] = test_df['text'].apply(lambda x: charcount(x))\ntest_df['word_count'] = test_df['text'].apply(lambda x: wordcount(x))\ntest_df['hashtag_count'] = test_df['text'].apply(lambda x: hashtag_count(x))\ntest_df['mention_count'] = test_df['text'].apply(lambda x: mentions_count(x))\ntest_df['length']=test_df['text'].apply(len)\n\ntrain_df.head(2)",
+            "class": "Data Transform",
+            "desc": "This code snippet defines functions to count words, characters, hashtags, and mentions in text, then applies these functions to the 'text' column of both the training and testing DataFrames, creating new columns for each count type using pandas' `apply` method.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "feature_engineering",
+                "subclass_id": 8,
+                "predicted_subclass_probability": 0.9946966
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 11,
+            "code": "# Taken from - Craig Thomas https://www.kaggle.com/craigmthomas/logistic-regression-lightgbm-fe\ntrain_df.drop(\n    [\n        6449, 7034, 3589, 3591, 3597, 3600, 3603, 3604, 3610, 3613, 3614, 119, 106, 115,\n        2666, 2679, 1356, 7609, 3382, 1335, 2655, 2674, 1343, 4291, 4303, 1345, 48, 3374,\n        7600, 164, 5292, 2352, 4308, 4306, 4310, 1332, 1156, 7610, 2441, 2449, 2454, 2477,\n        2452, 2456, 3390, 7611, 6656, 1360, 5771, 4351, 5073, 4601, 5665, 7135, 5720, 5723,\n        5734, 1623, 7533, 7537, 7026, 4834, 4631, 3461, 6366, 6373, 6377, 6378, 6392, 2828,\n        2841, 1725, 3795, 1251, 7607\n    ], inplace=True\n)\n\ntrain_df.drop(\n    [\n        4290, 4299, 4312, 4221, 4239, 4244, 2830, 2831, 2832, 2833, 4597, 4605, 4618, 4232, 4235, 3240,\n        3243, 3248, 3251, 3261, 3266, 4285, 4305, 4313, 1214, 1365, 6614, 6616, 1197, 1331, 4379, 4381,\n        4284, 4286, 4292, 4304, 4309, 4318, 610, 624, 630, 634, 3985, 4013, 4019, 1221, 1349, 6091, 6094, \n        6103, 6123, 5620, 5641\n    ], inplace=True\n)",
+            "class": "Data Transform",
+            "desc": "This code snippet removes rows with specific indices from the training DataFrame using the `drop` method in pandas, possibly to eliminate noisy or irrelevant data points.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "drop_column",
+                "subclass_id": 10,
+                "predicted_subclass_probability": 0.9402679
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 13,
+            "code": "def preprocess_text(text, flg_stemm=False, flg_lemm=True, lst_stopwords=None):\n    \n    text = re.sub(r'[^\\w\\s]', '', str(text).lower().strip())\n    lst_text = text.split()\n    if lst_stopwords is not None:\n        lst_text = [word for word in lst_text if word not in \n                    lst_stopwords]\n                \n    ## Stemming (remove -ing, -ly, ...)\n    if flg_stemm == True:\n        ps = nltk.stem.porter.PorterStemmer()\n        lst_text = [ps.stem(word) for word in lst_text]\n\n    if flg_lemm == True:\n        lem = nltk.stem.wordnet.WordNetLemmatizer()\n        lst_text = [lem.lemmatize(word) for word in lst_text]\n            \n                            \n    ## back to string from list\n    text = \" \".join(lst_text)\n    return text",
+            "class": "Data Transform",
+            "desc": "This code snippet defines a `preprocess_text` function to clean and preprocess text by removing punctuation, converting to lowercase, eliminating stop words, and optionally applying stemming or lemmatization using the NLTK library, then reconstructing the processed words into a single string.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "string_transform",
+                "subclass_id": 78,
+                "predicted_subclass_probability": 0.9333879
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 15,
+            "code": "contractions = { \n\"ain't\": \"am not\",\n\"aren't\": \"are not\",\n\"can't\": \"cannot\",\n\"can't've\": \"cannot have\",\n\"'cause\": \"because\",\n\"could've\": \"could have\",\n\"couldn't\": \"could not\",\n\"couldn't've\": \"could not have\",\n\"didn't\": \"did not\",\n\"doesn't\": \"does not\",\n\"don't\": \"do not\",\n\"hadn't\": \"had not\",\n\"hadn't've\": \"had not have\",\n\"hasn't\": \"has not\",\n\"haven't\": \"have not\",\n\"he'd\": \"he would\",\n\"he'd've\": \"he would have\",\n\"he'll\": \"he will\",\n\"he'll've\": \"he will have\",\n\"he's\": \"he is\",\n\"how'd\": \"how did\",\n\"how'd'y\": \"how do you\",\n\"how'll\": \"how will\",\n\"how's\": \"how does\",\n\"i'd\": \"i would\",\n\"i'd've\": \"i would have\",\n\"i'll\": \"i will\",\n\"i'll've\": \"i will have\",\n\"i'm\": \"i am\",\n\"i've\": \"i have\",\n\"isn't\": \"is not\",\n\"it'd\": \"it would\",\n\"it'd've\": \"it would have\",\n\"it'll\": \"it will\",\n\"it'll've\": \"it will have\",\n\"it's\": \"it is\",\n\"let's\": \"let us\",\n\"ma'am\": \"madam\",\n\"mayn't\": \"may not\",\n\"might've\": \"might have\",\n\"mightn't\": \"might not\",\n\"mightn't've\": \"might not have\",\n\"must've\": \"must have\",\n\"mustn't\": \"must not\",\n\"mustn't've\": \"must not have\",\n\"needn't\": \"need not\",\n\"needn't've\": \"need not have\",\n\"o'clock\": \"of the clock\",\n\"oughtn't\": \"ought not\",\n\"oughtn't've\": \"ought not have\",\n\"shan't\": \"shall not\",\n\"sha'n't\": \"shall not\",\n\"shan't've\": \"shall not have\",\n\"she'd\": \"she would\",\n\"she'd've\": \"she would have\",\n\"she'll\": \"she will\",\n\"she'll've\": \"she will have\",\n\"she's\": \"she is\",\n\"should've\": \"should have\",\n\"shouldn't\": \"should not\",\n\"shouldn't've\": \"should not have\",\n\"so've\": \"so have\",\n\"so's\": \"so is\",\n\"that'd\": \"that would\",\n\"that'd've\": \"that would have\",\n\"that's\": \"that is\",\n\"there'd\": \"there would\",\n\"there'd've\": \"there would have\",\n\"there's\": \"there is\",\n\"they'd\": \"they would\",\n\"they'd've\": \"they would have\",\n\"they'll\": \"they will\",\n\"they'll've\": \"they will have\",\n\"they're\": \"they are\",\n\"they've\": \"they have\",\n\"to've\": \"to have\",\n\"wasn't\": \"was not\",\n\" u \": \" you \",\n\" ur \": \" your \",\n\" n \": \" and \",\n\"won't\": \"would not\",\n'dis': 'this',\n'bak': 'back',\n'brng': 'bring'}\n\ndef cont_to_exp(x):\n    if type(x) is str:\n        for key in contractions:\n            value = contractions[key]\n            x = x.replace(key, value)\n        return x\n    else:\n        return x\n    \ntrain_df['text_clean'] = train_df['text'].apply(lambda x: cont_to_exp(x))\ntest_df['text_clean'] = test_df['text'].apply(lambda x: cont_to_exp(x))\n\n\ndef remove_emails(x):\n     return re.sub(r'([a-z0-9+._-]+@[a-z0-9+._-]+\\.[a-z0-9+_-]+)',\"\", x)\n\n\ndef remove_urls(x):\n    return re.sub(r'(http|https|ftp|ssh)://([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?', '' , x)\n\ndef remove_rt(x):\n    return re.sub(r'\\brt\\b', '', x).strip()\n\ndef remove_special_chars(x):\n    x = re.sub(r'[^\\w ]+', \"\", x)\n    x = ' '.join(x.split())\n    return x\n\n\ndef remove_accented_chars(x):\n    x = unicodedata.normalize('NFKD', x).encode('ascii', 'ignore').decode('utf-8', 'ignore')\n    return x\n\n\n\ntrain_df['text_clean'] = train_df['text_clean'].apply(lambda x: remove_emails(x))\ntrain_df['text_clean'] = train_df['text_clean'].apply(lambda x: remove_urls(x))\ntrain_df['text_clean'] = train_df['text_clean'].apply(lambda x: remove_rt(x))\ntrain_df['text_clean'] = train_df['text_clean'].apply(lambda x: remove_special_chars(x))\ntrain_df['text_clean'] = train_df['text_clean'].apply(lambda x: remove_accented_chars(x))",
+            "class": "Data Transform",
+            "desc": "This code snippet defines a series of functions to expand contractions, remove emails, URLs, retweets, special characters, and accented characters from text, and then applies these cleaning steps to the 'text' column in both the training and test DataFrames, storing the cleaned text in a new column 'text_clean'.",
+            "testing": {
+                "class": "Exploratory_Data_Analysis",
+                "subclass": "define_variables",
+                "subclass_id": 77,
+                "predicted_subclass_probability": 0.99555004
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 16,
+            "code": "train_df[\"text_clean\"] = train_df[\"text_clean\"].apply(lambda x: preprocess_text(x, flg_stemm=True, flg_lemm=False, lst_stopwords=lst_stopwords))\ntrain_df.head()",
+            "class": "Data Transform",
+            "desc": "This code snippet applies the `preprocess_text` function with stemming enabled and lemmatization disabled, along with a list of stop words, to the 'text_clean' column of the training DataFrame, updating the 'text_clean' column with the processed text.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "feature_engineering",
+                "subclass_id": 8,
+                "predicted_subclass_probability": 0.9974553
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 17,
+            "code": "vec=TfidfVectorizer(max_features = 10000,ngram_range=(1,4))\nvec.fit(train_df['text_clean'])",
+            "class": "Data Transform",
+            "desc": "This code snippet initializes a `TfidfVectorizer` from scikit-learn with a maximum of 10,000 features and n-gram range of 1 to 4, then fits it to the 'text_clean' column of the training DataFrame to learn the vocabulary and document-term matrix.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "train_model",
+                "subclass_id": 7,
+                "predicted_subclass_probability": 0.5606868
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 18,
+            "code": "matrix = vec.transform(train_df['text_clean']).toarray()\nfeatures = vec.get_feature_names()\nmatrix_df = pd.DataFrame(data=matrix, columns=features)\n",
+            "class": "Data Transform",
+            "desc": "This code snippet transforms the 'text_clean' column of the training DataFrame into a document-term matrix using the fitted `TfidfVectorizer`, converts it to an array, retrieves the feature names, and constructs a new pandas DataFrame using this matrix with feature names as columns.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "create_dataframe",
+                "subclass_id": 12,
+                "predicted_subclass_probability": 0.99546874
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 21,
+            "code": "matrix_df['length']=train_df['length']\nmatrix_df['char_count']=train_df['char_count']\nmatrix_df['word_count']=train_df['word_count']\nmatrix_df['hashtag_count']=train_df['hashtag_count']\nmatrix_df['mention_count']=train_df['mention_count']\ny=train_df['target']",
+            "class": "Data Transform",
+            "desc": "This code snippet appends additional features ('length', 'char_count', 'word_count', 'hashtag_count', 'mention_count') from the training DataFrame to the `matrix_df` DataFrame and sets the target variable `y` to the 'target' column from the training DataFrame.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "prepare_x_and_y",
+                "subclass_id": 21,
+                "predicted_subclass_probability": 0.8321087
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 32,
+            "code": "test_df[\"text_clean\"]=test_df['text']\ntest_df['text_clean'] = test_df['text_clean'].apply(lambda x: remove_emails(x))\ntest_df['text_clean'] = test_df['text_clean'].apply(lambda x: remove_urls(x))\ntest_df['text_clean'] = test_df['text_clean'].apply(lambda x: remove_rt(x))\ntest_df['text_clean'] = test_df['text_clean'].apply(lambda x: remove_special_chars(x))\ntest_df['text_clean'] = test_df['text_clean'].apply(lambda x: remove_accented_chars(x))\n\ntest_df[\"text_clean\"] = test_df[\"text\"].apply(lambda x: preprocess_text(x, flg_stemm=True, flg_lemm=False, lst_stopwords=lst_stopwords))\ntest_df['length']=test_df['text'].apply(len)\n\ntest_df.head()\n\n#vec=TfidfVectorizer(max_features = 20000,ngram_range=(1,4))\n#vec.fit(test_df['text_clean'])\n\n\n\nmatrix = vec.transform(test_df['text_clean']).toarray()\nfeatures = vec.get_feature_names()\nmatrix_df = pd.DataFrame(data=matrix, columns=features)\n\nmatrix_df['length']=test_df['length']\nmatrix_df['char_count']=test_df['char_count']\nmatrix_df['word_count']=test_df['word_count']\nmatrix_df['hashtag_count']=test_df['hashtag_count']\nmatrix_df['mention_count']=test_df['mention_count']",
+            "class": "Data Transform",
+            "desc": "This code snippet preprocesses the 'text_clean' column in the test DataFrame by applying email, URL, retweet, special character, and accented character removal functions, as well as the `preprocess_text` function, then transforms this cleaned text into a document-term matrix using the existing `TfidfVectorizer`, and appends other features ('length', 'char_count', 'word_count', 'hashtag_count', 'mention_count') to the resulting DataFrame.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "feature_engineering",
+                "subclass_id": 8,
+                "predicted_subclass_probability": 0.99814296
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 36,
+            "code": "#Credit: https://www.kaggle.com/xhlulu/disaster-nlp-keras-bert-using-tfhub\ndef bert_encode(texts, tokenizer, max_len=512):\n    all_tokens = []\n    all_masks = []\n    all_segments = []\n    \n    for text in texts:\n        text = tokenizer.tokenize(text)\n            \n        text = text[:max_len-2]\n        input_sequence = [\"[CLS]\"] + text + [\"[SEP]\"]\n        pad_len = max_len - len(input_sequence)\n        \n        tokens = tokenizer.convert_tokens_to_ids(input_sequence)\n        tokens += [0] * pad_len\n        pad_masks = [1] * len(input_sequence) + [0] * pad_len\n        segment_ids = [0] * max_len\n        \n        all_tokens.append(tokens)\n        all_masks.append(pad_masks)\n        all_segments.append(segment_ids)\n    \n    return np.array(all_tokens), np.array(all_masks), np.array(all_segments)",
+            "class": "Data Transform",
+            "desc": "This code snippet defines a function `bert_encode` to tokenize input texts using a BERT tokenizer, then creates token, mask, and segment ID arrays to fit BERT\u2019s input requirements, ensuring that each sequence has a maximum length of 512 tokens.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "categorify",
+                "subclass_id": 20,
+                "predicted_subclass_probability": 0.9645982
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 40,
+            "code": "# Encode the text into tokens, masks, and segment flags\ntrain_input = bert_encode(train_df.text_clean.values, tokenizer, max_len=160)\ntest_input = bert_encode(test_df.text_clean.values, tokenizer, max_len=160)\ntrain_labels = train_df.target.values",
+            "class": "Data Transform",
+            "desc": "This code snippet encodes the cleaned text data from both the training and test DataFrames into BERT-compatible tokens, masks, and segment flags using the previously defined `bert_encode` function and stores the encoded inputs and labels.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "categorify",
+                "subclass_id": 20,
+                "predicted_subclass_probability": 0.9929838
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 3,
+            "code": "train_df.head(5)",
+            "class": "Exploratory Data Analysis",
+            "desc": "This code snippet displays the first five rows of the training DataFrame using the `head` method in pandas.",
+            "testing": {
+                "class": "Exploratory_Data_Analysis",
+                "subclass": "show_table",
+                "subclass_id": 41,
+                "predicted_subclass_probability": 0.9997615
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 4,
+            "code": "# DataFrane Summary by pandas summary package (extension of pandas.describe method) \ndfs = DataFrameSummary(train_df)\ndfs.summary()",
+            "class": "Exploratory Data Analysis",
+            "desc": "This code snippet generates a summary of the training DataFrame using the `DataFrameSummary` method from the pandas-summary package, which provides an extended version of the pandas `describe` method.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "create_dataframe",
+                "subclass_id": 12,
+                "predicted_subclass_probability": 0.988304
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 10,
+            "code": "duplicates = pd.concat(x for _, x in train_df.groupby([\"text\"]) if len(x) > 1)\n\n#with pd.option_context(\"display.max_rows\", None, \"max_colwidth\", 80):\n#    display(duplicates[[\"id\", \"target\", \"text\"]])",
+            "class": "Exploratory Data Analysis",
+            "desc": "This code snippet identifies and concatenates duplicate text entries in the training DataFrame using pandas' `groupby` and `concat` methods, allowing for further inspection and analysis of duplicate rows.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "concatenate",
+                "subclass_id": 11,
+                "predicted_subclass_probability": 0.87380403
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 19,
+            "code": "matrix_df.head(2)",
+            "class": "Exploratory Data Analysis",
+            "desc": "This code snippet displays the first two rows of the DataFrame `matrix_df`, which contains the document-term matrix of the cleaned text data.",
+            "testing": {
+                "class": "Exploratory_Data_Analysis",
+                "subclass": "show_table",
+                "subclass_id": 41,
+                "predicted_subclass_probability": 0.9997633
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 20,
+            "code": "matrix_df.shape",
+            "class": "Exploratory Data Analysis",
+            "desc": "This code snippet outputs the shape (number of rows and columns) of the `matrix_df` DataFrame, which contains the document-term matrix.",
+            "testing": {
+                "class": "Exploratory_Data_Analysis",
+                "subclass": "show_shape",
+                "subclass_id": 58,
+                "predicted_subclass_probability": 0.9996574
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 29,
+            "code": "top_features=feature_imp_list.sort_values(by='Value', ascending=False).head(20)\ntop_features",
+            "class": "Exploratory Data Analysis",
+            "desc": "This code snippet sorts the feature importance list by value in descending order, extracts the top 20 features, and displays them, allowing for an analysis of the most influential features in the model.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "sort_values",
+                "subclass_id": 9,
+                "predicted_subclass_probability": 0.992605
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 30,
+            "code": "list_for_correlations=top_features['Feature'].to_list()\nlist_for_correlations.append('target')\noc.correlations(matrix_df,list_for_correlations)",
+            "class": "Exploratory Data Analysis",
+            "desc": "This code snippet generates a list of the top 20 most important features, appends the 'target' variable to this list, and uses the `correlations` function from the Octopus ML package to compute and display the correlation matrix for these features plus the target variable.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "model_coefficients",
+                "subclass_id": 79,
+                "predicted_subclass_probability": 0.9603935
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 47,
+            "code": "submit.head(3)",
+            "class": "Exploratory Data Analysis",
+            "desc": "This code snippet displays the first three rows of the `submit` DataFrame, allowing for a quick inspection of the prepared submission data.",
+            "testing": {
+                "class": "Exploratory_Data_Analysis",
+                "subclass": "show_table",
+                "subclass_id": 41,
+                "predicted_subclass_probability": 0.9997651
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 0,
+            "code": "# Octopus ML pakage - github.com/gershonc/octopus-ml\n!pip install octopus-ml",
+            "class": "Imports and Environment",
+            "desc": "This code installs the Octopus ML package from GitHub using pip.",
+            "testing": {
+                "class": "Imports_and_Environment",
+                "subclass": "install_modules",
+                "subclass_id": 87,
+                "predicted_subclass_probability": 0.99379325
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 1,
+            "code": "import warnings\nwarnings.simplefilter(\"ignore\")\nimport seaborn as sns \nimport matplotlib.pyplot as plt\nimport time\nimport pandas as pd\nimport numpy as np\nimport lightgbm as lgb\nimport tracemalloc\nfrom pandas_summary import DataFrameSummary\nfrom sklearn.metrics import classification_report\n\nfrom sklearn import feature_extraction, linear_model, model_selection, preprocessing\n\n%matplotlib inline\nsns.set_style(\"whitegrid\")\n\npd.set_option('display.max_columns', None)  # or 1000\npd.set_option('display.max_rows', None)  # or 1000\npd.set_option('display.max_colwidth', -1)  # or 199\n\n#check out https://github.com/gershonc/octopus-ml\nimport octopus_ml as oc\n\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.multiclass import OneVsRestClassifier\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.model_selection import train_test_split",
+            "class": "Imports and Environment",
+            "desc": "This code snippet imports various libraries needed for data manipulation (pandas, numpy), plotting (seaborn, matplotlib), machine learning (LightGBM, scikit-learn), monitoring (tracemalloc), and displaying dataframes (DataFrameSummary), sets visualization styles for matplotlib, and configures pandas display options.",
+            "testing": {
+                "class": "Imports_and_Environment",
+                "subclass": "set_options",
+                "subclass_id": 23,
+                "predicted_subclass_probability": 0.9992041
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 12,
+            "code": "## for data\nimport json\nimport pandas as pd\nimport numpy as np\n## for plotting\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n## for processing\nimport re\nimport nltk\n## for bag-of-words\nfrom sklearn import feature_extraction, model_selection, naive_bayes, pipeline, manifold, preprocessing\n## for explainer\nfrom lime import lime_text\n## for word embedding\nimport gensim\nimport gensim.downloader as gensim_api\n## for deep learning\nfrom tensorflow.keras import models, layers, preprocessing as kprocessing\nfrom tensorflow.keras import backend as K\n## for bert language model\nimport transformers\nimport unicodedata",
+            "class": "Imports and Environment",
+            "desc": "This code snippet imports various libraries and modules for data manipulation (pandas, numpy), plotting (matplotlib, seaborn), text processing (re, nltk), machine learning (scikit-learn, lime), word embedding (gensim), deep learning (TensorFlow Keras), and BERT language models (transformers), thus setting up the environment for further tasks.",
+            "testing": {
+                "class": "Imports_and_Environment",
+                "subclass": "import_modules",
+                "subclass_id": 22,
+                "predicted_subclass_probability": 0.9993574
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 34,
+            "code": "!wget --quiet https://raw.githubusercontent.com/tensorflow/models/master/official/nlp/bert/tokenization.py",
+            "class": "Imports and Environment",
+            "desc": "This code snippet downloads the `tokenization.py` script from the TensorFlow models repository on GitHub using wget, possibly for BERT tokenization tasks.",
+            "testing": {
+                "class": "Data_Extraction",
+                "subclass": "load_from_url",
+                "subclass_id": 42,
+                "predicted_subclass_probability": 0.8866123
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 35,
+            "code": "import tensorflow as tf\nfrom tensorflow.keras.layers import Dense, Input\nfrom tensorflow.keras.optimizers import Adam\nfrom tensorflow.keras.models import Model\nfrom tensorflow.keras.callbacks import ModelCheckpoint\nimport tensorflow_hub as hub\n\nimport tokenization",
+            "class": "Imports and Environment",
+            "desc": "This code snippet imports various TensorFlow modules including Keras layers, optimizers, models, and callbacks, as well as TensorFlow Hub and the previously downloaded `tokenization.py` script, setting up the environment for working with TensorFlow and BERT.",
+            "testing": {
+                "class": "Imports_and_Environment",
+                "subclass": "import_modules",
+                "subclass_id": 22,
+                "predicted_subclass_probability": 0.99932015
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 38,
+            "code": "# Load BERT from the Tensorflow Hub\nmodule_url = \"https://tfhub.dev/tensorflow/bert_en_uncased_L-24_H-1024_A-16/1\"\nbert_layer = hub.KerasLayer(module_url, trainable=True)",
+            "class": "Imports and Environment",
+            "desc": "This code snippet loads a pre-trained BERT model (uncased, base architecture) from TensorFlow Hub as a Keras layer, with the `trainable` parameter set to `True` to allow fine-tuning.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "choose_model_class",
+                "subclass_id": 4,
+                "predicted_subclass_probability": 0.87859446
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 22,
+            "code": "params = {\n        'boosting_type': 'gbdt',\n        'objective': 'binary',\n        'metric': 'auc',\n        'learning_rate': 0.01,\n        'num_leaves':32,\n        'subsample': 1,\n        #'colsample_bytree': 0.25,\n        #'reg_alpha': 0,\n        #'reg_lambda': 1,\n        #'scale_pos_weight': 5,\n        'n_estimators': 10000,\n        'verbose': -1,\n        'max_depth': -1,\n        'seed':100, \n        'colsample_bytree':0.4,\n        'force_col_wise': True\n\n\n}\n\"\"\"\n    boosting_type='gbdt', class_weight=None, colsample_bytree=0.4,\n               importance_type='split', learning_rate=0.04, max_depth=-1,\n               metric='auc', min_child_samples=20, min_child_weight=0.001,\n               min_split_gain=0.0, n_estimators=1500, n_jobs=-1, num_leaves=31,\n               objective=None, random_state=None, reg_alpha=0.0, reg_lambda=0.0,\n               silent=True, subsample=1.0, subsample_for_bin=200000,\n               subsample_freq=0 \n\"\"\"\nmetrics = oc.cv_adv(matrix_df,y,0.5,2000,shuffle=True,params=params)",
+            "class": "Model Evaluation",
+            "desc": "This code snippet sets up LightGBM parameters for a binary classification task and uses the `cv_adv` function from the Octopus ML package to perform cross-validation on the transformed data `matrix_df` and target variable `y`, evaluating the model based on AUC metric with shuffle enabled.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "init_hyperparams",
+                "subclass_id": 59,
+                "predicted_subclass_probability": 0.99348336
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 24,
+            "code": "print(classification_report(metrics['y'], metrics['predictions_folds']))",
+            "class": "Model Evaluation",
+            "desc": "This code snippet prints the classification report, which includes precision, recall, and F1-score for each class, using the true labels and predicted labels from the cross-validation metrics via scikit-learn's `classification_report` function.",
+            "testing": {
+                "class": "Model_Evaluation",
+                "subclass": "compute_test_metric",
+                "subclass_id": 49,
+                "predicted_subclass_probability": 0.9977271
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 33,
+            "code": "test_pred=metrics['final_clf'].predict(matrix_df)\npredictions = []\n#predictions = oc.adjusted_classes(test_pred, 0.5)",
+            "class": "Model Training",
+            "desc": "This code snippet makes predictions on the transformed test data (`matrix_df`) using the final trained LightGBM classifier stored in `metrics['final_clf']`, storing the raw prediction outputs in `test_pred`.",
+            "testing": {
+                "class": "Model_Evaluation",
+                "subclass": "predict_on_test",
+                "subclass_id": 48,
+                "predicted_subclass_probability": 0.9896577
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 37,
+            "code": "def build_model(bert_layer, max_len=512):\n    input_word_ids = Input(shape=(max_len,), dtype=tf.int32, name=\"input_word_ids\")\n    input_mask = Input(shape=(max_len,), dtype=tf.int32, name=\"input_mask\")\n    segment_ids = Input(shape=(max_len,), dtype=tf.int32, name=\"segment_ids\")\n\n    _, sequence_output = bert_layer([input_word_ids, input_mask, segment_ids])\n    clf_output = sequence_output[:, 0, :]\n    \n    if Dropout_num == 0:\n        # Without Dropout\n        out = Dense(1, activation='sigmoid')(clf_output)\n    else:\n        # With Dropout(Dropout_num), Dropout_num > 0\n        x = Dropout(Dropout_num)(clf_output)\n        out = Dense(1, activation='sigmoid')(x)\n\n    model = Model(inputs=[input_word_ids, input_mask, segment_ids], outputs=out)\n    model.compile(Adam(lr=learning_rate), loss='binary_crossentropy', metrics=['accuracy'])\n    \n    return model",
+            "class": "Model Training",
+            "desc": "This code snippet defines a function `build_model` to create a TensorFlow Keras model using a given BERT layer, with inputs for word IDs, masks, and segment IDs, and an optional dropout layer, compiling the model with the Adam optimizer and binary cross-entropy loss function.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "choose_model_class",
+                "subclass_id": 4,
+                "predicted_subclass_probability": 0.9445593
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 41,
+            "code": "random_state_split = 2\nDropout_num = 0\nlearning_rate = 6e-6\nvalid = 0.2\nepochs_num = 3\nbatch_size_num = 16\ntarget_corrected = False\ntarget_big_corrected = False\n\n# Build BERT model with my tuning\nmodel_BERT = build_model(bert_layer, max_len=160)\nmodel_BERT.summary()",
+            "class": "Model Training",
+            "desc": "This code snippet sets various hyperparameters such as dropout rate, learning rate, validation split, number of epochs, and batch size, and builds a BERT model with a maximum length of 160 tokens using the previously defined `build_model` function, then prints a summary of the model architecture.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "choose_model_class",
+                "subclass_id": 4,
+                "predicted_subclass_probability": 0.66016126
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 42,
+            "code": "checkpoint = ModelCheckpoint('model_BERT.h5', monitor='val_loss', save_best_only=True)\n\ntrain_history = model_BERT.fit(\n    train_input, train_labels,\n    validation_split = valid,\n    epochs = epochs_num, # recomended 3-5 epochs\n    callbacks=[checkpoint],\n    batch_size = batch_size_num\n)",
+            "class": "Model Training",
+            "desc": "This code snippet trains the BERT model using the training inputs and labels, with a validation split, number of epochs, and batch size as specified; it also uses a `ModelCheckpoint` callback to save the best model based on validation loss, and stores the training history.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "train_model",
+                "subclass_id": 7,
+                "predicted_subclass_probability": 0.99751294
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 43,
+            "code": "model_BERT.load_weights('model_BERT.h5')\ntest_pred_BERT = model_BERT.predict(test_input)\ntest_pred_BERT_int = test_pred_BERT.round().astype('int')",
+            "class": "Model Training",
+            "desc": "This code snippet loads the best weights into the BERT model from the checkpoint file `model_BERT.h5`, makes predictions on the test input data, and converts these predictions to integers by rounding.",
+            "testing": {
+                "class": "Model_Evaluation",
+                "subclass": "predict_on_test",
+                "subclass_id": 48,
+                "predicted_subclass_probability": 0.991269
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 44,
+            "code": "train_pred_BERT = model_BERT.predict(train_input)\ntrain_pred_BERT_int = train_pred_BERT.round().astype('int')",
+            "class": "Model Training",
+            "desc": "This code snippet makes predictions on the training input data using the BERT model and converts these predictions to integers by rounding.",
+            "testing": {
+                "class": "Model_Evaluation",
+                "subclass": "predict_on_test",
+                "subclass_id": 48,
+                "predicted_subclass_probability": 0.990164
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 5,
+            "code": "# Target distribution analysis\nfig, ax =plt.subplots(1,2)\n\n\nplt.style.use('fivethirtyeight')\nplt.figure(figsize=(3,4))\nsns.set_context(\"paper\", font_scale=1.2)                                                  \nsns.countplot('target',data=train_df, ax=ax[0])\ntrain_df['target'].value_counts().plot.pie(explode=[0,0.2],autopct='%1.2f%%',ax=ax[1])\nfig.show()",
+            "class": "Visualization",
+            "desc": "This code snippet visualizes the distribution of the target variable in the training DataFrame using seaborn's `countplot` and a pie chart created with pandas plot method, all styled with `fivethirtyeight`.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "distribution",
+                "subclass_id": 33,
+                "predicted_subclass_probability": 0.9649334
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 7,
+            "code": "sns.displot(data = train_df, kind = 'hist', x = 'length', hue = 'target', multiple = 'stack',bins=50,height = 5, aspect = 1.9)\n\n# The distibution of tweet text length vs target - there is a correlation between tweet length and target ",
+            "class": "Visualization",
+            "desc": "This code snippet uses seaborn's `displot` to create a stacked histogram of tweet text length versus the target variable, providing insights into the correlation between tweet length and the target.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "distribution",
+                "subclass_id": 33,
+                "predicted_subclass_probability": 0.9802619
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 8,
+            "code": "sns.displot(data = train_df, kind = 'hist', x = 'hashtag_count', hue = 'target', multiple = 'stack',bins=50,height = 5, aspect = 1.9)",
+            "class": "Visualization",
+            "desc": "This code snippet uses seaborn's `displot` to create a stacked histogram of hashtag counts versus the target variable, allowing for analysis of the relationship between hashtag usage and the target.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "distribution",
+                "subclass_id": 33,
+                "predicted_subclass_probability": 0.9985002
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 9,
+            "code": "sns.displot(data = train_df, kind = 'hist', x = 'word_count', hue = 'target', multiple = 'stack',bins=50,height = 5, aspect = 1.9)\n",
+            "class": "Visualization",
+            "desc": "This code snippet uses seaborn's `displot` to create a stacked histogram of word counts versus the target variable, providing insights into the relationship between word count and the target variable.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "distribution",
+                "subclass_id": 33,
+                "predicted_subclass_probability": 0.9985385
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 23,
+            "code": "oc.cv_plot(metrics['f1_weighted'],metrics['f1_macro'],metrics['f1_positive'],'Titanic Kaggle competition')",
+            "class": "Visualization",
+            "desc": "This code snippet uses the `cv_plot` function from the Octopus ML package to plot the weighted F1 score, macro F1 score, and positive F1 score from the cross-validation metrics with the title 'Titanic Kaggle competition'.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "distribution",
+                "subclass_id": 33,
+                "predicted_subclass_probability": 0.64448214
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 25,
+            "code": "oc.roc_curve_plot(metrics['y'], metrics['predictions_proba'])",
+            "class": "Visualization",
+            "desc": "This code snippet uses the `roc_curve_plot` function from the Octopus ML package to plot the Receiver Operating Characteristic (ROC) curve based on the true labels and predicted probabilities from the cross-validation metrics, providing insights into the model's performance.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "distribution",
+                "subclass_id": 33,
+                "predicted_subclass_probability": 0.67355084
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 26,
+            "code": "oc.confusion_matrix_plot(metrics['y'], metrics['predictions_folds'])",
+            "class": "Visualization",
+            "desc": "This code snippet uses the `confusion_matrix_plot` function from the Octopus ML package to plot the confusion matrix for the true labels and predicted labels from the cross-validation metrics, allowing visualization of the model's classification performance in terms of true positives, true negatives, false positives, and false negatives.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "model_coefficients",
+                "subclass_id": 79,
+                "predicted_subclass_probability": 0.65878206
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 27,
+            "code": "feature_imp_list=oc.plot_imp(metrics['final_clf'],matrix_df,'LightGBM Mortality Kaggle',num=40)",
+            "class": "Visualization",
+            "desc": "This code snippet uses the `plot_imp` function from the Octopus ML package to visualize the top 40 important features from the final LightGBM classifier (`final_clf`) trained during cross-validation, labeling the plot with 'LightGBM Mortality Kaggle'.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "model_coefficients",
+                "subclass_id": 79,
+                "predicted_subclass_probability": 0.9963425
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 28,
+            "code": "oc.preds_distribution(metrics['y'], metrics['predictions_proba'], bins=40)",
+            "class": "Visualization",
+            "desc": "This code snippet uses the `preds_distribution` function from the Octopus ML package to plot the distribution of predicted probabilities for the true labels, with 40 bins, allowing for an assessment of the probability distribution and model confidence.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "compute_train_metric",
+                "subclass_id": 28,
+                "predicted_subclass_probability": 0.558016
+            },
+            "cluster": -1
+        }],
+        "notebook_id": 0,
+        "notebook_name": "nlp-twitter-tuned-lgbm-model-tfidf-bert.ipynb",
+        "user": "celniker"
+    }, {
+        "cells": [{
+            "cell_id": 11,
+            "code": "def submission(model, test_df, fname = 'submission'):\n    y_hat = model.predict(test_df)\n    submission = pd.read_csv('/kaggle/input/nlp-getting-started/sample_submission.csv')\n    submission['target'] = y_hat\n    submission.to_csv('submission.csv', index=False)",
+            "class": "Data Export",
+            "desc": "This code snippet defines a function `submission` that takes a trained model and a test DataFrame, uses the model to predict the target values, loads a sample submission CSV file, updates its 'target' column with the model's predictions, and saves the updated DataFrame to a CSV file named 'submission.csv' using pandas' `read_csv` and `to_csv` methods.",
+            "testing": {
+                "class": "Data_Export",
+                "subclass": "save_to_csv",
+                "subclass_id": 25,
+                "predicted_subclass_probability": 0.9989374
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 17,
+            "code": "# submission\ny_hat = lr.predict_proba(test)\ny_hat = y_hat[:, 1]\n\npreds = to_class_label(y_hat, opt_thres)\nsubmission = pd.read_csv('/kaggle/input/nlp-getting-started/sample_submission.csv')\nsubmission['target'] = preds\n\nsubmission.to_csv('submission.csv', index=False)",
+            "class": "Data Export",
+            "desc": "This code snippet generates predictions using the trained Logistic Regression model with the optimal threshold, updates the 'target' column in the sample submission file with these predictions, and saves it as 'submission.csv' using pandas' `read_csv` and `to_csv` methods.",
+            "testing": {
+                "class": "Data_Export",
+                "subclass": "save_to_csv",
+                "subclass_id": 25,
+                "predicted_subclass_probability": 0.9982597
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 1,
+            "code": "# print files in input dir\nfor dirname, _, filenames in os.walk('/kaggle/input'):\n    for filename in filenames:\n        print(os.path.join(dirname, filename))\n    ",
+            "class": "Data Extraction",
+            "desc": "This code snippet iterates through the '/kaggle/input' directory and prints the full path of each file found using the `os.walk` method.",
+            "testing": {
+                "class": "Exploratory_Data_Analysis",
+                "subclass": "list_files",
+                "subclass_id": 88,
+                "predicted_subclass_probability": 0.9993166
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 2,
+            "code": "train = pd.read_csv('../input/nlp-getting-started/train.csv')\ntest = pd.read_csv('../input/nlp-getting-started/test.csv')\n\ntrain.head()",
+            "class": "Data Extraction",
+            "desc": "This code snippet reads the training and test datasets from CSV files into pandas DataFrames and displays the first few rows of the training DataFrame using the `pd.read_csv` and `head` methods.",
+            "testing": {
+                "class": "Data_Extraction",
+                "subclass": "load_from_csv",
+                "subclass_id": 45,
+                "predicted_subclass_probability": 0.9996737
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 4,
+            "code": "# plot prop of missing for each feature\nsns.set_theme(style='white')\nsns.barplot(x=train.columns, y=train.isnull().mean())\nplt.show()\n\n# drop location and keyword\ntrain.drop(columns=['id', 'keyword', 'location'], inplace=True)\ntest.drop(columns=['id', 'keyword', 'location'], inplace=True)\ntrain.drop_duplicates(inplace=True, ignore_index=True)",
+            "class": "Data Transform",
+            "desc": "This code snippet plots the proportion of missing values for each feature in the training dataset using seaborn's `barplot`, then drops the 'id', 'keyword', and 'location' columns from both the training and test datasets and removes duplicates from the training dataset using pandas' `drop` and `drop_duplicates` methods.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "distribution",
+                "subclass_id": 33,
+                "predicted_subclass_probability": 0.8657076
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 6,
+            "code": "wordnet_lemmatizer = WordNetLemmatizer()\n\ndef quick_clean(text):\n    \"\"\"\n    adapted from: https://www.kaggle.com/sophiejermy/sj-eda1\n    \"\"\"\n#     text = text + ' '\n    #remove links\n    text = re.sub(r'(?:(?:https?|ftp):\\/\\/)?[\\w/\\-?=%.]+\\.[\\w/\\-&?=%.]+', '', text)\n    #lower case\n    text = text.lower()    \n    #remove special characters\n    text = re.sub(r'[\\W]+', ' ', text)\n    #remove double spaces\n    text = re.sub(r'\\s+', ' ', text)\n    #tokenize\n    text = word_tokenize(text)\n    #remove stop words\n    text = [word for word in text if not word in stopwords.words('english')]    \n    #lemmatize\n    text= [wordnet_lemmatizer.lemmatize(word, pos='v') for word in text]\n    #rejoin text to string\n    text = ' '.join(text)\n    return text\n\ndef quick_clean_vectorized(col):\n    return pd.DataFrame(data=col.apply(lambda x: quick_clean(x)).tolist())\n\nquiklean_transformer = FunctionTransformer(quick_clean_vectorized) # to use in pipeline\n    ",
+            "class": "Data Transform",
+            "desc": "This code snippet defines a text cleaning function `quick_clean` that removes links, converts text to lowercase, removes special characters and stop words, tokenizes and lemmatizes the text, and then rejoins the tokens into a cleaned string, and then wraps this function in a `FunctionTransformer` for use in a machine learning pipeline using `scikit-learn`.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "string_transform",
+                "subclass_id": 78,
+                "predicted_subclass_probability": 0.75697106
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 9,
+            "code": "x_train, x_test, y_train, y_test = train_test_split(train.loc[:,train.columns != 'target'], train.target, test_size=0.2)\nprint(x_train.shape, y_train.shape, x_test.shape, y_test.shape)",
+            "class": "Data Transform",
+            "desc": "This code snippet splits the training dataset into training and testing subsets using `train_test_split` from scikit-learn, with 20% of the data allocated for testing, and prints the shapes of the resulting datasets.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "split",
+                "subclass_id": 13,
+                "predicted_subclass_probability": 0.99772364
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 10,
+            "code": "tfidf_vectorizer = TfidfVectorizer(tokenizer=word_tokenize, stop_words='english', max_features = 300)\n\npreprocess = Pipeline(steps=[\n                    ('clean',   ColumnTransformer([\n                                    ('cl', quiklean_transformer, 'text')\n                                    ],\n                                        remainder='drop')),\n                    ('TFIDF', ColumnTransformer([\n                        ('tfidf', tfidf_vectorizer, 0)\n                    ], \n                            remainder='passthrough')),\n                    ('dim_reduce', TruncatedSVD(n_components=250, random_state=42)),\n                    ('scale', MinMaxScaler())\n    \n        ])",
+            "class": "Data Transform",
+            "desc": "This code snippet constructs a preprocessing pipeline using scikit-learn's `Pipeline`, `ColumnTransformer`, `TfidfVectorizer`, `TruncatedSVD`, and `MinMaxScaler` to clean the text data, vectorize it with TF-IDF, reduce its dimensionality, and then scale the resulting features.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "feature_engineering",
+                "subclass_id": 8,
+                "predicted_subclass_probability": 0.9810301
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 3,
+            "code": "print(f'Train dims {train.shape}', f'Test dims {test.shape}', sep = '\\n')",
+            "class": "Exploratory Data Analysis",
+            "desc": "This code snippet prints the dimensions (number of rows and columns) of the training and test datasets using the `shape` attribute of the pandas DataFrame.",
+            "testing": {
+                "class": "Exploratory_Data_Analysis",
+                "subclass": "show_shape",
+                "subclass_id": 58,
+                "predicted_subclass_probability": 0.99101853
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 0,
+            "code": "# setup\n\nfrom collections import Counter, defaultdict\n\nimport numpy as np \nimport pandas as pd\nimport matplotlib.pyplot as plt\nimport seaborn as sns\nimport os\nimport re\n\nfrom sklearn.preprocessing import FunctionTransformer, MinMaxScaler\nfrom sklearn.pipeline import Pipeline, make_pipeline\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.feature_extraction.text import TfidfVectorizer\nfrom sklearn.model_selection import train_test_split \nfrom sklearn.decomposition import TruncatedSVD\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score\nfrom sklearn import set_config\n\nimport optuna\nimport nltk\nfrom nltk.stem import WordNetLemmatizer\nfrom nltk.corpus import stopwords\nfrom nltk.tokenize import word_tokenize\n\nplt.style.use('ggplot')\n%matplotlib inline\n\nset_config(display='diagram')",
+            "class": "Imports and Environment",
+            "desc": "This code snippet imports several libraries and modules including collections, numpy, pandas, matplotlib, seaborn, sklearn, optuna, and nltk, and sets some configuration options like the plotting style and sklearn display configuration.",
+            "testing": {
+                "class": "Imports_and_Environment",
+                "subclass": "set_options",
+                "subclass_id": 23,
+                "predicted_subclass_probability": 0.99920374
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 14,
+            "code": "def to_class_label(probs, threshold):\n    \"\"\"convert predicted probabilities to class labels\"\"\"\n    return (probs >= threshold).astype('int')\n\ndef get_optimal_threshold(fitted_model, x_test, y_test):\n    \"\"\"Threshold tuning\"\"\"\n    thresholds = np.arange(0, 1, 0.0005)\n    y_hat = fitted_model.predict_proba(x_test)\n    pos_clas_probs = y_hat[:, 1]\n    acc_scores = [accuracy_score(y_test, to_class_label(pos_clas_probs, thres)) for thres in thresholds]\n    idx = np.argmax(acc_scores)\n    \n    return thresholds[idx]\n    ",
+            "class": "Model Evaluation",
+            "desc": "This code snippet defines two functions: `to_class_label`, which converts predicted probabilities to class labels based on a given threshold, and `get_optimal_threshold`, which tunes the threshold by evaluating accuracy scores across a range of thresholds and selecting the one that maximizes accuracy using numpy and scikit-learn's `accuracy_score`.",
+            "testing": {
+                "class": "Model_Evaluation",
+                "subclass": "predict_on_test",
+                "subclass_id": 48,
+                "predicted_subclass_probability": 0.54912084
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 16,
+            "code": "# get optimal threshold\nopt_thres = get_optimal_threshold(lr, x_test, y_test)\nprint(f'Optimal threshold for trained LR {get_optimal_threshold(lr, x_test, y_test):.4f}')",
+            "class": "Model Evaluation",
+            "desc": "This code snippet calculates and prints the optimal threshold for converting predicted probabilities to class labels for the trained Logistic Regression model using the `get_optimal_threshold` function.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "train_model",
+                "subclass_id": 7,
+                "predicted_subclass_probability": 0.6867679
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 12,
+            "code": "# Tune logistic regression\ndef objective(trial):\n    x, y = x_train, y_train\n    C = trial.suggest_float('C', 1e-6, 1e6, log=True)\n    penalty = trial.suggest_categorical('penalty', ['l1', 'l2', 'elasticnet'])\n    l1_ratio = trial.suggest_float('l1_ratio', 0, 1)\n    if penalty != 'elasticnet':\n        l1_ratio = None\n    \n    clf = make_pipeline(preprocess, LogisticRegression(C=C,\n                                                      penalty=penalty,\n                                                      l1_ratio=l1_ratio,\n                                                      solver='saga',\n                                                      max_iter=800))\n    clf.fit(x,y)\n    \n    acc = accuracy_score(y_test, clf.predict(x_test))\n    \n    return acc\n\nclass EarlyStopping:\n    \"\"\"stop tuning after value remains unchanged after 10 successive trials\"\"\"\n    def __init__(self, max_rounds = 10):\n        self.max_rounds = max_rounds\n        self.current_rounds = 0\n        \n    def __call__(self, study, trial, tol = 1e-6):\n        if abs(trial.value - study.best_value) <= tol:\n            self.current_rounds += 1\n        elif trial.value == study.best_value:\n            self.current_rounds = 0\n        if self.current_rounds >= self.max_rounds:\n            study.stop()",
+            "class": "Model Training",
+            "desc": "This code snippet defines an `objective` function for tuning hyperparameters of a logistic regression model using Optuna, and an `EarlyStopping` class to halt the tuning process if performance does not improve after a specified number of trials, using scikit-learn's `make_pipeline` and `LogisticRegression` along with Optuna's `suggest_float` and `suggest_categorical` methods.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "find_best_model_class",
+                "subclass_id": 3,
+                "predicted_subclass_probability": 0.3142369
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 13,
+            "code": "# # create study and run trials\nes = EarlyStopping()\n\nstudy = optuna.create_study(direction='maximize', sampler=optuna.samplers.TPESampler())  # using Tree-structured Parzen Estimator to sample\nstudy.optimize(objective, n_trials=250, callbacks=[es])",
+            "class": "Model Training",
+            "desc": "This code snippet creates an Optuna study aimed at maximizing the objective function using the Tree-structured Parzen Estimator sampler, and runs the optimization for up to 250 trials, employing early stopping by defining the `EarlyStopping` callback.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "choose_model_class",
+                "subclass_id": 4,
+                "predicted_subclass_probability": 0.80090225
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 15,
+            "code": "# train LR on best parameters\nlr = LogisticRegression(**study.best_params, solver='saga', max_iter=800)\nlr = make_pipeline(preprocess, lr)\nlr.fit(x_train, y_train)",
+            "class": "Model Training",
+            "desc": "This code snippet trains a Logistic Regression model with the best hyperparameters found by the Optuna study, using scikit-learn's `LogisticRegression`, `make_pipeline`, and `fit` methods.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "train_model",
+                "subclass_id": 7,
+                "predicted_subclass_probability": 0.99761343
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 5,
+            "code": "# plot target distribution\nsns.countplot(x='target', data=train)\nplt.title('Target distribution')\nplt.show()",
+            "class": "Visualization",
+            "desc": "This code snippet visualizes the distribution of the target variable in the training dataset using seaborn's `countplot` method and sets the plot title.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "distribution",
+                "subclass_id": 33,
+                "predicted_subclass_probability": 0.99668735
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 7,
+            "code": "def plot_top_n_words(target = 1, n=50):\n    \n    count_dict = defaultdict(int)\n\n    for tweet in train.query(f'target=={target}')['text']:\n        for word in word_tokenize(tweet):\n            count_dict[word] += 1\n\n    wc_df = pd.DataFrame(data=count_dict.items(), columns = ['word', 'count'])\n    sns.barplot(x = 'count', y='word', data=wc_df.sort_values(by=['count'], ascending=False)[:n])",
+            "class": "Visualization",
+            "desc": "This code snippet defines a function `plot_top_n_words` that plots the top `n` most frequent words in tweets with a specified target label by tokenizing the tweets, counting word frequencies, creating a DataFrame, and using seaborn's `barplot` method for visualization.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "distribution",
+                "subclass_id": 33,
+                "predicted_subclass_probability": 0.8610096
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 8,
+            "code": "plot_top_n_words()",
+            "class": "Visualization",
+            "desc": "This code snippet calls the `plot_top_n_words` function to plot the top 50 most frequent words in tweets that have the target label of 1, using the function defined earlier.",
+            "testing": {
+                "class": "Visualization",
+                "subclass": "relationship",
+                "subclass_id": 81,
+                "predicted_subclass_probability": 0.58346504
+            },
+            "cluster": -1
+        }],
+        "notebook_id": 1,
+        "notebook_name": "logistic-regression-with-threshold-tuning.ipynb",
+        "user": "cluelessds"
+    }, {
+        "cells": [{
+            "cell_id": 13,
+            "code": "submission = pd.DataFrame({\n    'id': test_raw.id,\n    'target':y_hat\n})",
+            "class": "Data Export",
+            "desc": "This code snippet creates a DataFrame named `submission` containing the IDs from the test set and the corresponding predicted target labels.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "create_dataframe",
+                "subclass_id": 12,
+                "predicted_subclass_probability": 0.9941958
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 14,
+            "code": "submission.to_csv(\"my_submission_linear.csv\", index=False)",
+            "class": "Data Export",
+            "desc": "This code snippet saves the `submission` DataFrame to a CSV file named `my_submission_linear.csv` without including the DataFrame's index.",
+            "testing": {
+                "class": "Data_Export",
+                "subclass": "save_to_csv",
+                "subclass_id": 25,
+                "predicted_subclass_probability": 0.99924576
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 1,
+            "code": "train_raw = pd.read_csv(\"/kaggle/input/nlp-getting-started/train.csv\")\ntest_raw = pd.read_csv(\"/kaggle/input/nlp-getting-started/test.csv\")\nsubmission_raw = pd.read_csv(\"/kaggle/input/nlp-getting-started/sample_submission.csv\")",
+            "class": "Data Extraction",
+            "desc": "This code snippet reads three CSV files\u2014`train.csv`, `test.csv`, and `sample_submission.csv`\u2014into pandas DataFrames named `train_raw`, `test_raw`, and `submission_raw`, respectively.",
+            "testing": {
+                "class": "Data_Extraction",
+                "subclass": "load_from_csv",
+                "subclass_id": 45,
+                "predicted_subclass_probability": 0.9997112
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 7,
+            "code": "X_train, X_test, y_train, y_test = train_test_split(train, labels, test_size=0.3)",
+            "class": "Data Extraction",
+            "desc": "This code snippet splits the TF-IDF transformed training data and labels into training and testing sets using `train_test_split` from `sklearn`, with 30% of the data reserved for testing.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "split",
+                "subclass_id": 13,
+                "predicted_subclass_probability": 0.99791616
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 3,
+            "code": "nlp = spacy.load('en')",
+            "class": "Data Transform",
+            "desc": "This code snippet loads the English language model in spaCy for natural language processing tasks and assigns it to the variable `nlp`.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "load_pretrained",
+                "subclass_id": 30,
+                "predicted_subclass_probability": 0.9950819
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 4,
+            "code": "# remove stopwords,punct\n# remove duplicate tweet\ntexts = []\nlabels = []\ntexts_md5 = set()\nfor target, doc in zip(train_raw.target, nlp.pipe(train_raw.text)):\n    tokens = [token.lemma_ for token in doc if token.is_stop is False and token.is_punct is False and token.is_space is False]\n    temp_text = ' '.join(tokens)\n    # remove duplicate\n    md5 = hashlib.md5()\n    md5.update(temp_text.encode('utf-8'))\n    text_md5 = md5.hexdigest()\n    if text_md5 not in texts_md5:\n        texts.append(temp_text)\n        labels.append(target)\n        texts_md5.add(text_md5)",
+            "class": "Data Transform",
+            "desc": "This code snippet processes the text data by tokenizing, lemmatizing, and removing stopwords, punctuation, and duplicate tweets using spaCy and hashlib, then stores the cleaned text and corresponding labels in separate lists.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "categorify",
+                "subclass_id": 20,
+                "predicted_subclass_probability": 0.9552063
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 5,
+            "code": "tests = []\nfor doc in nlp.pipe(test_raw.text):\n    tokens = [token.lemma_ for token in doc if token.is_stop is False and token.is_punct is False and token.is_space is False]\n    tests.append(' '.join(tokens))",
+            "class": "Data Transform",
+            "desc": "This code snippet processes the test set text data by tokenizing, lemmatizing, and removing stopwords, punctuation, and unnecessary spaces using spaCy, then stores the cleaned texts in the `tests` list.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "string_transform",
+                "subclass_id": 78,
+                "predicted_subclass_probability": 0.9769126
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 6,
+            "code": "tf_idf = TfidfVectorizer(max_features=10000).fit(texts)\ntrain = tf_idf.transform(texts)\ntest = tf_idf.transform(tests)",
+            "class": "Data Transform",
+            "desc": "This code snippet initializes a `TfidfVectorizer` with a maximum of 10,000 features, fits it to the processed training texts, and then transforms both the training and test texts into TF-IDF feature representations.",
+            "testing": {
+                "class": "Data_Transform",
+                "subclass": "feature_engineering",
+                "subclass_id": 8,
+                "predicted_subclass_probability": 0.9555307
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 0,
+            "code": "# This Python 3 environment comes with many helpful analytics libraries installed\n# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python\n# For example, here's several helpful packages to load\n\nimport numpy as np # linear algebra\nimport pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)\n\n# Input data files are available in the read-only \"../input/\" directory\n# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory\n\nimport os\nfor dirname, _, filenames in os.walk('/kaggle/input'):\n    for filename in filenames:\n        print(os.path.join(dirname, filename))\n\n# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using \"Save & Run All\" \n# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session",
+            "class": "Imports and Environment",
+            "desc": "This code snippet imports necessary libraries like numpy and pandas for data processing and uses os to list all files in the specified input directory.",
+            "testing": {
+                "class": "Exploratory_Data_Analysis",
+                "subclass": "list_files",
+                "subclass_id": 88,
+                "predicted_subclass_probability": 0.99921954
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 2,
+            "code": "import hashlib\n\nimport spacy\nimport sklearn\nfrom sklearn.svm import SVC\nfrom sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer\nfrom sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.metrics import f1_score",
+            "class": "Imports and Environment",
+            "desc": "This code snippet imports additional libraries and modules for feature extraction, model training, evaluation, preprocessing, pipeline construction, and natural language processing, including `spacy` and various components from `sklearn` like `SVC`, `CountVectorizer`, `TfidfVectorizer`, and `f1_score`.",
+            "testing": {
+                "class": "Imports_and_Environment",
+                "subclass": "import_modules",
+                "subclass_id": 22,
+                "predicted_subclass_probability": 0.99932015
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 10,
+            "code": "best_params= {'C': 1, 'gamma': 0.001, 'kernel': 'linear'}\nsvc = SVC(**best_params)\nscores = cross_val_score(svc,X_train, y_train, cv=5, scoring='f1')\nprint(scores)\nprint(sum(scores)/len(scores))",
+            "class": "Model Evaluation",
+            "desc": "This code snippet creates an SVM model (`SVC`) with the best hyperparameters, evaluates it using 5-fold cross-validation with `f1` scoring, and prints the individual fold scores and their average.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "compute_train_metric",
+                "subclass_id": 28,
+                "predicted_subclass_probability": 0.9838514
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 12,
+            "code": "y_hat = svc.predict(test)",
+            "class": "Model Evaluation",
+            "desc": "This code snippet uses the trained SVM model to predict the classes for the TF-IDF transformed test set.",
+            "testing": {
+                "class": "Model_Evaluation",
+                "subclass": "predict_on_test",
+                "subclass_id": 48,
+                "predicted_subclass_probability": 0.99424076
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 8,
+            "code": "param_grid = {\n    \"gamma\" : [0.001,0.01,1,10,100],\n    \"C\":[0.001,0.01,1,10,100],\n    'kernel' : ['poly', \"linear\", 'sigmoid', 'rbf']\n}",
+            "class": "Model Training",
+            "desc": "This code snippet defines a parameter grid for hyperparameter tuning of an SVM model, specifying different values for `gamma`, `C`, and `kernel` options to be evaluated.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "define_search_space",
+                "subclass_id": 5,
+                "predicted_subclass_probability": 0.99403256
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 9,
+            "code": "svc = SVC()\ngrid_searcher = GridSearchCV(svc, param_grid, cv=5, scoring='f1')\ngrid_searcher.fit(X_train, y_train)\ngrid_searcher.best_params_",
+            "class": "Model Training",
+            "desc": "This code snippet initializes an SVM model (`SVC`), performs hyperparameter tuning using `GridSearchCV` with 5-fold cross-validation and `f1` scoring criterion, fits it on the training data, and outputs the best parameters found.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "train_on_grid",
+                "subclass_id": 6,
+                "predicted_subclass_probability": 0.99040365
+            },
+            "cluster": -1
+        }, {
+            "cell_id": 11,
+            "code": "val_texts = [\"A happy day!\", 'An earthquake happened!']\nval_data = tf_idf.transform(val_texts)\nsvc.fit(X_train, y_train)\nprint(svc.predict(val_data))",
+            "class": "Model Training",
+            "desc": "This code snippet fits the SVM model on the training data and demonstrates its prediction capabilities by transforming a small set of validation texts with the `TfidfVectorizer` and predicting their classes.",
+            "testing": {
+                "class": "Model_Train",
+                "subclass": "train_model",
+                "subclass_id": 7,
+                "predicted_subclass_probability": 0.6037878
+            },
+            "cluster": -1
+        }],
+        "notebook_id": 2,
+        "notebook_name": "baseline-svc-79.ipynb",
+        "user": "beherenowli"
+    }],
+    "metadata": {
+        "clusters": {
+            "Data Transform": {
+                "titles": {
+                    "-1": ["Text Preprocessing Tools", "Text Preprocessing with Pandas, NLTK, and BERT"]
+                },
+                "accuracy": {
+                    "silhouette_score": 0,
+                    "ch_index": 0,
+                    "db_index": 0
+                }
+            },
+            "Data Extraction": {
+                "titles": {
+                    "-1": ["Pandas & NLTK", "Data Handling with Pandas and NLTK"]
+                },
+                "accuracy": {
+                    "silhouette_score": 0,
+                    "ch_index": 0,
+                    "db_index": 0
+                }
+            },
+            "Visualization": {
+                "titles": {
+                    "-1": ["Seaborn, Octopus ML", "Seaborn, Octopus ML Visualizations in Python"]
+                },
+                "accuracy": {
+                    "silhouette_score": 0,
+                    "ch_index": 0,
+                    "db_index": 0
+                }
+            },
+            "Model Training": {
+                "titles": {
+                    "-1": ["BERT LightGBM SVM", "BERT, LightGBM, SVM, Optuna Hyperparameter Optimization"]
+                },
+                "accuracy": {
+                    "silhouette_score": 0,
+                    "ch_index": 0,
+                    "db_index": 0
+                }
+            },
+            "Model Evaluation": {
+                "titles": {
+                    "-1": ["Advanced Model Evaluation", "LightGBM, Logistic Regression, SVM Evaluation with Octopus"]
+                },
+                "accuracy": {
+                    "silhouette_score": 0,
+                    "ch_index": 0,
+                    "db_index": 0
+                }
+            },
+            "Imports and Environment": {
+                "titles": {
+                    "-1": ["TensorFlow & sklearn Setup", "Comprehensive ML Setup: TensorFlow, BERT, sklearn"]
+                },
+                "accuracy": {
+                    "silhouette_score": 0,
+                    "ch_index": 0,
+                    "db_index": 0
+                }
+            },
+            "Data Export": {
+                "titles": {
+                    "-1": ["Kaggle CSV Submission", "Kaggle Submission with BERT and Logistic Regression Using Pandas"]
+                },
+                "accuracy": {
+                    "silhouette_score": 0,
+                    "ch_index": 0,
+                    "db_index": 0
+                }
+            },
+            "Exploratory Data Analysis": {
+                "titles": {
+                    "-1": ["EDA with Pandas", "EDA with Pandas, Pandas-Summary, and Octopus ML  "]
+                },
+                "accuracy": {
+                    "silhouette_score": 0,
+                    "ch_index": 0,
+                    "db_index": 0
+                }
+            }
+        },
+        "clustering_accuracy": 0.3950617283950617
+    }
+}

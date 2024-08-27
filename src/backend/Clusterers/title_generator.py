@@ -30,7 +30,6 @@ class TitleGenerator:
                 "content": title
             })
             cluster_titles[str(cluster)] = [short_title, title]
-        print(cluster_titles)
         return cluster_titles
 
     
