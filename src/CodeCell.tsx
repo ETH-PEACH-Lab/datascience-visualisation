@@ -5,11 +5,15 @@ import '../style/CodeCell.css';
 
 interface CodeCellProps {
   code: string;
-  clusterLabel: string; // Add the cluster label as a prop
-    notebook_id: number; // add the notebook_id as a prop
+  clusterLabel: string; // Existing prop
+  notebook_id: number;   // Existing prop
+  onSelectNotebook: (notebookId: [number]) => void; // New prop to handle notebook selection
+  setCurrentCluster: (identifier: string) => void; // Existing prop
+  notebook_name: string;
 }
 
-const CodeCell: React.FC<CodeCellProps> = ({ code, clusterLabel,notebook_id }) => {
+
+const CodeCell: React.FC<CodeCellProps> = ({ code, clusterLabel, notebook_id, onSelectNotebook, setCurrentCluster, notebook_name }) => {
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,9 +33,19 @@ const CodeCell: React.FC<CodeCellProps> = ({ code, clusterLabel,notebook_id }) =
 
   return (
     <div className="code-cell-container">
-        <div className="notebook-id">Student {notebook_id}</div> {/* Display the notebook ID */}
+      <button 
+        className="notebook-id-button" 
+        onClick={() => onSelectNotebook([notebook_id])}
+      >
+        Notebook {notebook_id}
+      </button> {/* Button to select this student */}
       <div ref={editorRef} className="code-editor" />
-      <div className="cluster-label">{clusterLabel}</div> {/* Display the cluster label */}
+      <button 
+        className="cluster-label-button" 
+        onClick={() => setCurrentCluster(clusterLabel)}
+      >
+        {clusterLabel}
+      </button> {/* Button to set the current cluster */}
     </div>
   );
 };

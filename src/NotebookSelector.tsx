@@ -1,59 +1,45 @@
-// NotebookSelector.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import '../style/notebookSelector.css';
 
 interface NotebookSelectorProps {
   notebookIds: number[];
+  notebookNames: string[];
   onSelectionChange: (selectedIds: number[]) => void;
+  selectedNotebooks: number[];
 }
 
-const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, onSelectionChange }) => {
-  const [shownNotebooks, setShownNotebooks] = useState<Set<number>>(new Set());
+const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, notebookNames, onSelectionChange, selectedNotebooks }) => {
   const [selectedValue, setSelectedValue] = useState<string>('');
 
-  useEffect(() => {
-    // Trigger the callback when shownNotebooks changes
-    onSelectionChange(Array.from(shownNotebooks));
-  }, [shownNotebooks, onSelectionChange]);
-  
+
   const handleRemoveNotebook = (notebookId: number) => {
-    const newShownNotebooks = new Set(shownNotebooks);
-    if(newShownNotebooks.has(notebookId)){
-      newShownNotebooks.delete(notebookId);
-      setShownNotebooks(newShownNotebooks);
+    const newSelectedNotebooks = selectedNotebooks.filter(id => id !== notebookId);
+    if (newSelectedNotebooks.length === 0) {
+      onSelectionChange([-2]); // Add "ALL" if no notebooks are selected
+    } else {
+      onSelectionChange(newSelectedNotebooks);
     }
-  };     
+  };
 
   const handleAddNotebook = () => {
-    const notebookId = selectedValue === "ALL" ? -2 : Number(selectedValue);
-
+    const notebookId = selectedValue === "All Notebooks" ? -2 : parseInt(selectedValue.match(/\d+/)?.[0] || '', 10);
+    console.log('Current notebook IDs:', selectedNotebooks);
     if (notebookId === -2) {
-      // Remove all selected notebooks before adding ALL
-      const newShownNotebooks = new Set<number>();
-      newShownNotebooks.add(-2);
-      setShownNotebooks(newShownNotebooks);
-    } else if (!shownNotebooks.has(notebookId) && notebookIds.includes(notebookId)) {
-      if (shownNotebooks.has(-2)) {
-        console.log("nxdjwkn");
-        handleRemoveNotebook(-2);  // Remove ALL (-2) before adding a specific notebook
-        console.log("COME ON")
-      }   
-      console.log("notebooks")
-      console.log(shownNotebooks)
-      const newShownNotebooks = new Set(shownNotebooks);
-      newShownNotebooks.add(notebookId);
-      setShownNotebooks(newShownNotebooks);
+      onSelectionChange([-2]); // If "ALL" is selected, clear other selections and set "ALL"
+    } else if (!selectedNotebooks.includes(notebookId) && notebookIds.includes(notebookId)) {
+      const newSelectedNotebooks = [...selectedNotebooks, notebookId].filter(id => id !== -2); // Remove "ALL" (-2) before adding a specific notebook
+      onSelectionChange(newSelectedNotebooks);
     }
     setSelectedValue(''); // Clear the input after adding
-  };   
-   
-  return ( 
+  };
+
+  return (
     <div className="selector-container">
       <div className="current-selection-text">Current selection:</div>
       <div className="selected-elements" id="selected-elements">
-        {Array.from(shownNotebooks).map(notebookId => (
+        {selectedNotebooks.map(notebookId => (
           <div key={notebookId} className="element">
-            {notebookId === -2 ? "ALL" : notebookId}
+            {notebookId === -2 ? "All Notebooks" : "Notebook " + notebookId + ": " + notebookNames[notebookIds.indexOf(notebookId)]}
             <button className="remove-button" onClick={() => handleRemoveNotebook(notebookId)}>Remove</button>
           </div>
         ))}
@@ -65,12 +51,12 @@ const NotebookSelector: React.FC<NotebookSelectorProps> = ({ notebookIds, onSele
         className="element-selector"
         value={selectedValue}
         onChange={(e) => setSelectedValue(e.target.value)}
-        placeholder="Select notebook ID"
+        placeholder="Select notebook"
       />
       <datalist id="elements">
         {notebookIds.map(id => (
-          <option key={id} value={id === -2 ? "ALL" : id}>
-            {id === -2 ? "ALL" : id}
+          <option key={id} value={id === -2 ? "All Notebooks" : "Notebook " + id}>
+            {id === -2 ? "ALL" : notebookNames[notebookIds.indexOf(id)]}
           </option>
         ))}
       </datalist>

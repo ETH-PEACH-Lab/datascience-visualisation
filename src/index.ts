@@ -7,7 +7,7 @@ import { FlowchartWidget } from './Flowchart';
 import { WidgetTracker } from '@jupyterlab/apputils';
 
 const extension: JupyterFrontEndPlugin<void> = {
-  id: 'viz-file-handler',
+  id: 'viz-file-ext',
   autoStart: true,
   activate: (app: JupyterFrontEnd) => {
     console.log('JupyterLab extension viz-file-handler is activated!');

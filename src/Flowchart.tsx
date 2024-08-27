@@ -37,24 +37,28 @@ interface Props { }
 
 interface State {
   selectedCells: NotebookCellWithID[];
+  allNotebooks: boolean;
 }
 
-function resizeSVG(svgRef: React.RefObject<SVGSVGElement>): void {
-  const svg = svgRef.current;
+// function resizeSVG(svgRef: React.RefObject<SVGSVGElement>): void {
+//   const svg = svgRef.current;
 
-  if (svg) {
-    // Get the bounds of the SVG content
-    const bbox = svg.getBBox();
+//   if (svg) {
+//     // Get the bounds of the SVG content
+//     const bbox = svg.getBBox();
+//     console.log(bbox);
 
-    // Update the width and height using the size of the contents
-    svg.setAttribute("width", (bbox.x + bbox.width + bbox.x).toString());
-    svg.setAttribute("height", (bbox.y + bbox.height + bbox.y).toString());
+//     const newWidth = bbox.x + bbox.width + bbox.x;
+//     const newHeight = bbox.y + bbox.height + bbox.y;
+//     // Update the width and height using the size of the contents
+//     svg.setAttribute("width", newWidth.toString());
+//     svg.setAttribute("height", newHeight.toString());
 
-    console.log('Resized SVG to', (bbox.x + bbox.width + bbox.x).toString(), (bbox.y + bbox.height + bbox.y).toString());
-  } else {
-    console.error("SVG element not found.");
-  }
-}
+//     console.log('Resized SVG to', newWidth.toString(), newHeight.toString());
+//   } else {
+//     console.error("SVG element not found.");
+//   }
+// }
 
 class Flowchart extends Component<Props, State> {
   svgRef: React.RefObject<SVGSVGElement>;
@@ -64,6 +68,7 @@ class Flowchart extends Component<Props, State> {
     this.svgRef = createRef();
     this.state = {
       selectedCells: [],
+      allNotebooks: false,
     };
   }
 
@@ -73,16 +78,15 @@ class Flowchart extends Component<Props, State> {
     }
   }
 
-  updateSelectedCells = (newSelectedCells: NotebookCellWithID[]) => {
-    this.setState({ selectedCells: newSelectedCells });
+  updateSelectedCells = (newSelectedCells: NotebookCellWithID[], allNotebooks: boolean) => {
+    this.setState({ selectedCells: newSelectedCells, allNotebooks });
   };
 
 
   drawClassChart = () => {
     const { selectedCells } = this.state;
-    console.log('Drawing chart for selected cells', selectedCells);
     if (selectedCells.length === 0) {
-      return;
+      return { width: 0, height: 0 };
     }
 
     const svg = d3.select(this.svgRef.current)
@@ -144,24 +148,44 @@ class Flowchart extends Component<Props, State> {
         const source = nodes.find(node => node.id === d.source);
         const target = nodes.find(node => node.id === d.target);
         if (source && target) {
+          const isDirectNeighbor = nodes.indexOf(source) === nodes.indexOf(target) - 1;
           const midX = (source.x + target.x) / 2;
           const midY = (source.y + target.y) / 2;
-          return lineGenerator([
-            [source.x, source.y + nodeHeight / 2],
-            [midX - nodeWidth / 2, midY],
-            [target.x, target.y + nodeHeight / 2]
-          ] as [number, number][]);
+          const distanceY = Math.abs(target.y - source.y); // Calculate the vertical distance between nodes
+
+          if (isDirectNeighbor) {
+            // Draw the link on the left (curved leftwards)
+            return lineGenerator([
+              [source.x, source.y + nodeHeight / 2],
+              [midX - nodeWidth / 2, midY + nodeHeight / 2],
+              [target.x, target.y + nodeHeight / 2]
+            ] as [number, number][]);
+          } else {
+            // Draw the link on the right (curved rightwards)
+            return lineGenerator([
+              [source.x + nodeWidth, source.y + nodeHeight / 2],
+              [midX + nodeWidth + distanceY / 4, midY], // Shift control point rightwards
+              [target.x + nodeWidth, target.y + nodeHeight / 2]
+            ] as [number, number][]);
+          }
         }
         return '';
       })
       .attr('stroke', '#999')
       .attr('fill', 'none');
+
+    // Calculate the required width and height
+    const width = 300;  // Fixed width
+    const height = nodeCounter * 100 + 50;  // Based on number of nodes
+
+    return { width, height };
   }
+
 
   drawClusterChart = () => {
     const { selectedCells } = this.state;
     if (selectedCells.length === 0) {
-      return;
+      return { width: 0, height: 0 };
     }
 
     const svg = d3.select(this.svgRef.current);
@@ -170,7 +194,7 @@ class Flowchart extends Component<Props, State> {
 
     const nodes: ClusterNode[] = [];
     const links: ClusterLink[] = [];
-    const circleRadius = 25;  // Set the circle radius here
+    const circleRadius = 15;  // Set the circle radius here
     const arrowheadSize = 6; // Adjust this to the size of the arrowhead
     let yCounter = 0;
 
@@ -194,7 +218,7 @@ class Flowchart extends Component<Props, State> {
             id: nodes.length + 1,
             cluster: cells[i].cluster,
             class: cls,
-            x: 150 + clusterSet.size * 150,  // Horizontally position nodes with the same class next to each other
+            x: -50 + clusterSet.size * 150,  // Horizontally position nodes with the same class next to each other
             y: 100 + yCounter * 150,  // Vertically space classes
             cell_id: cells[i].cell_id,
             notebook_id: cells[i].notebook_id,  // Add notebook_id to the node
@@ -244,7 +268,7 @@ class Flowchart extends Component<Props, State> {
         const words = d.cluster.split(' ');  // Split cluster name into words
         let tspan = d3.select(this).append('tspan')
           .attr('x', d.x)
-          .attr('y', d.y)
+          .attr('y', d.y + circleRadius + 10)
           .attr('dy', -2);  // Start at the correct vertical position
 
         for (let i = 0; i < words.length; i += 3) {
@@ -312,6 +336,11 @@ class Flowchart extends Component<Props, State> {
       .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
       .attr('fill', '#666')
       .style('stroke', 'none');
+
+    const width = Math.max(...nodes.map(node => node.x)) + circleRadius * 2 + 50;  // Plus padding
+    const height = yCounter * 150 + circleRadius * 2 + 50;  // Based on number of classes
+
+    return { width, height };
   }
 
   drawChart() {
@@ -321,16 +350,21 @@ class Flowchart extends Component<Props, State> {
       return;
     }
 
-    if (selectedCells.length > 100) {
-      this.drawClassChart();
-      resizeSVG(this.svgRef);
-      return;
+    let dimensions: { width: number, height: number };
+
+    if (this.state.allNotebooks) {
+      dimensions = this.drawClassChart();
+    } else {
+      dimensions = this.drawClusterChart();
     }
 
-    this.drawClusterChart();
-    resizeSVG(this.svgRef);
-
+    const svg = this.svgRef.current;
+    if (svg) {
+      svg.setAttribute("width", dimensions.width.toString());
+      svg.setAttribute("height", dimensions.height.toString());
+    }
   }
+
 
   render() {
     return (
@@ -348,8 +382,8 @@ export class FlowchartWidget extends ReactWidget {
     this.graph = createRef();
   }
 
-  public updateGraph(selectedCells: NotebookCellWithID[]): void {
-    this.graph.current?.updateSelectedCells(selectedCells);
+  public updateGraph(selectedCells: NotebookCellWithID[], allNotebooks: boolean): void {
+    this.graph.current?.updateSelectedCells(selectedCells, allNotebooks);
   }
 
   render(): JSX.Element {

@@ -13,6 +13,7 @@ interface NotebookCell {
 
 export interface NotebookCellWithID extends NotebookCell {
   notebook_id: number;
+  notebook_name: string;
 }
 
 export interface Notebook {
@@ -22,6 +23,7 @@ export interface Notebook {
 export interface NotebookWithCellId {
   notebook_id: number;
   cells: NotebookCellWithID[];
+  notebook_name: string;
 }
 
 export interface VizData {
@@ -31,9 +33,10 @@ export interface VizData {
 interface GroupedCellsProps {
   className: string;
   cells: NotebookCellWithID[];
+  onSelectNotebook: (notebookIds: [number]) => void;
 }
 
-const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
+const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectNotebook }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [openClusters, setOpenClusters] = useState<string[]>([]); // Manage multiple open clusters
 
@@ -44,21 +47,34 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
     if (!acc[cell.cluster]) {
       acc[cell.cluster] = [];
     }
-    acc[cell.cluster].push(cell);
+    acc[cell.cluster].push(cell); 
     return acc;
   }, {} as { [key: string]: NotebookCellWithID[] });
 
   const totalCells = cells.length; // Total number of cells within the class
 
-  // Filter openClusters to remove clusters that no longer exist
-  // useEffect(() => {
-  //   setOpenClusters((prev) => prev.filter(clusterName => clusters[clusterName] && clusters[clusterName].length > 0));
-  // }, [clusters]);
+  const selectedCells = (clusterNames: string[]) => {
+    return clusterNames.filter(c => c in clusters).flatMap((clusterName) =>
+      clusters[clusterName].map(cell => ({ clusterName, cell }))
+    ).sort((a, b) => {
+      if (a.cell.notebook_id === b.cell.notebook_id) {
+        return a.cell.cell_id - b.cell.cell_id;
+      }
+      return a.cell.notebook_id - b.cell.notebook_id;
+    });
+  };
 
   const handleClusterClick = (clusterName: string) => {
     setOpenClusters((prev) =>
       prev.includes(clusterName) ? prev.filter((name) => name !== clusterName) : [...prev, clusterName]
     );
+  };
+
+  const handleIdentifierClick = (clusterIdentifier: string) => {
+    const cluster = clusterIdentifiers.find(ci => ci.identifier === clusterIdentifier);
+    if (cluster) {
+      setOpenClusters([cluster.name as string]);
+    }
   };
 
   // Generate identifiers (A, B, C, etc.) for each cluster
@@ -94,21 +110,23 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
             ))}
           </div>
           <div className="cluster-cells-container">
-            {openClusters.map((clusterName) =>
-              clusters[clusterName]?.map((cell) => (
+            {selectedCells(openClusters)?.map((cell) => (
                 <div
-                  key={`${cell.notebook_id}-${cell.cell_id}`}
+                  key={`${cell.cell.notebook_id}-${cell.cell.cell_id}`}
                   className="cell-container"
                   style={{ borderColor: colorScheme[className] }}
                 >
                   <CodeCell
-                    code={cell.code}
-                    clusterLabel={clusterIdentifiers.find(c => c.name === clusterName)?.identifier || ''}
-                    notebook_id={cell.notebook_id} // Pass the notebook ID
+                    code={cell.cell.code}
+                    clusterLabel={clusterIdentifiers.find(c => c.name === cell.clusterName)?.identifier || ''}
+                    notebook_id={cell.cell.notebook_id} // Pass the notebook ID
+                    onSelectNotebook={onSelectNotebook} // Pass the function to CodeCell
+                    setCurrentCluster={handleIdentifierClick}
+                    notebook_name={cell.cell.notebook_name}
                   />
                 </div>
               ))
-            )}
+            }
           </div>
         </div>
       )}
@@ -116,12 +134,12 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells }) => {
   );
 };
 
-const VizComponent: React.FC<{ data: VizData }> = ({ data }) => {
+const VizComponent: React.FC<{ data: VizData; onSelectNotebook: (notebookIds: [number]) => void }> = ({ data, onSelectNotebook }) => {
   if (!data.notebooks || !Array.isArray(data.notebooks)) {
     return <div>No valid notebook data found.</div>;
   }
 
-  let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [] };
+  let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [], notebook_name: 'Unassigned' };
 
   // Group cells by their class across all notebooks
   const groupedCells: { [key: string]: NotebookCellWithID[] } = {};
@@ -129,7 +147,7 @@ const VizComponent: React.FC<{ data: VizData }> = ({ data }) => {
   data.notebooks.forEach((notebook) => {
     notebook.cells.forEach((cell) => {
       if (notebook.notebook_id !== -2) {
-        const cellWithID: NotebookCellWithID = { ...cell, notebook_id: notebook.notebook_id };
+        const cellWithID: NotebookCellWithID = { ...cell, notebook_id: notebook.notebook_id, notebook_name: notebook.notebook_name };
         newNotebook.cells.push(cellWithID);
         if (!groupedCells[cell.class]) {
           groupedCells[cell.class] = [];
@@ -148,7 +166,12 @@ const VizComponent: React.FC<{ data: VizData }> = ({ data }) => {
   return (
     <div style={{ padding: '20px' }}>
       {Object.entries(groupedCells).map(([className, cells]) => (
-        <GroupedCells key={className} className={className} cells={cells} />
+        <GroupedCells 
+          key={className} 
+          className={className} 
+          cells={cells} 
+          onSelectNotebook={onSelectNotebook}
+        />
       ))}
     </div>
   );
