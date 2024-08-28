@@ -40,16 +40,17 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
   };
 
   // Function to handle cluster selection
-  const handleClusterSelection = (selectedCluster: string) => {
+  const handleClusterSelection = (selectedCluster: string, selectedClass: string) => {
     if(selectedClusters.includes(selectedCluster)) {
       setSelectedClusters(selectedClusters.filter(cluster => cluster !== selectedCluster));
     }
     else {
       setSelectedClusters([...selectedClusters, selectedCluster]);
+      setScrolledClass(selectedClass);
     }
   };
 
-  flowchartWidget.addProps(handleClusterSelection, handleClassSelection);
+  flowchartWidget.addProps(handleClusterSelection, handleClassSelection, selectedClusters);
 
   // Function to handle notebook selection
   const handleNotebookSelection = useCallback((selectedIds: number[]) => {

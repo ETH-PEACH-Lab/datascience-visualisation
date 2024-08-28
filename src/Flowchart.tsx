@@ -34,10 +34,9 @@ interface ClusterLink {
 
 
 interface Props { 
-  handleClusterClick?: ((cluster: string) => void);
+  handleClusterClick?: ((cluster: string, cls: string) => void);
   handleClassClick?: ((cls: string) => void);
   selectedClusters?: string[];
-  seletedClasses?: string[];
 }
 
 interface State {
@@ -79,6 +78,9 @@ class Flowchart extends Component<Props, State> {
 
   componentDidUpdate(prevProps: Props, prevState: State) {
     if (prevState.selectedCells !== this.state.selectedCells) {
+      this.drawChart();
+    }
+    if(prevProps.selectedClusters !== this.props.selectedClusters) {
       this.drawChart();
     }
   }
@@ -263,11 +265,14 @@ class Flowchart extends Component<Props, State> {
       .attr('cx', d => d.x)
       .attr('cy', d => d.y)
       .attr('r', circleRadius)
+      .attr('stroke', d => this.props.selectedClusters?.includes(d.cluster) ? 'black' : 'none')
+      .attr('stroke-width', d => this.props.selectedClusters?.includes(d.cluster) ? '2px' : '0px')
       .attr('fill', d => colorScheme[d.class] || '#69b3a2')
       .on('click', d => {
         const clstr = d.target.__data__.cluster;
+        const cls = d.target.__data__.class;
         if (this.props.handleClusterClick) {
-          this.props.handleClusterClick(clstr);
+          this.props.handleClusterClick(clstr, cls);
         }
       }
       );
@@ -283,6 +288,7 @@ class Flowchart extends Component<Props, State> {
       .attr('dominant-baseline', 'middle')
       .attr('fill', '#000')  // Set text color to black
       .style('font-size', '10px')  // Set font size to smaller
+      .style('font-weight', d => this.props.selectedClusters?.includes(d.cluster) ? 'bold' : 'normal')  // Make text bold if in selectedClusters
       .each(function (d) {
         const words = d.cluster.split(' ');  // Split cluster name into words
         let tspan = d3.select(this).append('tspan')
@@ -394,8 +400,9 @@ class Flowchart extends Component<Props, State> {
 
 export class FlowchartWidget extends ReactWidget {
   graph: React.RefObject<Flowchart>;
-  handleClusterClick: ((cluster: string) => void) | undefined;
+  handleClusterClick: ((cluster: string, cls: string) => void) | undefined;
   handleClassClick: ((cls: string) => void) | undefined;
+  selectedClusters: string[] | undefined;
 
   constructor() {
     super();
@@ -407,16 +414,17 @@ export class FlowchartWidget extends ReactWidget {
     this.graph.current?.updateSelectedCells(selectedCells, allNotebooks);
   }
 
-  public addProps(handleClusterClick: (cluster: string) => void, handleClassClick: (cls: string) => void): void {
+  public addProps(handleClusterClick: (cluster: string, cls: string) => void, handleClassClick: (cls: string) => void, selectedClusters: string[]): void {
     this.handleClusterClick = handleClusterClick;
     this.handleClassClick = handleClassClick;
+    this.selectedClusters = selectedClusters;
     this.update();
   }
 
   render(): JSX.Element {
     return (
       <div className="flowchart-widget">
-        <Flowchart ref={this.graph} handleClassClick={this.handleClassClick} handleClusterClick={this.handleClusterClick}/>
+        <Flowchart ref={this.graph} handleClassClick={this.handleClassClick} handleClusterClick={this.handleClusterClick} selectedClusters={this.selectedClusters}/>
       </div>
     );
   }
