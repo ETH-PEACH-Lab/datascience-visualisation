@@ -45,7 +45,9 @@ def classify_notebooks(notebook_jsons: list[dict], file_names: list[str]) -> dic
         'notebooks': [],
         'metadata': {}
     }
-    
+    # results = []
+    # for notebook_json in notebook_jsons:
+    #     results.append(_classify(notebook_json))
     with concurrent.futures.ThreadPoolExecutor() as executor:
         results = list(executor.map(_classify, notebook_jsons))
         for notebook_id, classified_cells in enumerate(results):
@@ -101,7 +103,6 @@ def _classify(notebook_json: dict) -> list[dict]:
     Returns:
         list[dict]: The list of classified cells.
     """
-    
     classifier = GPTClassifier(
         api_key=api_key, 
         prompt=classifier_prompt(LABELS), 

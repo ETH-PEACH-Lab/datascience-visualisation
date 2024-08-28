@@ -42,6 +42,7 @@ interface Props {
 
 interface State {
   selectedCells: NotebookCellWithID[];
+  allNotebooks: boolean;
 }
 
 // function resizeSVG(svgRef: React.RefObject<SVGSVGElement>): void {
@@ -72,6 +73,7 @@ class Flowchart extends Component<Props, State> {
     this.svgRef = createRef();
     this.state = {
       selectedCells: [],
+      allNotebooks: false,
     };
   }
 
@@ -81,8 +83,8 @@ class Flowchart extends Component<Props, State> {
     }
   }
 
-  updateSelectedCells = (newSelectedCells: NotebookCellWithID[]) => {
-    this.setState({ selectedCells: newSelectedCells });
+  updateSelectedCells = (newSelectedCells: NotebookCellWithID[], allNotebooks: boolean) => {
+    this.setState({ selectedCells: newSelectedCells, allNotebooks });
   };
 
 
@@ -369,7 +371,7 @@ class Flowchart extends Component<Props, State> {
 
     let dimensions: { width: number, height: number };
 
-    if (selectedCells.length > 100) {
+    if (this.state.allNotebooks) {
       dimensions = this.drawClassChart();
     } else {
       dimensions = this.drawClusterChart();
@@ -401,8 +403,8 @@ export class FlowchartWidget extends ReactWidget {
     this.graph = createRef();
   }
 
-  public updateGraph(selectedCells: NotebookCellWithID[]): void {
-    this.graph.current?.updateSelectedCells(selectedCells);
+  public updateGraph(selectedCells: NotebookCellWithID[], allNotebooks: boolean): void {
+    this.graph.current?.updateSelectedCells(selectedCells, allNotebooks);
   }
 
   public addProps(handleClusterClick: (cluster: string) => void, handleClassClick: (cls: string) => void): void {

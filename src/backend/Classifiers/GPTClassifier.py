@@ -118,6 +118,7 @@ class GPTClassifier():
         classified_cells = []
         i = 0
         for cell in tqdm.tqdm(cells):
+            if isinstance(cell["source"], list): cell["source"] = "\n".join(cell["source"])
             if cell["cell_type"] == "code" and len(cell["source"]):
                 messages.append({"role": "user","content": cell["source"]})
                 prediction, description = self._make_prediction(messages, verbose=verbose)
@@ -162,6 +163,7 @@ class GPTClassifier():
         truths = []
         preds = []
         for cell in tqdm.tqdm(cells, desc=f"Evaluating"):
+            if not isinstance(cell["source"], str): print(cell["source"])
             if cell["cell_type"] == "code" and len(cell["source"]): 
                 messages.append({"role": "user", "content": cell["source"]})
                 prediction, description = self._make_prediction(messages, verbose=verbose)
@@ -212,6 +214,7 @@ class GPTClassifier():
         Returns:
             str: The predicted label.
         """
+    
         prediction = None
         description = None
         while not prediction:   
@@ -232,7 +235,8 @@ class GPTClassifier():
                     found_label = True
                     description = match.group(2)
 
-            if verbose and not found_label: print(f"[ERROR] Response string invalid:\n{response}\n\nRetrying...", end="\r")
+            if verbose and not found_label: print(f"[ERROR] Response string invalid:\n{response}\n\nRetrying...", end="\r") 
+            
         return prediction, description
     
     

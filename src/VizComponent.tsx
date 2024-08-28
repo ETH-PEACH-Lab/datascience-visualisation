@@ -13,6 +13,7 @@ interface NotebookCell {
 
 export interface NotebookCellWithID extends NotebookCell {
   notebook_id: number;
+  notebook_name: string;
 }
 
 export interface Notebook {
@@ -22,6 +23,7 @@ export interface Notebook {
 export interface NotebookWithCellId {
   notebook_id: number;
   cells: NotebookCellWithID[];
+  notebook_name: string;
 }
 
 export interface VizData {
@@ -46,15 +48,15 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
     if (!acc[cell.cluster]) {
       acc[cell.cluster] = [];
     }
-    acc[cell.cluster].push(cell);
+    acc[cell.cluster].push(cell); 
     return acc;
   }, {} as { [key: string]: NotebookCellWithID[] });
 
   const totalCells = cells.length; // Total number of cells within the class
 
   const selectedCells = (clusterNames: string[]) => {
-    return clusterNames.flatMap((clusterName) =>
-      clusters[clusterName]?.map(cell => ({ clusterName, cell }))
+    return clusterNames.filter(c => c in clusters).flatMap((clusterName) =>
+      clusters[clusterName].map(cell => ({ clusterName, cell }))
     ).sort((a, b) => {
       if (a.cell.notebook_id === b.cell.notebook_id) {
         return a.cell.cell_id - b.cell.cell_id;
@@ -124,6 +126,7 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
                     notebook_id={cell.cell.notebook_id} // Pass the notebook ID
                     onSelectNotebook={onSelectNotebook} // Pass the function to CodeCell
                     setCurrentCluster={handleIdentifierClick}
+                    notebook_name={cell.cell.notebook_name}
                   />
                 </div>
               ))
@@ -147,7 +150,7 @@ const VizComponent: React.FC<VizComponentProps> = ({data, onSelectNotebook, sele
     return <div>No valid notebook data found.</div>;
   }
 
-  let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [] };
+  let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [], notebook_name: 'Unassigned' };
 
   // Group cells by their class across all notebooks
   const groupedCells: { [key: string]: NotebookCellWithID[] } = {};
@@ -155,7 +158,7 @@ const VizComponent: React.FC<VizComponentProps> = ({data, onSelectNotebook, sele
   data.notebooks.forEach((notebook) => {
     notebook.cells.forEach((cell) => {
       if (notebook.notebook_id !== -2) {
-        const cellWithID: NotebookCellWithID = { ...cell, notebook_id: notebook.notebook_id };
+        const cellWithID: NotebookCellWithID = { ...cell, notebook_id: notebook.notebook_id, notebook_name: notebook.notebook_name };
         newNotebook.cells.push(cellWithID);
         if (!groupedCells[cell.class]) {
           groupedCells[cell.class] = [];
