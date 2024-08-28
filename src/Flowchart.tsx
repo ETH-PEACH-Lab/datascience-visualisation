@@ -33,7 +33,11 @@ interface ClusterLink {
 }
 
 
-interface Props { }
+interface Props { 
+  handleClusterClick?: ((cluster: string, cls: string) => void);
+  handleClassClick?: ((cls: string) => void);
+  selectedClusters?: string[];
+}
 
 interface State {
   selectedCells: NotebookCellWithID[];
@@ -74,6 +78,9 @@ class Flowchart extends Component<Props, State> {
 
   componentDidUpdate(prevProps: Props, prevState: State) {
     if (prevState.selectedCells !== this.state.selectedCells) {
+      this.drawChart();
+    }
+    if(prevProps.selectedClusters !== this.props.selectedClusters) {
       this.drawChart();
     }
   }
@@ -125,7 +132,14 @@ class Flowchart extends Component<Props, State> {
       .attr('height', nodeHeight)
       .attr('rx', 10)
       .attr('ry', 10)
-      .attr('fill', d => colorScheme[d.id] || '#69b3a2'); // Replace with your color logic
+      .attr('fill', d => colorScheme[d.id] || '#69b3a2')
+      .on('click', d => {
+        const cls = d.target.__data__.id;
+        if (this.props.handleClassClick) {
+          this.props.handleClassClick(cls);
+        }
+      }
+      );
 
     svg.selectAll('text')
       .data(nodes)
@@ -251,7 +265,17 @@ class Flowchart extends Component<Props, State> {
       .attr('cx', d => d.x)
       .attr('cy', d => d.y)
       .attr('r', circleRadius)
-      .attr('fill', d => colorScheme[d.class] || '#69b3a2');  // Use color scheme based on class
+      .attr('stroke', d => this.props.selectedClusters?.includes(d.cluster) ? 'black' : 'none')
+      .attr('stroke-width', d => this.props.selectedClusters?.includes(d.cluster) ? '2px' : '0px')
+      .attr('fill', d => colorScheme[d.class] || '#69b3a2')
+      .on('click', d => {
+        const clstr = d.target.__data__.cluster;
+        const cls = d.target.__data__.class;
+        if (this.props.handleClusterClick) {
+          this.props.handleClusterClick(clstr, cls);
+        }
+      }
+      );
 
     // Draw text labels (cluster names)
     svg.selectAll('text')
@@ -264,6 +288,7 @@ class Flowchart extends Component<Props, State> {
       .attr('dominant-baseline', 'middle')
       .attr('fill', '#000')  // Set text color to black
       .style('font-size', '10px')  // Set font size to smaller
+      .style('font-weight', d => this.props.selectedClusters?.includes(d.cluster) ? 'bold' : 'normal')  // Make text bold if in selectedClusters
       .each(function (d) {
         const words = d.cluster.split(' ');  // Split cluster name into words
         let tspan = d3.select(this).append('tspan')
@@ -375,6 +400,9 @@ class Flowchart extends Component<Props, State> {
 
 export class FlowchartWidget extends ReactWidget {
   graph: React.RefObject<Flowchart>;
+  handleClusterClick: ((cluster: string, cls: string) => void) | undefined;
+  handleClassClick: ((cls: string) => void) | undefined;
+  selectedClusters: string[] | undefined;
 
   constructor() {
     super();
@@ -386,10 +414,17 @@ export class FlowchartWidget extends ReactWidget {
     this.graph.current?.updateSelectedCells(selectedCells, allNotebooks);
   }
 
+  public addProps(handleClusterClick: (cluster: string, cls: string) => void, handleClassClick: (cls: string) => void, selectedClusters: string[]): void {
+    this.handleClusterClick = handleClusterClick;
+    this.handleClassClick = handleClassClick;
+    this.selectedClusters = selectedClusters;
+    this.update();
+  }
+
   render(): JSX.Element {
     return (
       <div className="flowchart-widget">
-        <Flowchart ref={this.graph} />
+        <Flowchart ref={this.graph} handleClassClick={this.handleClassClick} handleClusterClick={this.handleClusterClick} selectedClusters={this.selectedClusters}/>
       </div>
     );
   }

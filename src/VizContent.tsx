@@ -20,6 +20,8 @@ interface VizContentProps {
 const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => {
   const [selectedNotebookIds, setSelectedNotebookIds] = useState<number[]>([-2]);
   const [isReady, setIsReady] = useState<boolean>(context.isReady);
+  const [selectedClusters, setSelectedClusters] = useState<string[]>([]);
+  const [scrolledClass, setScrolledClass] = useState<string>('');
 
   useEffect(() => {
     if (!context.isReady) {
@@ -30,6 +32,25 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
       setIsReady(true);
     }
   }, [context]);
+
+  // Function to handle Class selection
+  const handleClassSelection = (selectedClass: string) => {
+    console.log("Selected class", selectedClass);
+    setScrolledClass(selectedClass);
+  };
+
+  // Function to handle cluster selection
+  const handleClusterSelection = (selectedCluster: string, selectedClass: string) => {
+    if(selectedClusters.includes(selectedCluster)) {
+      setSelectedClusters(selectedClusters.filter(cluster => cluster !== selectedCluster));
+    }
+    else {
+      setSelectedClusters([...selectedClusters, selectedCluster]);
+      setScrolledClass(selectedClass);
+    }
+  };
+
+  flowchartWidget.addProps(handleClusterSelection, handleClassSelection, selectedClusters);
 
   // Function to handle notebook selection
   const handleNotebookSelection = useCallback((selectedIds: number[]) => {
@@ -137,7 +158,6 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
     selectedNotebookIds.includes(notebook.notebook_id)
   );
  
-  console.log("notebook names"+ jsonData.notebooks.map(notebook=> notebook.notebook_name))
 
   return (
     <div style={{ height: '100%', overflowY: 'auto' }}>
@@ -150,6 +170,9 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
       <VizComponent
         data={{ notebooks: selectedNotebooks }}
         onSelectNotebook={handleNotebookSelection}
+        selectedClusters={selectedClusters}
+        setSelectedClusters={setSelectedClusters}
+        scrolledClass={scrolledClass}
       />
     </div>
   );
