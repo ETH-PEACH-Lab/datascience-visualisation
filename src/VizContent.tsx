@@ -161,12 +161,14 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
 
   return (
     <div style={{ height: '100%', overflowY: 'auto' }}>
-      <NotebookSelector
-        notebookIds={jsonData.notebooks.map(notebook => notebook.notebook_id)}
-        notebookNames={jsonData.notebooks.map(notebook => notebook.notebook_name)}
-        selectedNotebooks={selectedNotebookIds}
-        onSelectionChange={handleNotebookSelection}
-      />
+      <div style={{ position: 'sticky', top: 0, zIndex: 1000, background: 'white' }}>
+        <NotebookSelector
+          notebookIds={jsonData.notebooks.map(notebook => notebook.notebook_id)}
+          notebookNames={jsonData.notebooks.map(notebook => notebook.notebook_name)}
+          selectedNotebooks={selectedNotebookIds}
+          onSelectionChange={handleNotebookSelection}
+        />
+      </div>
       <VizComponent
         data={{ notebooks: selectedNotebooks }}
         onSelectNotebook={handleNotebookSelection}
