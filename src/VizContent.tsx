@@ -136,6 +136,8 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
   const selectedNotebooks = jsonData.notebooks.filter(notebook =>
     selectedNotebookIds.includes(notebook.notebook_id)
   );
+ 
+  console.log("notebook names"+ jsonData.notebooks.map(notebook=> notebook.notebook_name))
 
   return (
     <div style={{ height: '100%', overflowY: 'auto' }}>
