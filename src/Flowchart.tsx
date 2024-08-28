@@ -213,8 +213,28 @@ class Flowchart extends Component<Props, State> {
     let yCounter = 0;
 
     // Generate nodes, sorting by the order in colorScheme
+    const clusterFrequencies = d3.rollup(
+      selectedCells,
+      v => v.length,
+      d => d.cluster
+    );
+    
+    // Generate nodes, sorting by the order in colorScheme
     const classGroups = d3.group(selectedCells, d => d.class);
 
+    // Sort classGroups by the frequency of clusters
+    classGroups.forEach((cells, cls) => {
+      cells.sort((a, b) => {
+        const freqA = clusterFrequencies.get(a.cluster);
+        const freqB = clusterFrequencies.get(b.cluster);
+        if (freqA === undefined || freqB === undefined) {
+          return 0;
+        }
+        return freqB - freqA;
+      }
+      );
+    });
+    
     classGroups.forEach((cells, cls) => {
       cells.sort((a, b) => {
         const colorOrderA = Object.keys(colorScheme).indexOf(a.cluster);
@@ -248,10 +268,10 @@ class Flowchart extends Component<Props, State> {
       if (index < selectedCells.length - 1) {
         const sourceNode = nodes.find(node => node.cluster === cell.cluster);
         const targetCell = selectedCells[index + 1];
-        const targetNode = nodes.find(node => node.cluster === targetCell.cluster && sourceNode?.cluster !== node.cluster && node.notebook_id === targetCell.notebook_id);
+        const targetNode = nodes.find(node => node.cluster === targetCell.cluster && sourceNode?.cluster !== node.cluster);
 
         // Only create a link if both nodes belong to the same notebook_id
-        if (sourceNode && targetNode) {
+        if (sourceNode && targetNode && cell.notebook_id === targetCell.notebook_id) {
           links.push({ source: sourceNode, target: targetNode });
         }
       }
