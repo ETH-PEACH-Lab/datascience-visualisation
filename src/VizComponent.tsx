@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import colorScheme from './colorScheme';
 import '../style/VizComponent.css';
 import CodeCell from './CodeCell';
@@ -36,12 +36,20 @@ interface GroupedCellsProps {
   onSelectNotebook: (notebookIds: [number]) => void;
   selectedClusters: string[];
   setSelectedClusters: (clusters: string[]) => void;
+  scrolledClass: string;
 }
 
-const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectNotebook, selectedClusters, setSelectedClusters }) => {
+const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectNotebook, selectedClusters, setSelectedClusters, scrolledClass }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null); // Add ref here
 
   const toggleOpen = () => setIsOpen(!isOpen);
+  
+  useEffect(() => {
+    if(scrolledClass === className && containerRef.current) {
+      containerRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [scrolledClass]);
 
   // Group cells by their cluster
   const clusters = cells.reduce((acc, cell) => {
@@ -88,7 +96,11 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
   }));
 
   return (
-    <div className="group-container" style={{ borderColor: colorScheme[className] }}>
+    <div 
+      className="group-container" 
+      style={{ borderColor: colorScheme[className] }}
+      ref={containerRef}
+    >
       <div
         className="group-header"
         style={{ backgroundColor: colorScheme[className] || '#ddd' }}
@@ -143,9 +155,11 @@ interface VizComponentProps {
   onSelectNotebook: (notebookIds: [number]) => void;
   selectedClusters: string[];
   setSelectedClusters: (clusters: string[]) => void;
+  scrolledClass: string;
 }
 
-const VizComponent: React.FC<VizComponentProps> = ({data, onSelectNotebook, selectedClusters, setSelectedClusters}) => {
+const VizComponent: React.FC<VizComponentProps> = ({data, onSelectNotebook, selectedClusters, setSelectedClusters, scrolledClass}) => {
+
   if (!data.notebooks || !Array.isArray(data.notebooks)) {
     return <div>No valid notebook data found.</div>;
   }
@@ -184,11 +198,13 @@ const VizComponent: React.FC<VizComponentProps> = ({data, onSelectNotebook, sele
           onSelectNotebook={onSelectNotebook}
           selectedClusters={selectedClusters}
           setSelectedClusters={setSelectedClusters}
+          scrolledClass={scrolledClass}
         />
       ))}
     </div>
   );
 };
+
 
 export const LoadingComponent = () => <div>Loading...</div>;
 

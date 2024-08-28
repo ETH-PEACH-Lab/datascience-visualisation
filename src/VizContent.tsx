@@ -21,6 +21,7 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
   const [selectedNotebookIds, setSelectedNotebookIds] = useState<number[]>([-2]);
   const [isReady, setIsReady] = useState<boolean>(context.isReady);
   const [selectedClusters, setSelectedClusters] = useState<string[]>([]);
+  const [scrolledClass, setScrolledClass] = useState<string>('');
 
   useEffect(() => {
     if (!context.isReady) {
@@ -35,6 +36,7 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
   // Function to handle Class selection
   const handleClassSelection = (selectedClass: string) => {
     console.log("Selected class", selectedClass);
+    setScrolledClass(selectedClass);
   };
 
   // Function to handle cluster selection
@@ -155,7 +157,6 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
     selectedNotebookIds.includes(notebook.notebook_id)
   );
  
-  console.log("notebook names"+ jsonData.notebooks.map(notebook=> notebook.notebook_name))
 
   return (
     <div style={{ height: '100%', overflowY: 'auto' }}>
@@ -170,6 +171,7 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
         onSelectNotebook={handleNotebookSelection}
         selectedClusters={selectedClusters}
         setSelectedClusters={setSelectedClusters}
+        scrolledClass={scrolledClass}
       />
     </div>
   );
