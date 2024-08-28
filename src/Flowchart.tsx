@@ -352,9 +352,9 @@ class Flowchart extends Component<Props, State> {
         // Calculate the control point for the curve
         const midX = (sourceX + targetX) / 2;
         const midY = (sourceY + targetY) / 2;
-        const curvature = 50;  // Adjust this value to control the curvature
+        const curvature = (targetX > sourceX ? -20 : 20 ) * Math.abs(sourceX - targetX) / 150;  // Adjust this value to control the curvature
         const controlPointX = midX;
-        const controlPointY = sourceY < targetY ? midY - curvature : midY + curvature;
+        const controlPointY = midY + curvature;
 
         return d3.line().curve(d3.curveBasis)([
           [sourceX, sourceY],
