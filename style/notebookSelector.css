@@ -46,3 +46,12 @@
     cursor: pointer;
   }
   
+  /* Specific styles for the open button */
+.open-button {
+  background-color: #3498db;
+  color: white;
+}
+
+.open-button:hover {
+  background-color: #2980b9;
+}

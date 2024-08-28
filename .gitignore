@@ -14,6 +14,7 @@ cluster_viz/labextension
 # Version file is handled by hatchling
 cluster_viz/_version.py
 /secrets
+/dataset
 # Integration tests
 ui-tests/test-results/
 ui-tests/playwright-report/
