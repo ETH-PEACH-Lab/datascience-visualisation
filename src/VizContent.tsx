@@ -138,6 +138,8 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
 
   let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [], notebook_name: 'Unassigned' };
 
+  let comp_name = data["metadata"]["comp_name"]
+  console.log("competition:"+data["metadata"]["comp_name"])
   jsonData.notebooks.forEach(notebook => {
     notebook.cells.forEach(cell => {
       const classMetadata = data["metadata"]["clusters"][cell.class]["titles"];
@@ -153,7 +155,7 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
     });
   });
   jsonData.notebooks.push(newNotebook);
-
+ 
   const selectedNotebooks = jsonData.notebooks.filter(notebook =>
     selectedNotebookIds.includes(notebook.notebook_id)
   );
@@ -167,6 +169,7 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
           notebookNames={jsonData.notebooks.map(notebook => notebook.notebook_name)}
           selectedNotebooks={selectedNotebookIds}
           onSelectionChange={handleNotebookSelection}
+          competition_name = {comp_name}
         />
       </div>
       <VizComponent
