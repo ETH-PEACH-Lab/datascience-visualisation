@@ -33,7 +33,7 @@ interface ClusterLink {
 }
 
 
-interface Props { 
+interface Props {
   handleClusterClick?: ((cluster: string, cls: string) => void);
   handleClassClick?: ((cls: string) => void);
   selectedClusters?: string[];
@@ -80,7 +80,7 @@ class Flowchart extends Component<Props, State> {
     if (prevState.selectedCells !== this.state.selectedCells) {
       this.drawChart();
     }
-    if(prevProps.selectedClusters !== this.props.selectedClusters) {
+    if (prevProps.selectedClusters !== this.props.selectedClusters) {
       this.drawChart();
     }
   }
@@ -103,21 +103,39 @@ class Flowchart extends Component<Props, State> {
     svg.selectAll('*').remove(); // Clear existing graph
 
     // Extract unique classes from selected cells
-    const classes = selectedCells.map(cell => cell.class);
-    const nodes: ClassNode[] = [];
+
+    const sortedSelectedCells = selectedCells.sort((a, b) => {
+      // First, compare by originalNotebookId
+      if (a.originalNotebookId !== b.originalNotebookId) {
+        return a.originalNotebookId - b.originalNotebookId;
+      }
+      // If originalNotebookId is the same, compare by cell_id
+      return a.cell_id - b.cell_id;
+    });
+    const classes = sortedSelectedCells.map(cell => cell.class);
     const nodesSet = new Set<string>();
     const links: ClassLink[] = [];
-    let nodeCounter = 0;
 
     for (let i = 0; i < classes.length; i++) {
-      if (!nodesSet.has(classes[i])) {
-        nodes.push({ id: classes[i], x: 100, y: 50 + (nodeCounter++) * 100 });
-        nodesSet.add(classes[i]);
-      }
+      nodesSet.add(classes[i]);
       if (i < classes.length - 1 && classes[i] !== classes[i + 1]) {
         links.push({ source: classes[i], target: classes[i + 1] });
       }
     }
+    // Step 1: Extract class names in color scheme order
+    const colorSchemeOrder = Object.keys(colorScheme);
+
+    // Step 2: Filter and sort the class names set based on colorScheme order
+    const sortedClassNames = Array.from(nodesSet).sort(
+      (a, b) => colorSchemeOrder.indexOf(a) - colorSchemeOrder.indexOf(b)
+    );
+
+    // Step 3: Create a list of nodes (for example with dummy coordinates)
+    const nodes: ClassNode[] = sortedClassNames.map((className, index) => ({
+      id: className,
+      x: 100,  // Dummy x coordinate, you can adjust this
+      y: 50 + index * 100,  // Dummy y coordinate, you can adjust this
+    }));
 
     const nodeWidth = 120;
     const nodeHeight = 50;
@@ -190,7 +208,7 @@ class Flowchart extends Component<Props, State> {
 
     // Calculate the required width and height
     const width = 300;  // Fixed width
-    const height = nodeCounter * 100 + 50;  // Based on number of nodes
+    const height = nodes.length * 100 + 50;  // Based on number of nodes
 
     return { width, height };
   }
@@ -213,14 +231,23 @@ class Flowchart extends Component<Props, State> {
     let yCounter = 0;
 
     // Generate nodes, sorting by the order in colorScheme
+    const sortedSelectedCells = selectedCells.sort((a, b) => {
+      // First, compare by notebook_id
+      if (a.notebook_id !== b.notebook_id) {
+        return a.notebook_id - b.notebook_id;
+      }
+      // If notebook_id is the same, compare by cell_id
+      return a.cell_id - b.cell_id;
+    });
+
     const clusterFrequencies = d3.rollup(
-      selectedCells,
+      sortedSelectedCells,
       v => v.length,
       d => d.cluster
     );
-    
+
     // Generate nodes, sorting by the order in colorScheme
-    const classGroups = d3.group(selectedCells, d => d.class);
+    const classGroups = d3.group(sortedSelectedCells, d => d.class);
 
     // Sort classGroups by the frequency of clusters
     classGroups.forEach((cells, cls) => {
@@ -234,7 +261,7 @@ class Flowchart extends Component<Props, State> {
       }
       );
     });
-    
+
     classGroups.forEach((cells, cls) => {
       cells.sort((a, b) => {
         const colorOrderA = Object.keys(colorScheme).indexOf(a.cluster);
@@ -264,7 +291,7 @@ class Flowchart extends Component<Props, State> {
     });
 
     // Create links between consecutive cells by cell_id and notebook_id
-    selectedCells.forEach((cell, index) => {
+    sortedSelectedCells.forEach((cell, index) => {
       if (index < selectedCells.length - 1) {
         const sourceNode = nodes.find(node => node.cluster === cell.cluster);
         const targetCell = selectedCells[index + 1];
@@ -352,7 +379,7 @@ class Flowchart extends Component<Props, State> {
         // Calculate the control point for the curve
         const midX = (sourceX + targetX) / 2;
         const midY = (sourceY + targetY) / 2;
-        const curvature = (targetX > sourceX ? -20 : 20 ) * Math.abs(sourceX - targetX) / 150;  // Adjust this value to control the curvature
+        const curvature = (targetX > sourceX ? -20 : 20) * Math.abs(sourceX - targetX) / 150;  // Adjust this value to control the curvature
         const controlPointX = midX;
         const controlPointY = midY + curvature;
 
@@ -444,7 +471,7 @@ export class FlowchartWidget extends ReactWidget {
   render(): JSX.Element {
     return (
       <div className="flowchart-widget">
-        <Flowchart ref={this.graph} handleClassClick={this.handleClassClick} handleClusterClick={this.handleClusterClick} selectedClusters={this.selectedClusters}/>
+        <Flowchart ref={this.graph} handleClassClick={this.handleClassClick} handleClusterClick={this.handleClusterClick} selectedClusters={this.selectedClusters} />
       </div>
     );
   }

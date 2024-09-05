@@ -44,9 +44,9 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
   const containerRef = useRef<HTMLDivElement>(null); // Add ref here
 
   const toggleOpen = () => setIsOpen(!isOpen);
-  
+
   useEffect(() => {
-    if(scrolledClass === className && containerRef.current) {
+    if (scrolledClass === className && containerRef.current) {
       containerRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [scrolledClass]);
@@ -56,7 +56,7 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
     if (!acc[cell.cluster]) {
       acc[cell.cluster] = [];
     }
-    acc[cell.cluster].push(cell); 
+    acc[cell.cluster].push(cell);
     return acc;
   }, {} as { [key: string]: NotebookCellWithID[] });
 
@@ -74,7 +74,7 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
   };
 
   const handleClusterClick = (clusterName: string) => {
-    if(selectedClusters.includes(clusterName)) {
+    if (selectedClusters.includes(clusterName)) {
       setSelectedClusters(selectedClusters.filter(cluster => cluster !== clusterName));
     }
     else {
@@ -96,8 +96,8 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
   }));
 
   return (
-    <div 
-      className="group-container" 
+    <div
+      className="group-container"
       style={{ borderColor: colorScheme[className] }}
       ref={containerRef}
     >
@@ -127,21 +127,21 @@ const GroupedCells: React.FC<GroupedCellsProps> = ({ className, cells, onSelectN
           </div>
           <div className="cluster-cells-container">
             {selectedCells(selectedClusters)?.map((cell) => (
-                <div
-                  key={`${cell.cell.notebook_id}-${cell.cell.cell_id}`}
-                  className="cell-container"
-                  style={{ borderColor: colorScheme[className] }}
-                >
-                  <CodeCell
-                    code={cell.cell.code}
-                    clusterLabel={clusterIdentifiers.find(c => c.name === cell.clusterName)?.identifier || ''}
-                    notebook_id={cell.cell.notebook_id} // Pass the notebook ID
-                    onSelectNotebook={onSelectNotebook} // Pass the function to CodeCell
-                    setCurrentCluster={handleIdentifierClick}
-                    notebook_name={cell.cell.notebook_name}
-                  />
-                </div>
-              ))
+              <div
+                key={`${cell.cell.notebook_id}-${cell.cell.cell_id}`}
+                className="cell-container"
+                style={{ borderColor: colorScheme[className] }}
+              >
+                <CodeCell
+                  code={cell.cell.code}
+                  clusterLabel={clusterIdentifiers.find(c => c.name === cell.clusterName)?.identifier || ''}
+                  notebook_id={cell.cell.notebook_id} // Pass the notebook ID
+                  onSelectNotebook={onSelectNotebook} // Pass the function to CodeCell
+                  setCurrentCluster={handleIdentifierClick}
+                  notebook_name={cell.cell.notebook_name}
+                />
+              </div>
+            ))
             }
           </div>
         </div>
@@ -158,7 +158,7 @@ interface VizComponentProps {
   scrolledClass: string;
 }
 
-const VizComponent: React.FC<VizComponentProps> = ({data, onSelectNotebook, selectedClusters, setSelectedClusters, scrolledClass}) => {
+const VizComponent: React.FC<VizComponentProps> = ({ data, onSelectNotebook, selectedClusters, setSelectedClusters, scrolledClass }) => {
 
   if (!data.notebooks || !Array.isArray(data.notebooks)) {
     return <div>No valid notebook data found.</div>;
@@ -188,13 +188,24 @@ const VizComponent: React.FC<VizComponentProps> = ({data, onSelectNotebook, sele
     });
   });
 
+  const colorSchemeOrder = Object.keys(colorScheme);
+
+  const sortedGroupedCells = Object.entries(groupedCells).sort(([classNameA], [classNameB]) => {
+    // Get the index of the class names in colorSchemeOrder
+    const indexA = colorSchemeOrder.indexOf(classNameA);
+    const indexB = colorSchemeOrder.indexOf(classNameB);
+
+    // Sort based on their index
+    return indexA - indexB;
+  });
+
   return (
     <div style={{ padding: '20px' }}>
-      {Object.entries(groupedCells).map(([className, cells]) => (
-        <GroupedCells 
-          key={className} 
-          className={className} 
-          cells={cells} 
+      {sortedGroupedCells.map(([className, cells]) => (
+        <GroupedCells
+          key={className}
+          className={className}
+          cells={cells}
           onSelectNotebook={onSelectNotebook}
           selectedClusters={selectedClusters}
           setSelectedClusters={setSelectedClusters}
