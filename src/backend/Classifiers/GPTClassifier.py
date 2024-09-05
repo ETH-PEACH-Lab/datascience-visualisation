@@ -130,6 +130,7 @@ class GPTClassifier():
                 new_cell = {
                     "cell_id": i,
                     "code": cell["source"],
+                    "output": "\n".join(cell["outputs"]),
                     "class": prediction,
                     "desc": description,
                 }

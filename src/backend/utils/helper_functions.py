@@ -37,11 +37,13 @@ def load_notebooks(notebooks_dir: str, verbose: bool = False) -> tuple[List[dict
         
         if os.path.isfile(file_path) and file.endswith(".ipynb"):# and len(file.split("_")) == 2:
             notebook_json = load_notebook(file_path)
-            if len([cell for cell in notebook_json['cells'] if cell['cell_type'] == 'code']) >= 15:
-                notebook_jsons.append(notebook_json)
-                file_names.append(file)
-            else:
-                if verbose: print(f"Skipping notebook {file} due to insufficient code cells.")
+            notebook_jsons.append(notebook_json)
+            file_names.append(file)
+            # if len([cell for cell in notebook_json['cells'] if cell['cell_type'] == 'code']) >= 15:
+            #     notebook_jsons.append(notebook_json)
+            #     file_names.append(file)
+            # else:
+            #     if verbose: print(f"Skipping notebook {file} due to insufficient code cells.")
         else:
             if verbose: print("Invalid file format. Skipping file: " + file)
     return notebook_jsons, file_names
