@@ -1,13 +1,15 @@
-import {
-  ReactWidget
-} from '@jupyterlab/apputils';
+import { ReactWidget } from '@jupyterlab/apputils';
 
-import {
-  DocumentRegistry
-} from '@jupyterlab/docregistry';
+import { DocumentRegistry } from '@jupyterlab/docregistry';
 
 import * as React from 'react';
-import VizComponent, { LoadingComponent, DataNotFoundComponent, VizData, NotebookCellWithID, NotebookWithCellId } from './VizComponent';
+import VizComponent, {
+  LoadingComponent,
+  DataNotFoundComponent,
+  VizData,
+  NotebookCellWithID,
+  NotebookWithCellId
+} from './VizComponent';
 import NotebookSelector from './NotebookSelector';
 import { FlowchartWidget } from './Flowchart';
 import { useCallback, useEffect, useState } from 'react';
@@ -17,8 +19,13 @@ interface VizContentProps {
   flowchartWidget: FlowchartWidget;
 }
 
-const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => {
-  const [selectedNotebookIds, setSelectedNotebookIds] = useState<number[]>([-2]);
+const VizContent: React.FC<VizContentProps> = ({
+  context,
+  flowchartWidget
+}) => {
+  const [selectedNotebookIds, setSelectedNotebookIds] = useState<number[]>([
+    -2
+  ]);
   const [isReady, setIsReady] = useState<boolean>(context.isReady);
   const [selectedClusters, setSelectedClusters] = useState<string[]>([]);
   const [scrolledClass, setScrolledClass] = useState<string>('');
@@ -35,27 +42,35 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
 
   // Function to handle Class selection
   const handleClassSelection = (selectedClass: string) => {
-    console.log("Selected class", selectedClass);
+    console.log('Selected class', selectedClass);
     setScrolledClass(selectedClass);
   };
 
   // Function to handle cluster selection
-  const handleClusterSelection = (selectedCluster: string, selectedClass: string) => {
-    if(selectedClusters.includes(selectedCluster)) {
-      setSelectedClusters(selectedClusters.filter(cluster => cluster !== selectedCluster));
-    }
-    else {
+  const handleClusterSelection = (
+    selectedCluster: string,
+    selectedClass: string
+  ) => {
+    if (selectedClusters.includes(selectedCluster)) {
+      setSelectedClusters(
+        selectedClusters.filter(cluster => cluster !== selectedCluster)
+      );
+    } else {
       setSelectedClusters([...selectedClusters, selectedCluster]);
       setScrolledClass(selectedClass);
     }
   };
 
-  flowchartWidget.addProps(handleClusterSelection, handleClassSelection, selectedClusters);
+  flowchartWidget.addProps(
+    handleClusterSelection,
+    handleClassSelection,
+    selectedClusters
+  );
 
   // Function to handle notebook selection
   const handleNotebookSelection = useCallback((selectedIds: number[]) => {
     setSelectedNotebookIds([...selectedIds]);
-    console.log("Selected notebooks", selectedIds);
+    console.log('Selected notebooks', selectedIds);
   }, []);
 
   // Function to update the flowchart widget when notebooks are selected
@@ -66,20 +81,25 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
       let jsonData: VizData = { notebooks: [] };
       let data: any = {};
 
-      if (content.trim() !== "") {
+      if (content.trim() !== '') {
         try {
           jsonData = JSON.parse(content);
           data = JSON.parse(content);
         } catch (error) {
-          console.error("Error parsing JSON", error);
+          console.error('Error parsing JSON', error);
           return;
         }
 
-        let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [], notebook_name: 'Unassigned' };
+        let newNotebook: NotebookWithCellId = {
+          notebook_id: -2,
+          cells: [],
+          notebook_name: 'Unassigned'
+        };
 
         jsonData.notebooks.forEach(notebook => {
           notebook.cells.forEach(cell => {
-            const classMetadata = data["metadata"]["clusters"][cell.class]["titles"];
+            const classMetadata =
+              data['metadata']['clusters'][cell.class]['titles'];
 
             if (classMetadata && classMetadata[cell.cluster]) {
               cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
@@ -94,15 +114,20 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
         jsonData.notebooks.push(newNotebook);
 
         const selectedCells: NotebookCellWithID[] = jsonData.notebooks
-          .filter(notebook => selectedNotebookIds.includes(notebook.notebook_id))
+          .filter(notebook =>
+            selectedNotebookIds.includes(notebook.notebook_id)
+          )
           .flatMap(notebook =>
             notebook.cells.map(cell => ({
               ...cell,
-              notebook_id: notebook.notebook_id,  // Add notebook_id to each cell
+              notebook_id: notebook.notebook_id // Add notebook_id to each cell
             }))
           );
 
-        flowchartWidget.updateGraph(selectedCells, selectedNotebookIds.includes(-2));
+        flowchartWidget.updateGraph(
+          selectedCells,
+          selectedNotebookIds.includes(-2)
+        );
       }
     }
   }, [isReady, selectedNotebookIds, context, flowchartWidget]);
@@ -115,7 +140,7 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
   let jsonData: VizData = { notebooks: [] };
   let data: any = {};
 
-  if (content.trim() === "") {
+  if (content.trim() === '') {
     return <DataNotFoundComponent />;
   }
 
@@ -123,12 +148,12 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
     jsonData = JSON.parse(content);
     data = JSON.parse(content);
   } catch (error) {
-    console.error("Error parsing JSON", error);
+    console.error('Error parsing JSON', error);
   }
 
   jsonData.notebooks.forEach(notebook => {
     notebook.cells.forEach(cell => {
-      const classMetadata = data["metadata"]["clusters"][cell.class]["titles"];
+      const classMetadata = data['metadata']['clusters'][cell.class]['titles'];
 
       if (classMetadata && classMetadata[cell.cluster]) {
         cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
@@ -136,13 +161,17 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
     });
   });
 
-  let newNotebook: NotebookWithCellId = { notebook_id: -2, cells: [], notebook_name: 'Unassigned' };
+  let newNotebook: NotebookWithCellId = {
+    notebook_id: -2,
+    cells: [],
+    notebook_name: 'Unassigned'
+  };
 
-  let comp_name = data["metadata"]["comp_name"]
-  console.log("competition:"+data["metadata"]["comp_name"])
+  let comp_name = data['metadata']['comp_name'];
+  console.log('competition:' + data['metadata']['comp_name']);
   jsonData.notebooks.forEach(notebook => {
     notebook.cells.forEach(cell => {
-      const classMetadata = data["metadata"]["clusters"][cell.class]["titles"];
+      const classMetadata = data['metadata']['clusters'][cell.class]['titles'];
 
       if (classMetadata && classMetadata[cell.cluster]) {
         cell.cluster = classMetadata[cell.cluster]; // Replace cluster ID with the title
@@ -155,21 +184,29 @@ const VizContent: React.FC<VizContentProps> = ({ context, flowchartWidget }) => 
     });
   });
   jsonData.notebooks.push(newNotebook);
- 
+
   const selectedNotebooks = jsonData.notebooks.filter(notebook =>
     selectedNotebookIds.includes(notebook.notebook_id)
   );
- 
 
   return (
     <div style={{ height: '100%', overflowY: 'auto' }}>
-      <div style={{ position: 'sticky', top: 0, zIndex: 1000, background: 'white' }}>
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000,
+          background: 'white'
+        }}
+      >
         <NotebookSelector
           notebookIds={jsonData.notebooks.map(notebook => notebook.notebook_id)}
-          notebookNames={jsonData.notebooks.map(notebook => notebook.notebook_name)}
+          notebookNames={jsonData.notebooks.map(
+            notebook => notebook.notebook_name
+          )}
           selectedNotebooks={selectedNotebookIds}
           onSelectionChange={handleNotebookSelection}
-          competition_name = {comp_name}
+          competition_name={comp_name}
         />
       </div>
       <VizComponent
@@ -187,7 +224,10 @@ class VizContentWidget extends ReactWidget {
   private context: DocumentRegistry.Context;
   private flowchartWidget: FlowchartWidget;
 
-  constructor(context: DocumentRegistry.Context, flowchartWidget: FlowchartWidget) {
+  constructor(
+    context: DocumentRegistry.Context,
+    flowchartWidget: FlowchartWidget
+  ) {
     super();
     this.context = context;
     this.flowchartWidget = flowchartWidget;
@@ -195,7 +235,12 @@ class VizContentWidget extends ReactWidget {
   }
 
   protected render(): React.ReactElement<any> {
-    return <VizContent context={this.context} flowchartWidget={this.flowchartWidget} />;
+    return (
+      <VizContent
+        context={this.context}
+        flowchartWidget={this.flowchartWidget}
+      />
+    );
   }
 }
 

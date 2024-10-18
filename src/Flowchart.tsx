@@ -32,10 +32,9 @@ interface ClusterLink {
   target: ClusterNode;
 }
 
-
 interface Props {
-  handleClusterClick?: ((cluster: string, cls: string) => void);
-  handleClassClick?: ((cls: string) => void);
+  handleClusterClick?: (cluster: string, cls: string) => void;
+  handleClassClick?: (cls: string) => void;
   selectedClusters?: string[];
 }
 
@@ -52,7 +51,7 @@ class Flowchart extends Component<Props, State> {
     this.svgRef = createRef();
     this.state = {
       selectedCells: [],
-      allNotebooks: false,
+      allNotebooks: false
     };
   }
 
@@ -65,10 +64,12 @@ class Flowchart extends Component<Props, State> {
     }
   }
 
-  updateSelectedCells = (newSelectedCells: NotebookCellWithID[], allNotebooks: boolean) => {
+  updateSelectedCells = (
+    newSelectedCells: NotebookCellWithID[],
+    allNotebooks: boolean
+  ) => {
     this.setState({ selectedCells: newSelectedCells, allNotebooks });
   };
-
 
   drawClassChart = () => {
     const { selectedCells } = this.state;
@@ -76,7 +77,8 @@ class Flowchart extends Component<Props, State> {
       return { width: 0, height: 0 };
     }
 
-    const svg = d3.select(this.svgRef.current)
+    const svg = d3
+      .select(this.svgRef.current)
       .attr('width', 300)
       .attr('height', 1000);
 
@@ -113,14 +115,15 @@ class Flowchart extends Component<Props, State> {
     // Step 3: Create a list of nodes (for example with dummy coordinates)
     const nodes: ClassNode[] = sortedClassNames.map((className, index) => ({
       id: className,
-      x: 100,  // Dummy x coordinate, you can adjust this
-      y: 50 + index * 100,  // Dummy y coordinate, you can adjust this
+      x: 100, // Dummy x coordinate, you can adjust this
+      y: 50 + index * 100 // Dummy y coordinate, you can adjust this
     }));
 
     const nodeWidth = 120;
     const nodeHeight = 50;
 
-    svg.selectAll('rect')
+    svg
+      .selectAll('rect')
       .data(nodes)
       .enter()
       .append('rect')
@@ -136,10 +139,10 @@ class Flowchart extends Component<Props, State> {
         if (this.props.handleClassClick) {
           this.props.handleClassClick(cls);
         }
-      }
-      );
+      });
 
-    svg.selectAll('text')
+    svg
+      .selectAll('text')
       .data(nodes)
       .enter()
       .append('text')
@@ -149,10 +152,10 @@ class Flowchart extends Component<Props, State> {
       .attr('dominant-baseline', 'middle')
       .text(d => d.id);
 
-    const lineGenerator = d3.line()
-      .curve(d3.curveBundle.beta(0.5));
+    const lineGenerator = d3.line().curve(d3.curveBundle.beta(0.5));
 
-    svg.selectAll('path')
+    svg
+      .selectAll('path')
       .data(links)
       .enter()
       .append('path')
@@ -160,7 +163,8 @@ class Flowchart extends Component<Props, State> {
         const source = nodes.find(node => node.id === d.source);
         const target = nodes.find(node => node.id === d.target);
         if (source && target) {
-          const isDirectNeighbor = nodes.indexOf(source) === nodes.indexOf(target) - 1;
+          const isDirectNeighbor =
+            nodes.indexOf(source) === nodes.indexOf(target) - 1;
           const midX = (source.x + target.x) / 2;
           const midY = (source.y + target.y) / 2;
           const distanceY = Math.abs(target.y - source.y); // Calculate the vertical distance between nodes
@@ -187,12 +191,11 @@ class Flowchart extends Component<Props, State> {
       .attr('fill', 'none');
 
     // Calculate the required width and height
-    const width = 300;  // Fixed width
-    const height = nodes.length * 100 + 50;  // Based on number of nodes
+    const width = 300; // Fixed width
+    const height = nodes.length * 100 + 50; // Based on number of nodes
 
     return { width, height };
-  }
-
+  };
 
   drawClusterChart = () => {
     const { selectedCells } = this.state;
@@ -206,7 +209,7 @@ class Flowchart extends Component<Props, State> {
 
     const nodes: ClusterNode[] = [];
     const links: ClusterLink[] = [];
-    const circleRadius = 15;  // Set the circle radius here
+    const circleRadius = 15; // Set the circle radius here
     const arrowheadSize = 6; // Adjust this to the size of the arrowhead
     let yCounter = 0;
 
@@ -238,8 +241,7 @@ class Flowchart extends Component<Props, State> {
           return 0;
         }
         return freqB - freqA;
-      }
-      );
+      });
     });
 
     classGroups.forEach((cells, cls) => {
@@ -249,25 +251,24 @@ class Flowchart extends Component<Props, State> {
         return colorOrderA - colorOrderB;
       });
 
-      const clusterSet = new Set();  // Create a set to track unique clusters
+      const clusterSet = new Set(); // Create a set to track unique clusters
 
       for (let i = 0; i < cells.length; i++) {
-
         if (!clusterSet.has(cells[i].cluster)) {
           clusterSet.add(cells[i].cluster);
           const node: ClusterNode = {
             id: nodes.length + 1,
             cluster: cells[i].cluster,
             class: cls,
-            x: -50 + clusterSet.size * 150,  // Horizontally position nodes with the same class next to each other
-            y: 100 + yCounter * 150,  // Vertically space classes
+            x: -50 + clusterSet.size * 150, // Horizontally position nodes with the same class next to each other
+            y: 100 + yCounter * 150, // Vertically space classes
             cell_id: cells[i].cell_id,
-            notebook_id: cells[i].notebook_id,  // Add notebook_id to the node
+            notebook_id: cells[i].notebook_id // Add notebook_id to the node
           };
           nodes.push(node);
         }
       }
-      yCounter++;  // Move to the next row for the next class
+      yCounter++; // Move to the next row for the next class
     });
 
     // Create links between consecutive cells by cell_id and notebook_id
@@ -275,25 +276,38 @@ class Flowchart extends Component<Props, State> {
       if (index < selectedCells.length - 1) {
         const sourceNode = nodes.find(node => node.cluster === cell.cluster);
         const targetCell = selectedCells[index + 1];
-        const targetNode = nodes.find(node => node.cluster === targetCell.cluster && sourceNode?.cluster !== node.cluster);
+        const targetNode = nodes.find(
+          node =>
+            node.cluster === targetCell.cluster &&
+            sourceNode?.cluster !== node.cluster
+        );
 
         // Only create a link if both nodes belong to the same notebook_id
-        if (sourceNode && targetNode && cell.notebook_id === targetCell.notebook_id) {
+        if (
+          sourceNode &&
+          targetNode &&
+          cell.notebook_id === targetCell.notebook_id
+        ) {
           links.push({ source: sourceNode, target: targetNode });
         }
       }
     });
 
     // Draw circles (nodes)
-    svg.selectAll('circle')
+    svg
+      .selectAll('circle')
       .data(nodes)
       .enter()
       .append('circle')
       .attr('cx', d => d.x)
       .attr('cy', d => d.y)
       .attr('r', circleRadius)
-      .attr('stroke', d => this.props.selectedClusters?.includes(d.cluster) ? 'black' : 'none')
-      .attr('stroke-width', d => this.props.selectedClusters?.includes(d.cluster) ? '2px' : '0px')
+      .attr('stroke', d =>
+        this.props.selectedClusters?.includes(d.cluster) ? 'black' : 'none'
+      )
+      .attr('stroke-width', d =>
+        this.props.selectedClusters?.includes(d.cluster) ? '2px' : '0px'
+      )
       .attr('fill', d => colorScheme[d.class] || '#69b3a2')
       .on('click', d => {
         const clstr = d.target.__data__.cluster;
@@ -301,11 +315,11 @@ class Flowchart extends Component<Props, State> {
         if (this.props.handleClusterClick) {
           this.props.handleClusterClick(clstr, cls);
         }
-      }
-      );
+      });
 
     // Draw text labels (cluster names)
-    svg.selectAll('text')
+    svg
+      .selectAll('text')
       .data(nodes)
       .enter()
       .append('text')
@@ -313,33 +327,39 @@ class Flowchart extends Component<Props, State> {
       .attr('y', d => d.y)
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
-      .attr('fill', '#000')  // Set text color to black
-      .style('font-size', '10px')  // Set font size to smaller
-      .style('font-weight', d => this.props.selectedClusters?.includes(d.cluster) ? 'bold' : 'normal')  // Make text bold if in selectedClusters
+      .attr('fill', '#000') // Set text color to black
+      .style('font-size', '10px') // Set font size to smaller
+      .style('font-weight', d =>
+        this.props.selectedClusters?.includes(d.cluster) ? 'bold' : 'normal'
+      ) // Make text bold if in selectedClusters
       .each(function (d) {
-        const words = d.cluster.split(' ');  // Split cluster name into words
-        let tspan = d3.select(this).append('tspan')
+        const words = d.cluster.split(' '); // Split cluster name into words
+        let tspan = d3
+          .select(this)
+          .append('tspan')
           .attr('x', d.x)
           .attr('y', d.y + circleRadius + 10)
-          .attr('dy', -2);  // Start at the correct vertical position
+          .attr('dy', -2); // Start at the correct vertical position
 
         for (let i = 0; i < words.length; i += 3) {
-          let line = words.slice(i, i + 3).join(' ');  // Take 3 words at a time
+          let line = words.slice(i, i + 3).join(' '); // Take 3 words at a time
           tspan.text(line);
-          if (i + 3 < words.length) {  // If more words remain, add a new line
-            tspan = d3.select(this).append('tspan')
+          if (i + 3 < words.length) {
+            // If more words remain, add a new line
+            tspan = d3
+              .select(this)
+              .append('tspan')
               .attr('x', d.x)
-              .attr('dy', '1.0em')  // Adjust line height
-              .attr('text-anchor', 'middle')  // Keep text centered
+              .attr('dy', '1.0em') // Adjust line height
+              .attr('text-anchor', 'middle') // Keep text centered
               .attr('dominant-baseline', 'middle');
           }
         }
       });
 
-
-
     // Draw dotted curved arrows (links between consecutive cells)
-    svg.selectAll('path')
+    svg
+      .selectAll('path')
       .data(links)
       .enter()
       .append('path')
@@ -353,13 +373,16 @@ class Flowchart extends Component<Props, State> {
         // Calculate the start and end points on the edge of the circles
         const sourceX = source.x + circleRadius * Math.cos(angle);
         const sourceY = source.y + circleRadius * Math.sin(angle);
-        const targetX = target.x - (circleRadius + arrowheadSize) * Math.cos(angle);
-        const targetY = target.y - (circleRadius + arrowheadSize) * Math.sin(angle);
+        const targetX =
+          target.x - (circleRadius + arrowheadSize) * Math.cos(angle);
+        const targetY =
+          target.y - (circleRadius + arrowheadSize) * Math.sin(angle);
 
         // Calculate the control point for the curve
         const midX = (sourceX + targetX) / 2;
         const midY = (sourceY + targetY) / 2;
-        const curvature = (targetX > sourceX ? -20 : 20) * Math.abs(sourceX - targetX) / 150;  // Adjust this value to control the curvature
+        const curvature =
+          ((targetX > sourceX ? -20 : 20) * Math.abs(sourceX - targetX)) / 150; // Adjust this value to control the curvature
         const controlPointX = midX;
         const controlPointY = midY + curvature;
 
@@ -371,11 +394,13 @@ class Flowchart extends Component<Props, State> {
       })
       .attr('stroke', '#666')
       .attr('fill', 'none')
-      .attr('stroke-dasharray', '4 2')  // Create dotted line (4px dash, 2px gap)
+      .attr('stroke-dasharray', '4 2') // Create dotted line (4px dash, 2px gap)
       .attr('marker-end', 'url(#arrowhead)');
 
     // Define arrowhead marker
-    svg.append('defs').append('marker')
+    svg
+      .append('defs')
+      .append('marker')
       .attr('id', 'arrowhead')
       .attr('viewBox', '-0 -5 10 10')
       .attr('refX', arrowheadSize)
@@ -389,11 +414,12 @@ class Flowchart extends Component<Props, State> {
       .attr('fill', '#666')
       .style('stroke', 'none');
 
-    const width = Math.max(...nodes.map(node => node.x)) + circleRadius * 2 + 50;  // Plus padding
-    const height = yCounter * 150 + circleRadius * 2 + 50;  // Based on number of classes
+    const width =
+      Math.max(...nodes.map(node => node.x)) + circleRadius * 2 + 50; // Plus padding
+    const height = yCounter * 150 + circleRadius * 2 + 50; // Based on number of classes
 
     return { width, height };
-  }
+  };
 
   drawChart() {
     const { selectedCells } = this.state;
@@ -402,7 +428,7 @@ class Flowchart extends Component<Props, State> {
       return;
     }
 
-    let dimensions: { width: number, height: number };
+    let dimensions: { width: number; height: number };
 
     if (this.state.allNotebooks) {
       dimensions = this.drawClassChart();
@@ -412,16 +438,13 @@ class Flowchart extends Component<Props, State> {
 
     const svg = this.svgRef.current;
     if (svg) {
-      svg.setAttribute("width", dimensions.width.toString());
-      svg.setAttribute("height", dimensions.height.toString());
+      svg.setAttribute('width', dimensions.width.toString());
+      svg.setAttribute('height', dimensions.height.toString());
     }
   }
 
-
   render() {
-    return (
-      <svg width="800" height="1000" ref={this.svgRef}></svg>
-    );
+    return <svg width="800" height="1000" ref={this.svgRef}></svg>;
   }
 }
 
@@ -437,11 +460,18 @@ export class FlowchartWidget extends ReactWidget {
     this.graph = createRef();
   }
 
-  public updateGraph(selectedCells: NotebookCellWithID[], allNotebooks: boolean): void {
+  public updateGraph(
+    selectedCells: NotebookCellWithID[],
+    allNotebooks: boolean
+  ): void {
     this.graph.current?.updateSelectedCells(selectedCells, allNotebooks);
   }
 
-  public addProps(handleClusterClick: (cluster: string, cls: string) => void, handleClassClick: (cls: string) => void, selectedClusters: string[]): void {
+  public addProps(
+    handleClusterClick: (cluster: string, cls: string) => void,
+    handleClassClick: (cls: string) => void,
+    selectedClusters: string[]
+  ): void {
     this.handleClusterClick = handleClusterClick;
     this.handleClassClick = handleClassClick;
     this.selectedClusters = selectedClusters;
@@ -451,7 +481,12 @@ export class FlowchartWidget extends ReactWidget {
   render(): JSX.Element {
     return (
       <div className="flowchart-widget">
-        <Flowchart ref={this.graph} handleClassClick={this.handleClassClick} handleClusterClick={this.handleClusterClick} selectedClusters={this.selectedClusters} />
+        <Flowchart
+          ref={this.graph}
+          handleClassClick={this.handleClassClick}
+          handleClusterClick={this.handleClusterClick}
+          selectedClusters={this.selectedClusters}
+        />
       </div>
     );
   }
