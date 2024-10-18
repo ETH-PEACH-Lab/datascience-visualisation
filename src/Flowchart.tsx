@@ -44,26 +44,6 @@ interface State {
   allNotebooks: boolean;
 }
 
-// function resizeSVG(svgRef: React.RefObject<SVGSVGElement>): void {
-//   const svg = svgRef.current;
-
-//   if (svg) {
-//     // Get the bounds of the SVG content
-//     const bbox = svg.getBBox();
-//     console.log(bbox);
-
-//     const newWidth = bbox.x + bbox.width + bbox.x;
-//     const newHeight = bbox.y + bbox.height + bbox.y;
-//     // Update the width and height using the size of the contents
-//     svg.setAttribute("width", newWidth.toString());
-//     svg.setAttribute("height", newHeight.toString());
-
-//     console.log('Resized SVG to', newWidth.toString(), newHeight.toString());
-//   } else {
-//     console.error("SVG element not found.");
-//   }
-// }
-
 class Flowchart extends Component<Props, State> {
   svgRef: React.RefObject<SVGSVGElement>;
 
