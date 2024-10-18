@@ -1,17 +1,14 @@
-# cluster_Viz
-
-[![Github Actions Status](/workflows/Build/badge.svg)](/actions/workflows/build.yml)
+# Galaxy
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ETH-PEACH-Lab/datascience-visualisation.git/HEAD)
 
- Show a random NASA Astronomy Picture of the Day in a JupyterLab panel
-
+Show a random NASA Astronomy Picture of the Day in a JupyterLab panel.
 
 ## Requirements
 
 - JupyterLab >= 4.0.0
 
-## Install
+## Installation
 
 To install the extension, execute:
 
@@ -19,7 +16,7 @@ To install the extension, execute:
 pip install cluster_viz
 ```
 
-## Uninstall
+## Uninstallation
 
 To remove the extension, execute:
 
@@ -27,74 +24,71 @@ To remove the extension, execute:
 pip uninstall cluster_viz
 ```
 
-## Contributing
+## Development Setup
 
-### Development install
+To set up the development environment, follow these steps:
 
-Note: You will need NodeJS to build the extension package.
+### 1. Create the Conda Environment
 
-The `jlpm` command is JupyterLab's pinned version of
-[yarn](https://yarnpkg.com/) that is installed with JupyterLab. You may use
-`yarn` or `npm` in lieu of `jlpm` below.
+Run the following command to create a new environment with JupyterLab 4, Node.js, Git, Copier, and other required packages:
 
 ```bash
-# Clone the repo to your local environment
-# Change directory to the cluster_viz directory
-# Install package in development mode
-pip install -e "."
-# Link your development version of the extension with JupyterLab
-jupyter labextension develop . --overwrite
-# Rebuild extension Typescript source after making changes
-jlpm build
+conda create -n galaxy --override-channels --strict-channel-priority -c conda-forge -c nodefaults jupyterlab=4 nodejs=20 git copier=9 jinja2-time
 ```
 
-You can watch the source directory and run JupyterLab at the same time in different terminals to watch for changes in the extension's source and automatically rebuild the extension.
+### 2. Activate the Environment
+
+Activate the Conda environment:
 
 ```bash
-# Watch the source directory in one terminal, automatically rebuilding when needed
+conda activate galaxy
+```
+
+### 3. Install the Extension in Development Mode
+
+Install the package with `pip` in editable mode:
+
+```bash
+pip install -ve .
+```
+
+### 4. Install Node.js Dependencies
+
+Run the following command to install JavaScript dependencies:
+
+```bash
+jlpm install
+```
+
+### 5. Watch for Changes
+
+Start the watch process to automatically rebuild the extension when source files are modified:
+
+```bash
 jlpm watch
-# Run JupyterLab in another terminal
+```
+
+### 6. Run JupyterLab
+
+In a separate terminal, activate the conda environment and run JupyterLab:
+
+```bash
 jupyter lab
 ```
 
-With the watch command running, every saved change will immediately be built locally and available in your running JupyterLab. Refresh JupyterLab to load the change in your browser (you may need to wait several seconds for the extension to be rebuilt).
+With `jlpm watch` running in one terminal and JupyterLab in another, every saved change will automatically rebuild the extension. Refresh JupyterLab to load the updated extension in the browser.
 
-By default, the `jlpm build` command generates the source maps for this extension to make it easier to debug using the browser dev tools. To also generate source maps for the JupyterLab core extensions, you can run the following command:
+## Packaging
 
-```bash
-jupyter lab build --minimize=False
+For instructions on how to package and release the extension, refer to the [RELEASE](RELEASE.md) file.
+
+For instructions on how to deploy the extension, refer to the [DEPLOYMENT](DEPLOYMENT.md) file.
+
+## Project Structure
+
 ```
-
-### Development uninstall
-
-```bash
-pip uninstall cluster_viz
+datascience-visualisation/
+│
+├── src          # Frontend logic
+└── backend      # Backend logic
 ```
-
-In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
-command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
-folder is located. Then you can remove the symlink named `cluster_viz` within that folder.
-
-### Testing the extension
-
-#### Frontend tests
-
-This extension is using [Jest](https://jestjs.io/) for JavaScript code testing.
-
-To execute them, execute:
-
-```sh
-jlpm
-jlpm test
-```
-
-#### Integration tests
-
-This extension uses [Playwright](https://playwright.dev/docs/intro) for the integration tests (aka user level tests).
-More precisely, the JupyterLab helper [Galata](https://github.com/jupyterlab/jupyterlab/tree/master/galata) is used to handle testing the extension in JupyterLab.
-
-More information are provided within the [ui-tests](./ui-tests/README.md) README.
-
-### Packaging the extension
-
-See [RELEASE](RELEASE.md)
