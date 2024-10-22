@@ -61,6 +61,7 @@
   transition:
     background-color 0.3s,
     transform 0.2s; /* Smooth transitions */
+
   flex-shrink: 0; /* Prevent shrinking */
   position: sticky; /* Stick to the container's right edge */
   right: 0; /* Stick to the right */

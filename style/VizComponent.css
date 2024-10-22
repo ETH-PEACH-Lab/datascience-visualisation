@@ -6,31 +6,6 @@
   border-radius: 5px;
 }
 
-.group-header {
-  padding: 10px;
-  border-radius: 5px 5px 0 0;
-  cursor: pointer;
-  color: #fff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: bold;
-}
-
-.group-content {
-  padding: 10px;
-  background-color: #f9f9f9;
-  border-radius: 0 0 5px 5px;
-}
-
-.cell-container {
-  margin-bottom: 10px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #fff;
-}
-
 .group-header-arrow {
   transform: rotate(0deg);
   transition: transform 0.2s;
@@ -77,11 +52,6 @@
   color: white;
   border-radius: 5px;
   cursor: pointer;
-}
-.group-container {
-  margin-bottom: 20px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
 }
 
 .group-header {

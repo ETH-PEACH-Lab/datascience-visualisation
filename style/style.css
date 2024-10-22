@@ -11,5 +11,6 @@
 
   /* Ensure the toolbar is properly positioned */
   z-index: 1;
+
   /* Make sure the toolbar stays on top */
 }
