@@ -1,5 +1,6 @@
 import {
-  JupyterFrontEnd, JupyterFrontEndPlugin
+  JupyterFrontEnd,
+  JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
 import { VizWidgetFactory } from './factory';
@@ -19,9 +20,9 @@ const extension: JupyterFrontEndPlugin<void> = {
       extensions: ['.viz'],
       fileFormat: 'text',
       mimeTypes: ['application/json'],
-      contentType: 'file',
+      contentType: 'file'
     });
-    
+
     const flowchartWidget = new FlowchartWidget();
 
     // Add the FlowchartWidget to the left sidebar
@@ -37,15 +38,17 @@ const extension: JupyterFrontEndPlugin<void> = {
     app.shell.add(flowchartWidget, 'left', { rank: 900 });
 
     // Create and register the widget factory
-    const factory = new VizWidgetFactory({
-      name: 'VIZ Widget',
-      fileTypes: ['viz'],
-      modelName: 'text',
-      defaultFor: ['viz'],
-      preferKernel: false
-    },
-    flowchartWidget);
-    
+    const factory = new VizWidgetFactory(
+      {
+        name: 'VIZ Widget',
+        fileTypes: ['viz'],
+        modelName: 'text',
+        defaultFor: ['viz'],
+        preferKernel: false
+      },
+      flowchartWidget
+    );
+
     app.docRegistry.addWidgetFactory(factory);
 
     // Use the widget factory to create a new widget

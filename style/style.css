@@ -1,15 +1,15 @@
 .jp-Notebook {
-    padding-top: 70px !important;
-    overflow: auto;
+  padding-top: 70px !important;
+  overflow: auto;
 
-    /* Adjust this value if needed */
+  /* Adjust this value if needed */
 }
 
 .jp-Toolbar {
-    position: fixed;
-    overflow: auto;
+  position: fixed;
+  overflow: auto;
 
-    /* Ensure the toolbar is properly positioned */
-    z-index: 1;
-    /* Make sure the toolbar stays on top */
+  /* Ensure the toolbar is properly positioned */
+  z-index: 1;
+  /* Make sure the toolbar stays on top */
 }

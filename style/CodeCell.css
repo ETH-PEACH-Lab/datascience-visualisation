@@ -23,7 +23,9 @@
   margin-right: 10px;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.1s;
+  transition:
+    background-color 0.3s,
+    transform 0.1s;
   flex-shrink: 0; /* Prevent shrinking */
 }
 
@@ -33,7 +35,7 @@
 
 .notebook-id-button:active {
   background-color: #d0d0d0; /* Even darker when clicked */
-  transform: scale(0.95);    /* Slightly shrink the button on click */
+  transform: scale(0.95); /* Slightly shrink the button on click */
 }
 
 .code-editor {
@@ -56,7 +58,9 @@
   margin-left: 10px;
   border: none; /* Remove default button border */
   cursor: pointer; /* Change cursor to pointer on hover */
-  transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
+  transition:
+    background-color 0.3s,
+    transform 0.2s; /* Smooth transitions */
   flex-shrink: 0; /* Prevent shrinking */
   position: sticky; /* Stick to the container's right edge */
   right: 0; /* Stick to the right */
